@@ -1,13 +1,5 @@
 [
   {
-    "name": "slidev-theme-cu-boulder",
-    "description": "Official University of Colorado Boulder brand theme for Slidev presentations. Published on npm. Live demo: jvaldivia23.github.io/slidev-theme-cu-boulder",
-    "url": "https://github.com/JValdivia23/slidev-theme-cu-boulder",
-    "stars": 0,
-    "language": "Vue",
-    "languageColor": "#CFB87C"
-  },
-  {
     "name": "radar-dct-smoothing",
     "description": "Radar smoothing algorithm using Discrete Cosine Transform",
     "url": "https://github.com/JValdivia23/radar-dct-smoothing",
