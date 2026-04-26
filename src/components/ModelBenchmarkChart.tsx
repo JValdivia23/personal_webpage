@@ -56,7 +56,8 @@ interface ChartPoint extends AIModel {
   x: number;
   y: number;
   color: string;
-  labelPos: number;
+  dx: number;
+  dy: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,130 +101,83 @@ const QUADRANT_BG = {
 // Collision-aware label placement with 8 directions
 // ---------------------------------------------------------------------------
 interface LabelPlacement {
-  pos: number;
-  lineLen: number;
+  dx: number;
+  dy: number;
 }
 
-function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
-  const xs = allPoints.map((p) => p.x);
-  const ys = allPoints.map((p) => p.y);
-  const xMin = Math.min(...xs);
-  const xMax = Math.max(...xs);
-  const yMin = Math.min(...ys);
-  const yMax = Math.max(...ys);
-  const xRange = xMax - xMin || 1;
-  const yRange = yMax - yMin || 1;
+/** Candidate offsets in pixels from dot centre.
+ *  Order = fallback priority.  Right-side first, then top/bottom,
+ *  then longer right, then left (only if near left edge).           */
+const CANDIDATES = [
+  // — right side (preferred) —
+  { dx: 10, dy: 0 },      // immediately right
+  { dx: 10, dy: -10 },    // 45° up-right
+  { dx: 10, dy: 10 },     // 45° down-right
+  { dx: 18, dy: 0 },      // further right
+  { dx: 18, dy: -18 },    // further up-right
+  { dx: 18, dy: 18 },     // further down-right
+  { dx: 28, dy: 0 },      // even further right
+  { dx: 28, dy: -28 },
+  { dx: 28, dy: 28 },
+  { dx: 40, dy: 0 },
+  { dx: 40, dy: -40 },
+  { dx: 40, dy: 40 },
+  // — top / bottom —
+  { dx: 0, dy: -12 },     // immediately top
+  { dx: 0, dy: 12 },      // immediately bottom
+  { dx: 0, dy: -20 },     // higher top
+  { dx: 0, dy: 20 },      // lower bottom
+  { dx: 0, dy: -32 },
+  { dx: 0, dy: 32 },
+  { dx: 0, dy: -46 },
+  { dx: 0, dy: 46 },
+  // — left side (only near left edge) —
+  { dx: -10, dy: 0 },
+  { dx: -10, dy: -10 },
+  { dx: -10, dy: 10 },
+  { dx: -18, dy: 0 },
+  { dx: -18, dy: -18 },
+  { dx: -18, dy: 18 },
+];
 
-  const directions = [
-    [0, -1], [0.7, -0.7], [1, 0], [0.7, 0.7],
-    [0, 1], [-0.7, 0.7], [-1, 0], [-0.7, -0.7],
-  ];
+function overlaps(
+  a: { l: number; r: number; b: number; t: number },
+  b: { l: number; r: number; b: number; t: number }
+) {
+  return a.l < b.r && a.r > b.l && a.b < b.t && a.t > b.b;
+}
 
-  // Text offset from line end (px) — MUST match CustomScatterShape switch
-  const OFF = [
-    { x: 0, y: -5 },
-    { x: 5, y: -5 },
-    { x: 5, y: 0 },
-    { x: 5, y: 5 },
-    { x: 0, y: 13 },
-    { x: -5, y: 5 },
-    { x: -5, y: 0 },
-    { x: -5, y: -5 },
-  ];
+function placeLabels(
+  allPoints: ChartPoint[],
+  xDomain: [number, number],
+  yDomain: [number, number]
+): LabelPlacement[] {
+  // Plot size in px (approximate, matches rendered chart area)
+  const PLOT_W = 800;
+  const PLOT_H = 520;
+  const sx = PLOT_W / (xDomain[1] - xDomain[0]); // px per data X
+  const sy = PLOT_H / (yDomain[1] - yDomain[0]); // px per data Y
 
-  // Estimated plot size (px) for overlap checks
-  const PLOT_W = 850;
-  const PLOT_H = 550;
-  const sx = PLOT_W / xRange; // px per data X unit
-  const sy = PLOT_H / yRange; // px per data Y unit
+  // Dot radius in data units
+  const dotR = 5 / Math.min(sx, sy);
 
-  // Pixel distance between two data-space deltas
-  const pxDist = (dx: number, dy: number) =>
-    Math.sqrt((dx * sx) ** 2 + (dy * sy) ** 2);
+  // Pre-compute dot bounding boxes
+  const dotBoxes = allPoints.map((p) => ({
+    l: p.x - dotR,
+    r: p.x + dotR,
+    b: p.y - dotR,
+    t: p.y + dotR,
+  }));
 
-  // Compute text bounding box in DATA coords for a given direction,
-  // line-end position, label width and height (all in px).
-  function textBox(
-    dIdx: number,
-    lineEndX: number,
-    lineEndY: number,
-    textWPx: number,
-    textHPx: number
-  ) {
-    const o = OFF[dIdx];
-    // Anchor point in data coords (same math as CustomScatterShape)
-    const ax = lineEndX + o.x / sx;
-    const ay = lineEndY + o.y / sy;
-
-    // textWidth / textHeight in data coords
-    const tw = textWPx / sx;
-    const th = textHPx / sy;
-
-    let left: number, right: number, top: number, bottom: number;
-
-    // horizontal: must match CustomScatterShape textAnchor
-    switch (dIdx) {
-      case 0:
-      case 4: // middle
-        left = ax - tw / 2;
-        right = ax + tw / 2;
-        break;
-      case 1:
-      case 2:
-      case 3: // start
-        left = ax;
-        right = ax + tw;
-        break;
-      case 5:
-      case 6:
-      case 7: // end
-        left = ax - tw;
-        right = ax;
-        break;
-      default:
-        left = ax - tw / 2;
-        right = ax + tw / 2;
-    }
-
-    // vertical: must match CustomScatterShape dominantBaseline
-    // 0,1,7 = auto   (baseline near bottom of text, text extends UP)
-    // 2,6   = middle (centered on ay)
-    // 3,4,5 = hanging (hanging baseline near top, text extends DOWN)
-    switch (dIdx) {
-      case 0:
-      case 1:
-      case 7: // auto
-        top = ay - th * 0.8;
-        bottom = ay + th * 0.2;
-        break;
-      case 2:
-      case 6: // middle
-        top = ay - th / 2;
-        bottom = ay + th / 2;
-        break;
-      case 3:
-      case 4:
-      case 5: // hanging
-        top = ay - th * 0.1;
-        bottom = ay + th * 0.9;
-        break;
-      default:
-        top = ay - th / 2;
-        bottom = ay + th / 2;
-    }
-
-    return { left, right, top, bottom };
-  }
-
-  const DOT_R = 5; // px
-
-  // Process most constrained (closest to neighbours) first
+  // Process points with most neighbours first (crowded clusters claim space early)
   const order = allPoints
     .map((p, i) => {
       let minD = Infinity;
       for (let j = 0; j < allPoints.length; j++) {
         if (i === j) continue;
-        const d = pxDist(allPoints[j].x - p.x, allPoints[j].y - p.y);
+        const dx = (allPoints[j].x - p.x) * sx;
+        const dy = (allPoints[j].y - p.y) * sy;
+        const d = Math.sqrt(dx * dx + dy * dy);
         if (d < minD) minD = d;
       }
       return { idx: i, minD };
@@ -231,184 +185,120 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
     .sort((a, b) => a.minD - b.minD)
     .map((c) => c.idx);
 
-  const placed: Array<{ left: number; right: number; top: number; bottom: number }> = [];
+  const placedLabels: Array<{ l: number; r: number; b: number; t: number }> = [];
   const results: LabelPlacement[] = new Array(allPoints.length);
 
   for (const pi of order) {
     const p = allPoints[pi];
     const label = p.shortName || p.name;
-    const textWPx = label.length * 6.5; // 10px font, ~6.5px per char
-    const textHPx = 13; // ~13px total height
 
-    // Direction away from nearest neighbour
-    let awayDir = 0;
-    let nearestDist = Infinity;
-    for (let j = 0; j < allPoints.length; j++) {
-      if (j === pi) continue;
-      const d = pxDist(allPoints[j].x - p.x, allPoints[j].y - p.y);
-      if (d < nearestDist) {
-        nearestDist = d;
-        const ndx = allPoints[j].x - p.x;
-        const ndy = allPoints[j].y - p.y;
-        const nd = Math.sqrt(ndx * ndx + ndy * ndy) || 1;
-        let best = -Infinity;
-        for (let d = 0; d < 8; d++) {
-          const score = -(directions[d][0] * (ndx / nd) + directions[d][1] * (ndy / nd));
-          if (score > best) {
-            best = score;
-            awayDir = d;
-          }
-        }
-      }
-    }
+    // Text size in px → data units
+    const textWPx = label.length * 6.2; // 10px font
+    const textHPx = 13;
+    const textW = textWPx / sx;
+    const textH = textHPx / sy;
 
-    // Build direction order: start pointing away, then spiral
-    const dirOrder: number[] = [awayDir];
-    for (let step = 1; step <= 4; step++) {
-      dirOrder.push((awayDir + step) % 8);
-      dirOrder.push((awayDir + 8 - step) % 8);
-    }
+    // Is this dot near the left edge?
+    const nearLeft =
+      (p.x - xDomain[0]) / (xDomain[1] - xDomain[0]) < 0.10;
 
-    let bestDir = awayDir;
-    let bestLen = 6;
+    let best: LabelPlacement = { dx: 10, dy: 0 };
     let bestScore = Infinity;
 
-    for (const dIdx of dirOrder) {
-      const [ddx, ddy] = directions[dIdx];
+    for (const cand of CANDIDATES) {
+      // Skip left-side candidates unless near left edge
+      if (cand.dx < 0 && !nearLeft) continue;
 
-      for (const lineLenPx of [6, 10, 14, 20, 28, 38, 50, 65]) {
-        // Line end in data coords
-        const lex = p.x + ddx * (lineLenPx / sx);
-        const ley = p.y + ddy * (lineLenPx / sy);
+      // Anchor = bottom-left corner of text box in data coords
+      const ax = p.x + cand.dx / sx;
+      const ay = p.y - cand.dy / sy; // SVG dy negative = up = higher data Y
 
-        // Text box (matches SVG rendering exactly)
-        const box = textBox(dIdx, lex, ley, textWPx, textHPx);
+      const box = {
+        l: ax,
+        r: ax + textW,
+        b: ay,           // bottom of text (anchor)
+        t: ay + textH,   // top of text (extends upward)
+      };
 
-        let score = 0;
+      let score = 0;
 
-        // --- 1. Text box must not overlap ANY dot ---
-        for (let j = 0; j < allPoints.length; j++) {
-          const dot = allPoints[j];
-          const closestX = Math.max(box.left, Math.min(dot.x, box.right));
-          const closestY = Math.max(box.top, Math.min(dot.y, box.bottom));
-          const distPx = pxDist(dot.x - closestX, dot.y - closestY);
-
-          if (distPx < DOT_R) {
-            score += 100_000; // on top of dot → reject
-          } else if (distPx < DOT_R * 2) {
-            score += 500; // uncomfortably close
-          }
+      // 1. Must not overlap any dot
+      for (const db of dotBoxes) {
+        if (overlaps(box, db)) {
+          score += 1_000_000; // hard reject
         }
+      }
 
-        // --- 2. Text box must not overlap other labels ---
-        for (const pb of placed) {
-          const ow = Math.max(0, Math.min(box.right, pb.right) - Math.max(box.left, pb.left));
-          const oh = Math.max(0, Math.min(box.bottom, pb.bottom) - Math.max(box.top, pb.top));
-          if (ow > 0 && oh > 0) {
-            // overlap area in px²
-            score += ow * sx * oh * sy * 20;
-          }
+      // 2. Must not overlap already-placed labels
+      for (const lb of placedLabels) {
+        if (overlaps(box, lb)) {
+          score += 100_000;
         }
+      }
 
-        // --- 3. Prefer short lines (labels close to dots) ---
-        score += lineLenPx * lineLenPx * 0.02;
+      // 3. Prefer shorter distances (labels close to their dot)
+      const dist = Math.sqrt(cand.dx * cand.dx + cand.dy * cand.dy);
+      score += dist * dist * 0.03;
 
-        if (score < bestScore) {
-          bestScore = score;
-          bestDir = dIdx;
-          bestLen = lineLenPx;
-        }
+      // 4. Prefer right side strongly
+      if (cand.dx < 0) score += 500; // left side penalty
+      if (cand.dx === 0) score += 100; // top/bottom mild penalty
+
+      if (score < bestScore) {
+        bestScore = score;
+        best = cand;
       }
     }
 
-    const [ddx, ddy] = directions[bestDir];
-    const lex = p.x + ddx * (bestLen / sx);
-    const ley = p.y + ddy * (bestLen / sy);
-    const box = textBox(bestDir, lex, ley, textWPx, textHPx);
+    // Record placed label box for future collision checks
+    const ax = p.x + best.dx / sx;
+    const ay = p.y - best.dy / sy;
+    placedLabels.push({
+      l: ax,
+      r: ax + textW,
+      b: ay,
+      t: ay + textH,
+    });
 
-    placed.push(box);
-    results[pi] = { pos: bestDir, lineLen: bestLen };
+    results[pi] = best;
   }
 
   return results;
 }
 
 // ---------------------------------------------------------------------------
-// Custom Scatter Shape with leader line + label (8-direction support)
+// Custom Scatter Shape — label at fixed (dx, dy) offset from dot
 // ---------------------------------------------------------------------------
 function CustomScatterShape(props: any) {
-  const { cx, cy, fill, stroke, payload, onClick } = props;
+  const { cx, cy, fill, payload, onClick } = props;
   if (cx == null || cy == null) return null;
 
   const label = payload.shortName || payload.name;
-  const labelPos = payload.labelPos ?? 0;
-  const lineLen = payload.lineLen ?? 24;
-  const textOffset = 5;
+  const dx = payload.dx ?? 10;
+  const dy = payload.dy ?? 0;
 
-  const dirs = [
-    [0, -1], [0.7, -0.7], [1, 0], [0.7, 0.7],
-    [0, 1], [-0.7, 0.7], [-1, 0], [-0.7, -0.7],
-  ];
-  const [dx, dy] = dirs[labelPos % 8];
-
-  const lx = cx + dx * lineLen;
-  const ly = cy + dy * lineLen;
-
-  let tx: number, ty: number, textAnchor: 'middle' | 'start' | 'end', dominantBaseline: 'auto' | 'middle' | 'hanging';
-
-  switch (labelPos % 8) {
-    case 0:
-      tx = lx; ty = ly - textOffset;
-      textAnchor = 'middle'; dominantBaseline = 'auto';
-      break;
-    case 1:
-      tx = lx + textOffset; ty = ly - textOffset;
-      textAnchor = 'start'; dominantBaseline = 'auto';
-      break;
-    case 2:
-      tx = lx + textOffset; ty = ly;
-      textAnchor = 'start'; dominantBaseline = 'middle';
-      break;
-    case 3:
-      tx = lx + textOffset; ty = ly + textOffset;
-      textAnchor = 'start'; dominantBaseline = 'hanging';
-      break;
-    case 4:
-      tx = lx; ty = ly + textOffset + 8;
-      textAnchor = 'middle'; dominantBaseline = 'hanging';
-      break;
-    case 5:
-      tx = lx - textOffset; ty = ly + textOffset;
-      textAnchor = 'end'; dominantBaseline = 'hanging';
-      break;
-    case 6:
-      tx = lx - textOffset; ty = ly;
-      textAnchor = 'end'; dominantBaseline = 'middle';
-      break;
-    default:
-      tx = lx - textOffset; ty = ly - textOffset;
-      textAnchor = 'end'; dominantBaseline = 'auto';
-      break;
-  }
+  const ax = cx + dx; // anchor X (SVG px)
+  const ay = cy + dy; // anchor Y (SVG px)
 
   return (
     <g style={{ cursor: 'pointer' }} onClick={onClick}>
       <line
         x1={cx}
         y1={cy}
-        x2={lx}
-        y2={ly}
+        x2={ax}
+        y2={ay}
         stroke={fill}
         strokeWidth={1.5}
         strokeDasharray="3 2"
         opacity={0.5}
       />
       <circle cx={cx} cy={cy} r={5} fill={fill} stroke="none" />
+      {/* outline */}
       <text
-        x={tx}
-        y={ty}
-        textAnchor={textAnchor}
-        dominantBaseline={dominantBaseline}
+        x={ax}
+        y={ay}
+        textAnchor="start"
+        dominantBaseline="auto"
         fill="#000"
         fontSize={10}
         fontWeight={500}
@@ -419,11 +309,12 @@ function CustomScatterShape(props: any) {
       >
         {label}
       </text>
+      {/* fill */}
       <text
-        x={tx}
-        y={ty}
-        textAnchor={textAnchor}
-        dominantBaseline={dominantBaseline}
+        x={ax}
+        y={ay}
+        textAnchor="start"
+        dominantBaseline="auto"
         fill="#ffffff"
         fontSize={10}
         fontWeight={500}
@@ -531,7 +422,8 @@ export function ModelBenchmarkChart({
         x: priceMode === 'price' ? (m.blendedPrice ?? 0) : (m.costToRunIndex ?? 0),
         y: (m as any)[selectedMetric] as number,
         color: getProviderColor(m.provider),
-        labelPos: 0,
+        dx: 10,
+        dy: 0,
       }));
 
     // Sort by Y descending so higher scores get placed first (less overlap)
@@ -577,13 +469,13 @@ export function ModelBenchmarkChart({
 
   // Assign collision-aware label placements
   const chartDataWithLabels = useMemo<ChartPoint[]>(() => {
-    const placements = placeLabels(chartData);
+    const placements = placeLabels(chartData, xDomain, yDomain);
     return chartData.map((m, i) => ({
       ...m,
-      labelPos: placements[i].pos,
-      lineLen: placements[i].lineLen,
+      dx: placements[i].dx,
+      dy: placements[i].dy,
     }));
-  }, [chartData]);
+  }, [chartData, xDomain, yDomain]);
 
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
