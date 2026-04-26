@@ -198,7 +198,7 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
 // Custom Scatter Shape with leader line + label (8-direction support)
 // ---------------------------------------------------------------------------
 function CustomScatterShape(props: any) {
-  const { cx, cy, fill, stroke, payload } = props;
+  const { cx, cy, fill, stroke, payload, onClick } = props;
   if (cx == null || cy == null) return null;
 
   const label = payload.shortName || payload.name;
@@ -253,7 +253,7 @@ function CustomScatterShape(props: any) {
   }
 
   return (
-    <g style={{ pointerEvents: 'none' }}>
+    <g style={{ cursor: 'pointer' }} onClick={onClick}>
       <line
         x1={cx}
         y1={cy}
@@ -264,7 +264,7 @@ function CustomScatterShape(props: any) {
         strokeDasharray="3 2"
         opacity={0.5}
       />
-      <circle cx={cx} cy={cy} r={5} fill={fill} stroke={stroke || '#fff'} strokeWidth={1.5} />
+      <circle cx={cx} cy={cy} r={5} fill={fill} stroke="none" />
       <text
         x={tx}
         y={ty}
@@ -421,13 +421,11 @@ export function ModelBenchmarkChart({
     return [lo, hi];
   }, [chartData]);
 
-  // Compute median lines for quadrants
-  const medianX = useMemo(() => {
+  // Compute 75th percentile for price/cost axis (accounts for right-skewed distribution)
+  const thresholdX = useMemo(() => {
     const sorted = [...chartData].sort((a, b) => a.x - b.x);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0
-      ? (sorted[mid - 1].x + sorted[mid].x) / 2
-      : sorted[mid].x;
+    const idx = Math.floor(sorted.length * 0.75);
+    return sorted[Math.min(idx, sorted.length - 1)].x;
   }, [chartData]);
 
   const medianY = useMemo(() => {
@@ -475,7 +473,7 @@ export function ModelBenchmarkChart({
             {/* Quadrant backgrounds */}
             <ReferenceArea
               x1={xDomain[0]}
-              x2={medianX}
+              x2={thresholdX}
               y1={medianY}
               y2={yDomain[1]}
               fill={QUADRANT_BG.topLeft.fill}
@@ -483,7 +481,7 @@ export function ModelBenchmarkChart({
               stroke="none"
             />
             <ReferenceArea
-              x1={medianX}
+              x1={thresholdX}
               x2={xDomain[1]}
               y1={medianY}
               y2={yDomain[1]}
@@ -493,7 +491,7 @@ export function ModelBenchmarkChart({
             />
             <ReferenceArea
               x1={xDomain[0]}
-              x2={medianX}
+              x2={thresholdX}
               y1={yDomain[0]}
               y2={medianY}
               fill={QUADRANT_BG.bottomLeft.fill}
@@ -501,7 +499,7 @@ export function ModelBenchmarkChart({
               stroke="none"
             />
             <ReferenceArea
-              x1={medianX}
+              x1={thresholdX}
               x2={xDomain[1]}
               y1={yDomain[0]}
               y2={medianY}
@@ -554,7 +552,7 @@ export function ModelBenchmarkChart({
             />
 
             <ReferenceLine
-              x={medianX}
+              x={thresholdX}
               stroke="currentColor"
               strokeDasharray="5 5"
               strokeOpacity={0.35}
