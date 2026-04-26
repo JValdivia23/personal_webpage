@@ -586,7 +586,7 @@ export function ModelBenchmarkChart({
               className="text-gray-500 dark:text-gray-400"
               tickFormatter={(v: number) => v.toFixed(1)}
               label={{
-                value: `${metricLabel} ↑`,
+                value: `${metricLabel} →`,
                 angle: -90,
                 position: 'insideLeft',
                 style: { fill: 'currentColor', fontSize: 12, fontWeight: 600 },
