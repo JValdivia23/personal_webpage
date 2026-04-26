@@ -63,29 +63,32 @@ const METRICS: MetricDef[] = [
   {
     key: "intelligenceIndex",
     label: "Overall Intelligence",
-    description: "Aggregate across all benchmarks",
+    description: "Weighted composite across agents, coding, general reasoning, and scientific reasoning",
     testBadge: "AA Index",
     scale: "Higher is better (current leader ~60)",
     fullDescription:
-      "The single best metric for comparing overall model capability. Computed as the average of all intelligence evaluation benchmarks measured independently by Artificial Analysis, including GPQA, HLE, SciCode, IFBench, Tau2, TerminalBench Hard, CritPT, and others.",
+      "Artificial Analysis Intelligence Index v4.0 combines a comprehensive suite of 10 evaluation datasets to assess language model capabilities across reasoning, knowledge, maths and programming. It is calculated as a weighted average across four categories, each contributing 25% to the overall score: Agents (GDPval-AA 16.7%, 𝜏²-Bench Telecom 8.3%), Coding (Terminal-Bench Hard 16.7%, SciCode 8.3%), General (AA-LCR 6.25%, AA-Omniscience 12.5%, IFBench 6.25%), and Scientific Reasoning (HLE 12.5%, GPQA Diamond 6.25%, CritPt 6.25%). Artificial Analysis estimates a 95% confidence interval of less than ±1% based on experiments with >10 repeats on certain models. The Intelligence Index is a text-only, English language evaluation suite; multimodal and multilingual performance are benchmarked separately. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
     key: "codingIndex",
     label: "Coding Ability",
-    description: "Programming and software development",
+    description: "Weighted average of coding benchmarks in the Intelligence Index",
     testBadge: "AA Coding",
     scale: "Higher is better",
     fullDescription:
-      "Average of coding-specific benchmarks including HumanEval, LiveCodeBench, SciCode, and others. Critical for developers choosing models for code generation, debugging, and software engineering tasks.",
+      "Represents the weighted average of coding benchmarks in the Artificial Analysis Intelligence Index: Terminal-Bench Hard (66.7%) and SciCode (33.3%). Terminal-Bench Hard evaluates agentic capabilities in terminal environments through software engineering, system administration, and data processing tasks. SciCode tests scientific code generation with 288 test-set subproblems from 80 laboratory problems across 16 scientific disciplines. Critical for developers choosing models for code generation, debugging, and software engineering tasks. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
     key: "agenticIndex",
     label: "Agentic Capability",
-    description: "Planning, tool use, multi-step reasoning",
+    description: "Average of agentic capabilities benchmarks in the Intelligence Index",
     testBadge: "AA Agentic",
     scale: "Higher is better",
     fullDescription:
-      "Average of agentic capabilities benchmarks. Measures the model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and task completion. Important for applications where the model needs to perform complex workflows or operate autonomously.",
+      "Represents the average of agentic capabilities benchmarks in the Artificial Analysis Intelligence Index: GDPval-AA and 𝜏²-Bench Telecom. GDPval-AA tests AI models on real-world tasks across 44 occupations and 9 major industries via an agentic loop with shell access and web browsing. 𝜏²-Bench Telecom is a dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions. Measures the model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and task completion. Important for applications where the model needs to perform complex workflows or operate autonomously. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
     key: "gpqa",
@@ -140,11 +143,11 @@ const METRICS: MetricDef[] = [
   {
     key: "tau2",
     label: "Tau-2 Telecom Agent",
-    description: "Dual-control conversational AI benchmark",
+    description: "Dual-control conversational AI benchmark for technical support",
     testBadge: "Tau-2",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions to resolve telecom service issues. Tests multi-turn agent coordination and task completion in realistic customer-service dialogues.",
+      "A dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions to resolve telecom service issues. 𝜏²-Bench (Tau-2 Bench) introduces a new paradigm for evaluating conversational AI by simulating both the agent and user to actively modify a shared world state. The telecom domain tests agents' abilities to guide users through technical troubleshooting to test problem-solving and effective communication skills. Developed by Sierra Research, this benchmark addresses gaps between other benchmarks and real-world customer service scenarios where users are active participants in problem resolution. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/tau2-bench",
   },
   {

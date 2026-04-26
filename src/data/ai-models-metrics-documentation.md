@@ -11,23 +11,34 @@
 These are aggregate scores computed by Artificial Analysis from multiple individual benchmarks. They provide a high-level view of model capabilities.
 
 ### Artificial Analysis Intelligence Index
-- **What it measures:** Overall model intelligence across reasoning, knowledge, coding, and problem-solving tasks.
+- **What it measures:** Overall model intelligence across reasoning, knowledge, maths and programming.
 - **Scale:** Higher is better (theoretical max varies, current leader ~60)
-- **How it's calculated:** Average of all intelligence evaluation benchmarks measured independently by Artificial Analysis.
-- **Included benchmarks:** GPQA, HLE, SciCode, IFBench, Tau2, TerminalBench Hard, CritPT, and others.
-- **Why it matters:** The single best metric for comparing overall model capability.
+- **How it's calculated:** Weighted average across four categories (Agents 25%, Coding 25%, General 25%, Scientific Reasoning 25%), each measured independently by Artificial Analysis.
+- **Included benchmarks (v4.0):** GDPval-AA, 𝜏²-Bench Telecom, Terminal-Bench Hard, SciCode, AA-LCR, AA-Omniscience, IFBench, HLE, GPQA Diamond, CritPt.
+- **Category breakdown:**
+  - **Agents (25%):** GDPval-AA (16.7%), 𝜏²-Bench Telecom (8.3%)
+  - **Coding (25%):** Terminal-Bench Hard (16.7%), SciCode (8.3%)
+  - **General (25%):** AA-LCR (6.25%), AA-Omniscience (12.5%), IFBench (6.25%)
+  - **Scientific Reasoning (25%):** HLE (12.5%), GPQA Diamond (6.25%), CritPt (6.25%)
+- **Methodology:** Artificial Analysis estimates a 95% confidence interval of less than ±1% based on experiments with >10 repeats on certain models for all evaluation datasets. The Intelligence Index is a text-only, English language evaluation suite; multimodal and multilingual performance are benchmarked separately.
+- **Why it matters:** The single best metric for comparing overall model capability. A more useful synthesis comparison between language models than any other metric in existence today.
+- **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
 ### Coding Index
 - **What it measures:** Programming and software development capabilities.
 - **Scale:** Higher is better
-- **How it's calculated:** Average of coding-specific benchmarks (HumanEval, LiveCodeBench, SciCode, etc.).
+- **How it's calculated:** Weighted average of coding benchmarks in the Artificial Analysis Intelligence Index: Terminal-Bench Hard (66.7%) and SciCode (33.3%).
+- **Included benchmarks:** Terminal-Bench Hard (agentic terminal environments — software engineering, system administration, data processing), SciCode (scientific code generation across 16 disciplines).
 - **Why it matters:** Critical for developers choosing models for code generation, debugging, and software engineering tasks.
+- **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
 ### Agentic Index
 - **What it measures:** The model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and task completion.
 - **Scale:** Higher is better
-- **How it's calculated:** Average of agentic capabilities benchmarks.
+- **How it's calculated:** Average of agentic capabilities benchmarks in the Artificial Analysis Intelligence Index: GDPval-AA and 𝜏²-Bench Telecom.
+- **Included benchmarks:** GDPval-AA (real-world tasks across 44 occupations and 9 major industries via agentic loop), 𝜏²-Bench Telecom (dual-control conversational AI benchmark for technical support scenarios).
 - **Why it matters:** Important for applications where the model needs to perform complex workflows, use tools, or operate autonomously.
+- **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
 ### Math Index
 - **What it measures:** Mathematical reasoning and problem-solving abilities.
@@ -81,8 +92,12 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 ### Tau-2 (τ²-Bench Telecom)
 - **What it measures:** A dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions to resolve telecom service issues.
 - **Scale:** 0.0 to 1.0 (accuracy score)
+- **Background:** 𝜏²-Bench (Tau-2 Bench) introduces a new paradigm for evaluating conversational AI by simulating both the agent and user to actively modify a shared world state. The telecom domain tests agents' abilities to guide users through technical troubleshooting to test problem-solving and effective communication skills. Developed by Sierra Research, this benchmark addresses gaps between other benchmarks and real-world customer service scenarios where users are active participants in problem resolution.
+- **Methodology:** All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests multi-turn agent coordination and task completion in realistic customer-service dialogues.
 - **Current range (24 models):** 0.348 — 0.977
+- **Official page:** https://artificialanalysis.ai/evaluations/tau2-bench
+- **Publication:** [𝜏²-Bench: Evaluating Conversational Agents in a Dual-Control Environment](https://arxiv.org/abs/2506.07982) (Victor Barres, Honghua Dong, Soham Ray, Xujie Si, Karthik Narasimhan)
 
 ### IFBench (Instruction Following Benchmark)
 - **What it measures:** A benchmark evaluating precise instruction-following generalization on 58 diverse, verifiable out-of-domain constraints that test models' ability to follow specific output requirements.
