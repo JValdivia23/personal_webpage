@@ -466,9 +466,7 @@ export function ModelBenchmarkChart({
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const pad = (max - min) * 0.12;
-    const lo = Math.max(0, Math.round((min - pad) * 10) / 10);
-    const hi = Math.round((max + pad) * 10) / 10;
-    return [lo, hi];
+    return [Math.max(0, min - pad), max + pad];
   }, [chartData]);
 
   // Compute 75th percentile for price/cost axis (accounts for right-skewed distribution)
