@@ -40,23 +40,34 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 ## Individual Benchmarks
 
 ### GPQA Diamond (Graduate-Level Google-Proof Q&A)
-- **What it measures:** Performance on the most challenging 198 questions from GPQA, where PhD experts achieve 65% accuracy but skilled non-experts only reach 34% despite web access.
+- **What it measures:** The most challenging 198 questions from GPQA, where PhD experts achieve 65% accuracy but skilled non-experts only reach 34% despite web access.
 - **Scale:** 0.0 to 1.0 (accuracy score)
 - **Format:** Multiple-choice questions at PhD level in biology, chemistry, and physics.
+- **Background:** These graduate-level questions are designed to be "Google-proof" and require genuine scientific expertise rather than search skills. They can only be consistently solved by domain experts with PhDs, making them ideal for testing true scientific reasoning capabilities.
+- **Methodology:** All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests deep domain expertise and reasoning in hard sciences. A score above 0.85 indicates strong scientific reasoning.
 - **Current range (24 models):** 0.558 — 0.926
+- **Official page:** https://artificialanalysis.ai/evaluations/gpqa-diamond
+- **Publication:** [GPQA: A Graduate-Level Google-Proof Q&A Benchmark](https://arxiv.org/abs/2311.12022) (David Rein, Betty Li Hou, Asa Cooper Stickland, Jackson Petty, Richard Yuanzhe Pang, Julien Dirani, Julian Michael, Samuel R. Bowman)
 
 ### HLE (Humanity's Last Exam)
-- **What it measures:** Performance on 2,500 expert-vetted questions designed to be the final closed-ended academic evaluation, near the frontier of human knowledge.
+- **What it measures:** A frontier-level benchmark with 2,500 expert-vetted questions across mathematics, sciences, and humanities, designed to be the final closed-ended academic evaluation.
 - **Scale:** 0.0 to 1.0 (accuracy score)
+- **Background:** A collaborative effort by the Center for AI Safety involving over 1,000 contributors to create frontier-level academic questions that challenge current AI capabilities. The questions are designed to be 'Google-proof' and require genuine understanding rather than information retrieval, serving as the intended final closed-ended academic benchmark.
+- **Methodology:** All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** One of the hardest existing benchmarks. Even top models score below 0.5, leaving significant headroom.
 - **Current range (24 models):** 0.042 — 0.447
+- **Official page:** https://artificialanalysis.ai/evaluations/humanitys-last-exam
 
 ### SciCode
-- **What it measures:** Scientific code generation — writing code to solve scientific research problems. Features 288 test-set subproblems from 80 laboratory problems across 16 scientific disciplines.
+- **What it measures:** A scientist-curated coding benchmark featuring 288 test set subproblems from 80 laboratory problems across 16 scientific disciplines.
 - **Scale:** 0.0 to 1.0 (accuracy score)
+- **Background:** Unlike traditional coding benchmarks, SciCode requires integrating scientific knowledge with programming skills to solve real research problems rather than abstract puzzles. The benchmark was developed by domain experts across 16 diverse natural science sub-fields, including mathematics, physics, chemistry, biology, and materials science.
+- **Methodology:** Problems naturally factorize into multiple subproblems, each involving knowledge recall, reasoning, and code synthesis. It offers optional descriptions specifying useful scientific background information and scientist-annotated gold-standard solutions and test cases for evaluation. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests the intersection of coding ability and scientific understanding. Important for research automation.
 - **Current range (24 models):** 0.352 — 0.589
+- **Official page:** https://artificialanalysis.ai/evaluations/scicode
+- **Publication:** [SciCode: A Research Coding Benchmark Curated by Scientists](https://arxiv.org/abs/2407.13168) (Minyang Tian, Luyu Gao, Shizhuo Dylan Zhang, Xinan Chen, Cunwei Fan, Xuefei Guo, Roland Haas, Pan Ji, Kittithat Krongchon, Yao Li, Shengyan Liu, Di Luo, Yutao Ma, Hao Tong, Kha Trinh, Chenyu Tian, Zihan Wang, Bohao Wu, Yanyu Xiong, Shengzhu Yin, and 10 others)
 
 ### GDPval (GDPval-AA Leaderboard)
 - **What it measures:** Artificial Analysis' evaluation framework for OpenAI's GDPval dataset. Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing capabilities in an agentic loop via Stirrup to solve tasks.
@@ -74,41 +85,63 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 - **Current range (24 models):** 0.348 — 0.977
 
 ### IFBench (Instruction Following Benchmark)
-- **What it measures:** Ability to follow complex, nuanced instructions accurately. Evaluates precise instruction-following generalization on 58 diverse, verifiable out-of-domain constraints.
+- **What it measures:** A benchmark evaluating precise instruction-following generalization on 58 diverse, verifiable out-of-domain constraints that test models' ability to follow specific output requirements.
 - **Scale:** 0.0 to 1.0 (accuracy score)
+- **Background:** IFBench addresses the problem that current language models strongly overfit to a small set of verifiable constraints and cannot generalize well to unseen output constraints, a critical skill for practical AI applications. The benchmark introduces 58 new, diverse, and challenging verifiable constraints to test precise instruction-following generalization, going beyond existing benchmarks that focus on a limited set of constraint types.
+- **Methodology:** Developed by the Allen Institute for AI, IFBench uses reinforcement learning with verifiable rewards (RLVR) to improve instruction following and includes 29 additional hand-annotated training constraints with verification functions. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Critical for real-world applications where precise adherence to instructions is required.
 - **Current range (24 models):** 0.327 — 0.812
+- **Official page:** https://artificialanalysis.ai/evaluations/ifbench
+- **Publication:** [Generalizing Verifiable Instruction Following](https://arxiv.org/abs/2507.02833) (Valentina Pyatkin, Saumya Malik, Victoria Graf, Hamish Ivison, Shengyi Huang, Pradeep Dasigi, Nathan Lambert, Hannaneh Hajishirzi)
 
 ### TerminalBench Hard
-- **What it measures:** Performance on difficult terminal/command-line tasks. An agentic benchmark evaluating AI capabilities in terminal environments through software engineering, system administration, and data processing tasks.
+- **What it measures:** An agentic benchmark evaluating AI capabilities in terminal environments through software engineering, system administration, and data processing tasks.
 - **Scale:** 0.0 to 1.0 (accuracy score)
+- **Background:** Terminal-Bench is a comprehensive benchmark developed by Stanford University and the Laude Institute for evaluating AI agents in realistic terminal environments. The "hard" subset contains challenging tasks that test agents' abilities to compile code, train models, configure servers, play games, and debug systems in representative scenarios for real-world problems and terminal use patterns.
+- **Methodology:** Tasks cover a wide range of engineering, game playing, and system administration tasks that are unlikely to be pattern-matched on training data. Outcomes are evaluated programmatically with verification scripts executed in the agent's Docker environment, requiring agents to successfully meet a range of output conditions. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests practical system administration and command-line reasoning abilities.
 - **Current range (24 models):** 0.242 — 0.606
+- **Official page:** https://artificialanalysis.ai/evaluations/terminalbench-hard
 
 ### CritPT (Critical Physics Thinking)
-- **What it measures:** Research-level physics reasoning tasks, featuring 71 composite research challenges.
+- **What it measures:** A benchmark designed to test LLMs on research-level physics reasoning tasks, featuring 71 composite research challenges.
 - **Scale:** 0.0 to 1.0 (accuracy score)
-- **Why it matters:** Tests advanced scientific reasoning in physics, beyond standard textbook problems.
+- **Background:** CritPt evaluates language models on solving unpublished, frontier-level physics problems that require genuine research-scale reasoning. The benchmark comprises 71 challenges (70 test challenges and one example), created by over 50 active physics researchers across 30 institutions and spanning 11 physics subfields including condensed matter, quantum physics, astrophysics, high energy physics, and biophysics. Each problem underwent extensive review (averaging 40+ hours per challenge) and uses "guess-resistant" answer formats including floating-point arrays, symbolic expressions, and Python functions.
+- **Methodology:** All evaluations are conducted independently by Artificial Analysis.
+- **Why it matters:** Tests advanced scientific reasoning in physics, beyond standard textbook problems. Leading models in 2025 achieve only single-digit accuracy, highlighting the substantial gap between current AI capabilities and research-level physics reasoning.
 - **Current range (24 models):** 0.000 — 0.271
+- **Official page:** https://artificialanalysis.ai/evaluations/critpt
+- **Publication:** [Probing the Critical Point (CritPt) of AI Reasoning: a Frontier Physics Research Benchmark](https://arxiv.org/abs/2509.26574) (Minhui Zhu, Minyang Tian, Xiaocheng Yang, Tianci Zhou, Penghao Zhu, Eli Chertkov, Shengyan Liu, Yufeng Du, Lifan Yuan, Ziming Ji, Indranil Das, Junyi Cao, Jinchen He, Yifan Su, Jiabin Yu, Yikun Jiang, Yujie Zhang, Chang Liu, Ze-Min Huang, Weizhen Jia, and 44 others)
 
 ### MMMU Pro (Massive Multi-discipline Multimodal Understanding — Professional)
-- **What it measures:** Multimodal understanding across professional-level tasks (images + text reasoning). An enhanced MMMU benchmark that eliminates shortcuts and guessing strategies to more rigorously test multimodal models across 30 academic disciplines.
+- **What it measures:** An enhanced MMMU benchmark that eliminates shortcuts and guessing strategies to more rigorously test multimodal models across 30 academic disciplines.
 - **Scale:** 0.0 to 1.0 (accuracy score)
+- **Background:** MMMU-Pro addresses limitations in the original MMMU through a three-step enhancement process: filtering out questions answerable by text-only models, expanding multiple-choice options from 4 to 10, and introducing a vision-only input format where questions are embedded within screenshots or photos. The benchmark contains 3,460 questions across six core disciplines (Art & Design, Business, Science, Health & Medicine, Humanities & Social Science, and Tech & Engineering).
+- **Methodology:** Requires models to simultaneously process visual and textual information in a more realistic setting. Performance results show substantial drops across all tested models compared to the original MMMU, demonstrating the benchmark's effectiveness in exposing current limitations in multimodal AI systems. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests vision-language capabilities at expert level. Only available for models with multimodal support.
 - **Coverage:** 12/24 models (multimodal models only)
 - **Current range:** 0.438 — 0.824
+- **Official page:** https://artificialanalysis.ai/evaluations/mmmu-pro
+- **Publication:** [MMMU-Pro: A More Robust Multi-discipline Multimodal Understanding Benchmark](https://arxiv.org/abs/2409.02813) (Xiang Yue, Tianyu Zheng, Yuansheng Ni, Yubo Wang, Kai Zhang, Shengbang Tong, Yuxuan Sun, Botao Yu, Ge Zhang, Huan Sun, Yu Su, Wenhu Chen, Graham Neubig)
 
-### LCR (Long Context Retrieval)
-- **What it measures:** Ability to retrieve and use information from very long contexts.
+### LCR (Long Context Reasoning)
+- **What it measures:** Language models' ability to extract, reason about, and synthesize information from long-form documents ranging from 10k to 100k tokens (measured using the cl100k_base tokenizer).
 - **Scale:** 0.0 to 1.0 (accuracy score)
+- **Background:** Long-form text comprehension represents an under-studied class of evaluations where humans dramatically outscore language models, despite expanding context windows in current AI systems. LCR features 100 questions across diverse document types including academic papers, company financials, government consultations, legal documents, industry reports, and marketing materials, requiring genuine reasoning rather than simple data extraction.
+- **Methodology:** Each question demands multi-step reasoning to synthesize information from dispersed sections, understand complex domain-specific content, and produce unambiguous answers that mid-2024 frontier models achieve less than 50% accuracy on. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Critical for applications processing long documents, where the model must find relevant information in extensive text.
 - **Current range (24 models):** 0.247 — 0.740
+- **Official page:** https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning
 
 ### Omniscience
-- **What it measures:** Broad factual knowledge across diverse domains and hallucination detection. Measures factual recall and hallucination across various economically relevant domains.
-- **Scale:** Higher is better (appears to be a count or index score, can be negative)
-- **Why it matters:** Indicates the breadth of the model's training knowledge and its tendency to hallucinate.
+- **What it measures:** Factual recall and hallucination across various economically relevant domains. AA-Omniscience is a knowledge and hallucination benchmark that rewards accuracy, punishes bad guesses, and provides a comprehensive view of which models produce factually reliable outputs across different domains.
+- **Scale:** -100 to 100 (higher is better, can be negative)
+- **Background:** The benchmark contains 6,000 questions across 6 major domains, derived from authoritative academic and industry sources and generated automatically using an LLM-based question generation agent to ensure unambiguity, scalability, and factual precision.
+- **Methodology:** The evaluation measures a model's AA-Omniscience Index, a bounded metric (-100 to 100) measuring factual recall that jointly penalizes hallucinations and rewards abstention when uncertain, with 0 equating to a model that answers questions correctly as much as it does incorrectly. All evaluations are conducted independently by Artificial Analysis.
+- **Why it matters:** Indicates the breadth of the model's training knowledge and its tendency to hallucinate. Performance varies by domain, suggesting models should be chosen according to the demands of the use case rather than general performance for tasks where knowledge is important.
 - **Current range (24 models):** ~-38.6 — 20.1
+- **Official page:** https://artificialanalysis.ai/evaluations/omniscience
+- **Publication:** [AA-Omniscience: Evaluating Cross-Domain Knowledge Reliability in Large Language Models](https://arxiv.org/abs/2511.13029) (Declan Jackson, William Keating, George Cameron, Micah Hill-Smith)
 
 ---
 
