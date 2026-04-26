@@ -119,109 +119,215 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
     [0, 1], [-0.7, 0.7], [-1, 0], [-0.7, -0.7],
   ];
 
-  const norm = (v: number, min: number, range: number) => ((v - min) / range) * 100;
-  const norms = allPoints.map((p) => ({ x: norm(p.x, xMin, xRange), y: norm(p.y, yMin, yRange) }));
+  // Text offset from line end (px) — MUST match CustomScatterShape switch
+  const OFF = [
+    { x: 0, y: -5 },
+    { x: 5, y: -5 },
+    { x: 5, y: 0 },
+    { x: 5, y: 5 },
+    { x: 0, y: 13 },
+    { x: -5, y: 5 },
+    { x: -5, y: 0 },
+    { x: -5, y: -5 },
+  ];
 
-  // Approximate chart pixel size → normalized unit conversion
-  // Chart area is roughly 600–700 px wide; 100 normalized units ≈ 650 px
-  const PX_PER_UNIT = 6.5;
-  const DOT_RADIUS = 5 / PX_PER_UNIT; // 5 px dot radius in normalized units
+  // Estimated plot size (px) for overlap checks
+  const PLOT_W = 850;
+  const PLOT_H = 550;
+  const sx = PLOT_W / xRange; // px per data X unit
+  const sy = PLOT_H / yRange; // px per data Y unit
 
-  const placed: Array<[number, number, number, number]> = [];
+  // Pixel distance between two data-space deltas
+  const pxDist = (dx: number, dy: number) =>
+    Math.sqrt((dx * sx) ** 2 + (dy * sy) ** 2);
+
+  // Compute text bounding box in DATA coords for a given direction,
+  // line-end position, label width and height (all in px).
+  function textBox(
+    dIdx: number,
+    lineEndX: number,
+    lineEndY: number,
+    textWPx: number,
+    textHPx: number
+  ) {
+    const o = OFF[dIdx];
+    // Anchor point in data coords (same math as CustomScatterShape)
+    const ax = lineEndX + o.x / sx;
+    const ay = lineEndY + o.y / sy;
+
+    // textWidth / textHeight in data coords
+    const tw = textWPx / sx;
+    const th = textHPx / sy;
+
+    let left: number, right: number, top: number, bottom: number;
+
+    // horizontal: must match CustomScatterShape textAnchor
+    switch (dIdx) {
+      case 0:
+      case 4: // middle
+        left = ax - tw / 2;
+        right = ax + tw / 2;
+        break;
+      case 1:
+      case 2:
+      case 3: // start
+        left = ax;
+        right = ax + tw;
+        break;
+      case 5:
+      case 6:
+      case 7: // end
+        left = ax - tw;
+        right = ax;
+        break;
+      default:
+        left = ax - tw / 2;
+        right = ax + tw / 2;
+    }
+
+    // vertical: must match CustomScatterShape dominantBaseline
+    // 0,1,7 = auto   (baseline near bottom of text, text extends UP)
+    // 2,6   = middle (centered on ay)
+    // 3,4,5 = hanging (hanging baseline near top, text extends DOWN)
+    switch (dIdx) {
+      case 0:
+      case 1:
+      case 7: // auto
+        top = ay - th * 0.8;
+        bottom = ay + th * 0.2;
+        break;
+      case 2:
+      case 6: // middle
+        top = ay - th / 2;
+        bottom = ay + th / 2;
+        break;
+      case 3:
+      case 4:
+      case 5: // hanging
+        top = ay - th * 0.1;
+        bottom = ay + th * 0.9;
+        break;
+      default:
+        top = ay - th / 2;
+        bottom = ay + th / 2;
+    }
+
+    return { left, right, top, bottom };
+  }
+
+  const DOT_R = 5; // px
+
+  // Process most constrained (closest to neighbours) first
+  const order = allPoints
+    .map((p, i) => {
+      let minD = Infinity;
+      for (let j = 0; j < allPoints.length; j++) {
+        if (i === j) continue;
+        const d = pxDist(allPoints[j].x - p.x, allPoints[j].y - p.y);
+        if (d < minD) minD = d;
+      }
+      return { idx: i, minD };
+    })
+    .sort((a, b) => a.minD - b.minD)
+    .map((c) => c.idx);
+
+  const placed: Array<{ left: number; right: number; top: number; bottom: number }> = [];
   const results: LabelPlacement[] = new Array(allPoints.length);
 
-  for (let pi = 0; pi < allPoints.length; pi++) {
+  for (const pi of order) {
     const p = allPoints[pi];
-    const px = norms[pi].x;
-    const py = norms[pi].y;
     const label = p.shortName || p.name;
+    const textWPx = label.length * 6.5; // 10px font, ~6.5px per char
+    const textHPx = 13; // ~13px total height
 
-    // Text box in normalized units (10 px font ≈ 5.5 px per char)
-    const textWidth = label.length * 0.85;
-    const textHeight = 2.2;
-
-    // Find nearest neighbour to know which direction to avoid
+    // Direction away from nearest neighbour
+    let awayDir = 0;
     let nearestDist = Infinity;
-    let nearestDx = 0;
-    let nearestDy = 0;
-    for (let j = 0; j < norms.length; j++) {
+    for (let j = 0; j < allPoints.length; j++) {
       if (j === pi) continue;
-      const dx = norms[j].x - px;
-      const dy = norms[j].y - py;
-      const d = Math.sqrt(dx * dx + dy * dy);
-      if (d < nearestDist && d > 0) {
+      const d = pxDist(allPoints[j].x - p.x, allPoints[j].y - p.y);
+      if (d < nearestDist) {
         nearestDist = d;
-        nearestDx = dx / d;
-        nearestDy = dy / d;
+        const ndx = allPoints[j].x - p.x;
+        const ndy = allPoints[j].y - p.y;
+        const nd = Math.sqrt(ndx * ndx + ndy * ndy) || 1;
+        let best = -Infinity;
+        for (let d = 0; d < 8; d++) {
+          const score = -(directions[d][0] * (ndx / nd) + directions[d][1] * (ndy / nd));
+          if (score > best) {
+            best = score;
+            awayDir = d;
+          }
+        }
       }
     }
 
-    // Score directions: higher = pointing away from nearest dot = better
-    const dirScores = directions.map(([dx, dy], dIdx) => {
-      const dotAvoid = -(dx * nearestDx + dy * nearestDy);
-      return { dIdx, dx, dy, score: dotAvoid };
-    });
-    dirScores.sort((a, b) => b.score - a.score);
+    // Build direction order: start pointing away, then spiral
+    const dirOrder: number[] = [awayDir];
+    for (let step = 1; step <= 4; step++) {
+      dirOrder.push((awayDir + step) % 8);
+      dirOrder.push((awayDir + 8 - step) % 8);
+    }
 
-    let best: [number, number] = [4, 6]; // default down, 6 px
+    let bestDir = awayDir;
+    let bestLen = 6;
     let bestScore = Infinity;
 
-    // Try each direction, starting with very short lines
-    for (const { dIdx, dx, dy } of dirScores) {
-      for (const lineLenPx of [6, 10, 14, 18, 24, 32, 42]) {
-        const lineLen = lineLenPx / PX_PER_UNIT;
-        const lx = px + dx * lineLen;
-        const ly = py + dy * lineLen;
-        const hw = textWidth / 2;
-        const hh = textHeight / 2;
-        const box: [number, number, number, number] = [
-          lx - hw, ly - hh, lx + hw, ly + hh,
-        ];
+    for (const dIdx of dirOrder) {
+      const [ddx, ddy] = directions[dIdx];
+
+      for (const lineLenPx of [6, 10, 14, 20, 28, 38, 50, 65]) {
+        // Line end in data coords
+        const lex = p.x + ddx * (lineLenPx / sx);
+        const ley = p.y + ddy * (lineLenPx / sy);
+
+        // Text box (matches SVG rendering exactly)
+        const box = textBox(dIdx, lex, ley, textWPx, textHPx);
 
         let score = 0;
 
-        // Check if label overlaps with ANY dot
-        for (let j = 0; j < norms.length; j++) {
-          const dotX = norms[j].x;
-          const dotY = norms[j].y;
-          const closestX = Math.max(box[0], Math.min(dotX, box[2]));
-          const closestY = Math.max(box[1], Math.min(dotY, box[3]));
-          const dist = Math.sqrt((dotX - closestX) ** 2 + (dotY - closestY) ** 2);
+        // --- 1. Text box must not overlap ANY dot ---
+        for (let j = 0; j < allPoints.length; j++) {
+          const dot = allPoints[j];
+          const closestX = Math.max(box.left, Math.min(dot.x, box.right));
+          const closestY = Math.max(box.top, Math.min(dot.y, box.bottom));
+          const distPx = pxDist(dot.x - closestX, dot.y - closestY);
 
-          if (dist < DOT_RADIUS) {
-            score += 5000; // directly on top of a dot
-          } else if (dist < DOT_RADIUS * 2.5) {
-            score += 200;  // uncomfortably close to a dot
+          if (distPx < DOT_R) {
+            score += 100_000; // on top of dot → reject
+          } else if (distPx < DOT_R * 2) {
+            score += 500; // uncomfortably close
           }
         }
 
-        // Check overlap with already-placed labels
-        for (const placedBox of placed) {
-          const ox = Math.max(0, Math.min(box[2], placedBox[2]) - Math.max(box[0], placedBox[0]));
-          const oy = Math.max(0, Math.min(box[3], placedBox[3]) - Math.max(box[1], placedBox[1]));
-          if (ox > 0 && oy > 0) {
-            score += ox * oy * 100;
+        // --- 2. Text box must not overlap other labels ---
+        for (const pb of placed) {
+          const ow = Math.max(0, Math.min(box.right, pb.right) - Math.max(box.left, pb.left));
+          const oh = Math.max(0, Math.min(box.bottom, pb.bottom) - Math.max(box.top, pb.top));
+          if (ow > 0 && oh > 0) {
+            // overlap area in px²
+            score += ow * sx * oh * sy * 20;
           }
         }
 
-        // Strong preference for short lines (closer to dot)
-        score += lineLenPx * 0.25;
+        // --- 3. Prefer short lines (labels close to dots) ---
+        score += lineLenPx * lineLenPx * 0.02;
 
         if (score < bestScore) {
           bestScore = score;
-          best = [dIdx, lineLenPx];
+          bestDir = dIdx;
+          bestLen = lineLenPx;
         }
       }
     }
 
-    const [dIdx, lineLen] = best;
-    const [dx, dy] = directions[dIdx];
-    const lx = px + dx * (lineLen / PX_PER_UNIT);
-    const ly = py + dy * (lineLen / PX_PER_UNIT);
-    const hw = textWidth / 2;
-    const hh = textHeight / 2;
-    placed.push([lx - hw, ly - hh, lx + hw, ly + hh]);
-    results[pi] = { pos: dIdx, lineLen };
+    const [ddx, ddy] = directions[bestDir];
+    const lex = p.x + ddx * (bestLen / sx);
+    const ley = p.y + ddy * (bestLen / sy);
+    const box = textBox(bestDir, lex, ley, textWPx, textHPx);
+
+    placed.push(box);
+    results[pi] = { pos: bestDir, lineLen: bestLen };
   }
 
   return results;
