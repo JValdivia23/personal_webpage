@@ -10,6 +10,7 @@ const navItems = [
   { name: 'Home', path: '/' },
   { name: 'Research', path: '/research' },
   { name: 'Publications', path: '/publications' },
+  { name: 'Agentic AI', path: '/agentic-ai' },
   { name: 'Contact', path: '/contact' },
 ];
 

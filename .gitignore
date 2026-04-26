@@ -48,3 +48,7 @@ PROGRESS.md
 PROGRESS_PHASE_2.md
 MANUAL_UPDATES.md
 clipboard_screenshot.png
+
+# Python
+__pycache__/
+*.py[cod]
