@@ -58,11 +58,14 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 - **Why it matters:** Tests the intersection of coding ability and scientific understanding. Important for research automation.
 - **Current range (24 models):** 0.352 — 0.589
 
-### GDPval
-- **What it measures:** A validation metric from Artificial Analysis that appears to correlate with overall model quality and robustness.
-- **Scale:** Higher is better (no fixed upper bound)
-- **Why it matters:** Provides an additional signal of model reliability beyond raw benchmark scores.
+### GDPval (GDPval-AA Leaderboard)
+- **What it measures:** Artificial Analysis' evaluation framework for OpenAI's GDPval dataset. Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing capabilities in an agentic loop via Stirrup to solve tasks.
+- **Scale:** ELO rating (higher is better, no fixed upper bound)
+- **How it's calculated:** ELO ratings are derived from blind pairwise comparisons of model outputs.
+- **Background:** The GDPval gold public dataset includes 220 tasks developed by OpenAI in collaboration with industry professionals to reflect real-world complexity. The benchmark requires models to produce diverse outputs including documents, slides, diagrams, and spreadsheets, mirroring actual work products across finance, healthcare, legal, and other professional domains.
+- **Why it matters:** Tests practical, open-ended real-world agentic capabilities beyond traditional academic benchmarks.
 - **Current range (24 models):** 938.1 — 1781.7
+- **Official page:** https://artificialanalysis.ai/evaluations/gdpval-aa
 
 ### Tau-2 (τ²-Bench Telecom)
 - **What it measures:** A dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions to resolve telecom service issues.
