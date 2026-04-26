@@ -271,10 +271,10 @@ function CustomScatterShape(props: any) {
         textAnchor={textAnchor}
         dominantBaseline={dominantBaseline}
         fill="#000"
-        fontSize={12}
-        fontWeight={700}
+        fontSize={10}
+        fontWeight={500}
         stroke="#000"
-        strokeWidth={4}
+        strokeWidth={2.5}
         strokeLinejoin="round"
         paintOrder="stroke"
       >
@@ -286,8 +286,8 @@ function CustomScatterShape(props: any) {
         textAnchor={textAnchor}
         dominantBaseline={dominantBaseline}
         fill="#ffffff"
-        fontSize={12}
-        fontWeight={700}
+        fontSize={10}
+        fontWeight={500}
       >
         {label}
       </text>
