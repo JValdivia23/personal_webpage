@@ -69,7 +69,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   'Google': '#4285f4',
   'DeepSeek': '#4f46e5',
   'Kimi': '#f59e0b',
-  'xAI': '#ef4444',
+  'xAI': '#000000',
   'Meta': '#06b6d4',
   'Mistral': '#f97316',
   'NVIDIA': '#76b900',
