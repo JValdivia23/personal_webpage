@@ -446,19 +446,12 @@ export default function AgenticAIPage() {
           <div className="sticky top-6">
             {/* Tab switcher */}
             <div className="mb-4 flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
-              <button
-                onClick={() => setSidebarTab("metrics")}
-                className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all ${
-                  sidebarTab === "metrics"
-                    ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
-                    : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                }`}
-              >
+              <div className="relative flex flex-1 items-center justify-center gap-1.5 rounded-md bg-white px-3 py-2 text-xs font-medium text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white">
                 <BarChart3 className="h-3.5 w-3.5" />
                 Select Metric
-              </button>
+              </div>
               <button
-                onClick={() => setSidebarTab("docs")}
+                onClick={() => setSidebarTab(sidebarTab === "docs" ? "metrics" : "docs")}
                 className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all ${
                   sidebarTab === "docs"
                     ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
