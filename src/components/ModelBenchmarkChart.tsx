@@ -140,21 +140,22 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
       if (nearBottom && dy > 0) continue;
       if (nearLeft && dx < 0) continue;
       if (nearRight && dx > 0) continue;
-      for (const lineLen of [18, 26, 34, 42, 50]) {
+      for (const lineLen of [22, 30, 38, 46, 54, 62]) {
         candidates.push([dIdx, lineLen]);
       }
     }
 
     if (candidates.length === 0) {
       for (let dIdx = 0; dIdx < 8; dIdx++) {
-        for (const lineLen of [18, 26, 34, 42]) {
+        for (const lineLen of [22, 30, 38, 46, 54]) {
           candidates.push([dIdx, lineLen]);
         }
       }
     }
 
-    const textWidth = (p.shortName || p.name).length * 1.8;
-    const textHeight = 3;
+    const textWidth = (p.shortName || p.name).length * 3.2;
+    const textHeight = 5;
+    const proximity = 3; // minimum gap between labels in normalized units
 
     let best: [number, number] = candidates[0];
     let bestScore = Infinity;
@@ -169,11 +170,24 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
 
       let score = 0;
       for (const placedBox of placed) {
+        // overlap area
         const ox = Math.max(0, Math.min(box[2], placedBox[2]) - Math.max(box[0], placedBox[0]));
         const oy = Math.max(0, Math.min(box[3], placedBox[3]) - Math.max(box[1], placedBox[1]));
-        if (ox > 0 && oy > 0) score += ox * oy;
+        if (ox > 0 && oy > 0) {
+          score += ox * oy * 10; // heavy penalty for actual overlap
+        }
+
+        // proximity penalty — penalize even if not overlapping but too close
+        const cx1 = (box[0] + box[2]) / 2;
+        const cy1 = (box[1] + box[3]) / 2;
+        const cx2 = (placedBox[0] + placedBox[2]) / 2;
+        const cy2 = (placedBox[1] + placedBox[3]) / 2;
+        const dist = Math.sqrt((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2);
+        if (dist < proximity + Math.max(textWidth, textHeight)) {
+          score += (proximity + Math.max(textWidth, textHeight) - dist) ** 2 * 0.5;
+        }
       }
-      score += lineLen * 0.01;
+      score += lineLen * 0.005; // slight preference for shorter lines
 
       if (score < bestScore) {
         bestScore = score;
