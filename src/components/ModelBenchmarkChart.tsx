@@ -154,25 +154,33 @@ function placeLabels(
 ): LabelPlacement[] {
   const PLOT_W = 800;
   const PLOT_H = 520;
-  const sx = PLOT_W / (xDomain[1] - xDomain[0]);
-  const sy = PLOT_H / (yDomain[1] - yDomain[0]);
+  const xR = xDomain[1] - xDomain[0];
+  const yR = yDomain[1] - yDomain[0];
 
-  const dotR = 5 / Math.min(sx, sy);
+  // Convert data coords → plot pixel coords (SVG-like, Y inverted)
+  const toPx = (p: ChartPoint) => ({
+    x: ((p.x - xDomain[0]) / xR) * PLOT_W,
+    y: PLOT_H - ((p.y - yDomain[0]) / yR) * PLOT_H,
+  });
 
-  const dotBoxes = allPoints.map((p) => ({
-    l: p.x - dotR,
-    r: p.x + dotR,
-    b: p.y - dotR,
-    t: p.y + dotR,
+  const pixels = allPoints.map(toPx);
+
+  // Dot boxes in pixels (radius = 5)
+  const dotBoxes = pixels.map((p) => ({
+    l: p.x - 5,
+    r: p.x + 5,
+    b: p.y - 5,
+    t: p.y + 5,
   }));
 
+  // Process crowded points first
   const order = allPoints
-    .map((p, i) => {
+    .map((_, i) => {
       let minD = Infinity;
-      for (let j = 0; j < allPoints.length; j++) {
+      for (let j = 0; j < pixels.length; j++) {
         if (i === j) continue;
-        const dx = (allPoints[j].x - p.x) * sx;
-        const dy = (allPoints[j].y - p.y) * sy;
+        const dx = pixels[j].x - pixels[i].x;
+        const dy = pixels[j].y - pixels[i].y;
         const d = Math.sqrt(dx * dx + dy * dy);
         if (d < minD) minD = d;
       }
@@ -185,16 +193,13 @@ function placeLabels(
   const results: LabelPlacement[] = new Array(allPoints.length);
 
   for (const pi of order) {
-    const p = allPoints[pi];
-    const label = p.shortName || p.name;
+    const p = pixels[pi];
+    const label = allPoints[pi].shortName || allPoints[pi].name;
 
-    const textWPx = label.length * 6.2;
-    const textHPx = 13;
-    const textW = textWPx / sx;
-    const textH = textHPx / sy;
+    const textW = label.length * 6.2; // px
+    const textH = 13; // px
 
-    const nearLeft =
-      (p.x - xDomain[0]) / (xDomain[1] - xDomain[0]) < 0.10;
+    const nearLeft = p.x / PLOT_W < 0.10;
 
     let best: LabelPlacement = { dx: 10, dy: 0 };
     let bestScore = Infinity;
@@ -202,44 +207,22 @@ function placeLabels(
     for (const cand of CANDIDATES) {
       if (cand.dx < 0 && !nearLeft) continue;
 
-      // Anchor point in data coords
-      const ax = p.x + cand.dx / sx;
-      const ay = p.y - cand.dy / sy;
+      // Anchor point in plot pixels
+      const ax = p.x + cand.dx;
+      const ay = p.y + cand.dy;
 
-      // Determine text box based on alignment
+      // Text box in pixels (matches CustomScatterShape rendering)
       const isRight = cand.dx > 0 && Math.abs(cand.dx) >= Math.abs(cand.dy);
       const isLeft = cand.dx < 0;
-      const isTopBottom = cand.dx === 0;
 
       let box: { l: number; r: number; b: number; t: number };
 
       if (isRight) {
-        // textAnchor="start", dominantBaseline="middle"
-        // text extends right from anchor, centered vertically
-        box = {
-          l: ax,
-          r: ax + textW,
-          b: ay - textH / 2,
-          t: ay + textH / 2,
-        };
+        box = { l: ax, r: ax + textW, b: ay - textH / 2, t: ay + textH / 2 };
       } else if (isLeft) {
-        // textAnchor="end", dominantBaseline="middle"
-        // text extends left from anchor, centered vertically
-        box = {
-          l: ax - textW,
-          r: ax,
-          b: ay - textH / 2,
-          t: ay + textH / 2,
-        };
+        box = { l: ax - textW, r: ax, b: ay - textH / 2, t: ay + textH / 2 };
       } else {
-        // textAnchor="middle", dominantBaseline="middle"
-        // text centered on anchor both ways
-        box = {
-          l: ax - textW / 2,
-          r: ax + textW / 2,
-          b: ay - textH / 2,
-          t: ay + textH / 2,
-        };
+        box = { l: ax - textW / 2, r: ax + textW / 2, b: ay - textH / 2, t: ay + textH / 2 };
       }
 
       let score = 0;
@@ -258,7 +241,7 @@ function placeLabels(
         }
       }
 
-      // 3. Prefer shorter distances
+      // 3. Prefer shorter distances (labels stay close to their dot)
       const dist = Math.sqrt(cand.dx * cand.dx + cand.dy * cand.dy);
       score += dist * dist * 0.03;
 
@@ -272,33 +255,18 @@ function placeLabels(
       }
     }
 
-    // Record placed label box
-    const ax = p.x + best.dx / sx;
-    const ay = p.y - best.dy / sy;
+    // Record placed label box in pixels
+    const ax = p.x + best.dx;
+    const ay = p.y + best.dy;
     const isRight = best.dx > 0 && Math.abs(best.dx) >= Math.abs(best.dy);
     const isLeft = best.dx < 0;
 
     if (isRight) {
-      placedLabels.push({
-        l: ax,
-        r: ax + textW,
-        b: ay - textH / 2,
-        t: ay + textH / 2,
-      });
+      placedLabels.push({ l: ax, r: ax + textW, b: ay - textH / 2, t: ay + textH / 2 });
     } else if (isLeft) {
-      placedLabels.push({
-        l: ax - textW,
-        r: ax,
-        b: ay - textH / 2,
-        t: ay + textH / 2,
-      });
+      placedLabels.push({ l: ax - textW, r: ax, b: ay - textH / 2, t: ay + textH / 2 });
     } else {
-      placedLabels.push({
-        l: ax - textW / 2,
-        r: ax + textW / 2,
-        b: ay - textH / 2,
-        t: ay + textH / 2,
-      });
+      placedLabels.push({ l: ax - textW / 2, r: ax + textW / 2, b: ay - textH / 2, t: ay + textH / 2 });
     }
 
     results[pi] = best;
