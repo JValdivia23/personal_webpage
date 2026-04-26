@@ -121,104 +121,127 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
 
   const norm = (v: number, min: number, range: number) => ((v - min) / range) * 100;
 
-  // Pre-compute isolation: distance to nearest neighbor for each point
-  const isolation: number[] = allPoints.map((p, i) => {
+  // Normalised positions
+  const norms = allPoints.map((p) => ({
+    x: norm(p.x, xMin, xRange),
+    y: norm(p.y, yMin, yRange),
+  }));
+
+  // Isolation = distance to nearest neighbour
+  const isolation = norms.map((p, i) => {
     let minDist = Infinity;
-    for (let j = 0; j < allPoints.length; j++) {
+    for (let j = 0; j < norms.length; j++) {
       if (i === j) continue;
-      const dx = norm(p.x, xMin, xRange) - norm(allPoints[j].x, xMin, xRange);
-      const dy = norm(p.y, yMin, yRange) - norm(allPoints[j].y, yMin, yRange);
-      const d = Math.sqrt(dx * dx + dy * dy);
+      const d = Math.sqrt((p.x - norms[j].x) ** 2 + (p.y - norms[j].y) ** 2);
       if (d < minDist) minDist = d;
     }
     return minDist;
   });
-  const avgIsolation = isolation.reduce((a, b) => a + b, 0) / isolation.length;
+  const sortedIso = [...isolation].sort((a, b) => a - b);
+  const medianIso = sortedIso[Math.floor(sortedIso.length / 2)] || 1;
+
+  // Process crowded points FIRST so they claim their territory
+  const order = allPoints
+    .map((_, i) => i)
+    .sort((a, b) => isolation[a] - isolation[b]);
 
   const placed: Array<[number, number, number, number]> = [];
-  const results: LabelPlacement[] = [];
+  const results: LabelPlacement[] = new Array(allPoints.length);
 
-  for (let pi = 0; pi < allPoints.length; pi++) {
+  for (const pi of order) {
     const p = allPoints[pi];
-    const nx = norm(p.x, xMin, xRange);
-    const ny = norm(p.y, yMin, yRange);
+    const px = norms[pi].x;
+    const py = norms[pi].y;
     const iso = isolation[pi];
+    const isIsolated = iso > medianIso * 1.3;
 
-    const nearTop = (yMax - p.y) / yRange < 0.08;
-    const nearBottom = (p.y - yMin) / yRange < 0.08;
-    const nearLeft = (p.x - xMin) / xRange < 0.06;
-    const nearRight = (xMax - p.x) / xRange < 0.06;
+    const label = p.shortName || p.name;
+    const textWidth = label.length * 2.8;
+    const textHeight = 4;
 
-    // Isolated dots prefer short lines; crowded dots get longer lines
-    const isIsolated = iso > avgIsolation * 1.5;
-    const lineLens = isIsolated
-      ? [12, 18, 24, 30]
-      : [18, 26, 34, 42, 50, 58, 66];
+    // Score each direction by how much clear space exists in that direction
+    const dirScores = directions.map(([dx, dy], dIdx) => {
+      let space = Infinity;
 
-    const candidates: Array<[number, number]> = [];
-    for (let dIdx = 0; dIdx < 8; dIdx++) {
-      const [dx, dy] = directions[dIdx];
-      if (nearTop && dy < 0) continue;
-      if (nearBottom && dy > 0) continue;
-      if (nearLeft && dx < 0) continue;
-      if (nearRight && dx > 0) continue;
-      for (const lineLen of lineLens) {
-        candidates.push([dIdx, lineLen]);
-      }
-    }
-
-    if (candidates.length === 0) {
-      for (let dIdx = 0; dIdx < 8; dIdx++) {
-        for (const lineLen of lineLens) {
-          candidates.push([dIdx, lineLen]);
+      // Nearest neighbour in this direction
+      for (let j = 0; j < norms.length; j++) {
+        if (j === pi) continue;
+        const ox = norms[j].x - px;
+        const oy = norms[j].y - py;
+        const proj = ox * dx + oy * dy; // distance along the ray
+        if (proj > 0) {
+          const perp = Math.abs(ox * dy - oy * dx); // perpendicular distance
+          if (perp < textWidth * 1.5) {
+            space = Math.min(space, proj);
+          }
         }
       }
+
+      // Distance to chart edge in this direction
+      if (dx > 0) space = Math.min(space, (100 - px) / dx);
+      if (dx < 0) space = Math.min(space, -px / dx);
+      if (dy > 0) space = Math.min(space, (100 - py) / dy);
+      if (dy < 0) space = Math.min(space, -py / dy);
+
+      return { dIdx, dx, dy, space };
+    });
+
+    // Sort: directions with most clear space come first
+    dirScores.sort((a, b) => b.space - a.space);
+
+    // Candidate generation
+    const lineLens = isIsolated
+      ? [6, 10, 14, 18, 22]
+      : [10, 18, 26, 34, 42, 50];
+
+    const candidates: Array<[number, number]> = [];
+    for (const { dIdx, space } of dirScores) {
+      for (const ll of lineLens) {
+        if (space >= ll * 0.1) {
+          candidates.push([dIdx, ll]);
+        }
+      }
+      // Ensure every direction has at least one candidate
+      if (!candidates.some((c) => c[0] === dIdx)) {
+        candidates.push([dIdx, lineLens[0]]);
+      }
     }
 
-    const textWidth = (p.shortName || p.name).length * 3.2;
-    const textHeight = 5;
-    const proximity = 4;
-
-    let best: [number, number] = candidates[0];
+    let best: [number, number] = candidates[0] || [4, 10];
     let bestScore = Infinity;
 
     for (const [dIdx, lineLen] of candidates) {
       const [dx, dy] = directions[dIdx];
-      const lx = nx + dx * lineLen * 0.15;
-      const ly = ny + dy * lineLen * 0.15;
+      const lx = px + dx * lineLen * 0.15;
+      const ly = py + dy * lineLen * 0.15;
       const hw = textWidth / 2;
       const hh = textHeight / 2;
-      const box: [number, number, number, number] = [lx - hw, ly - hh, lx + hw, ly + hh];
+      const box: [number, number, number, number] = [
+        lx - hw,
+        ly - hh,
+        lx + hw,
+        ly + hh,
+      ];
 
       let score = 0;
 
-      // overlap + proximity against already-placed labels
+      // Heavy overlap penalty
       for (const placedBox of placed) {
-        const ox = Math.max(0, Math.min(box[2], placedBox[2]) - Math.max(box[0], placedBox[0]));
-        const oy = Math.max(0, Math.min(box[3], placedBox[3]) - Math.max(box[1], placedBox[1]));
+        const ox = Math.max(
+          0,
+          Math.min(box[2], placedBox[2]) - Math.max(box[0], placedBox[0])
+        );
+        const oy = Math.max(
+          0,
+          Math.min(box[3], placedBox[3]) - Math.max(box[1], placedBox[1])
+        );
         if (ox > 0 && oy > 0) {
-          score += ox * oy * 20;
-        }
-        const cx1 = (box[0] + box[2]) / 2;
-        const cy1 = (box[1] + box[3]) / 2;
-        const cx2 = (placedBox[0] + placedBox[2]) / 2;
-        const cy2 = (placedBox[1] + placedBox[3]) / 2;
-        const dist = Math.sqrt((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2);
-        if (dist < proximity + Math.max(textWidth, textHeight)) {
-          score += (proximity + Math.max(textWidth, textHeight) - dist) ** 2 * 0.8;
+          score += ox * oy * 100;
         }
       }
 
-      // penalty for going far outside the data area (where quadrant labels used to be)
-      const outOfBounds =
-        Math.max(0, -lx) +
-        Math.max(0, lx - 100) +
-        Math.max(0, -ly) +
-        Math.max(0, ly - 100);
-      score += outOfBounds * 0.3;
-
-      // line length preference: isolated = strong preference for short; crowded = weak preference
-      score += lineLen * (isIsolated ? 0.05 : 0.003);
+      // Very strong preference for short lines on isolated points
+      score += lineLen * (isIsolated ? 0.3 : 0.01);
 
       if (score < bestScore) {
         bestScore = score;
@@ -228,12 +251,12 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
 
     const [dIdx, lineLen] = best;
     const [dx, dy] = directions[dIdx];
-    const lx = nx + dx * lineLen * 0.15;
-    const ly = ny + dy * lineLen * 0.15;
+    const lx = px + dx * lineLen * 0.15;
+    const ly = py + dy * lineLen * 0.15;
     const hw = textWidth / 2;
     const hh = textHeight / 2;
     placed.push([lx - hw, ly - hh, lx + hw, ly + hh]);
-    results.push({ pos: dIdx, lineLen });
+    results[pi] = { pos: dIdx, lineLen };
   }
 
   return results;
