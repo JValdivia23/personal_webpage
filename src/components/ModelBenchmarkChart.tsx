@@ -121,17 +121,39 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
 
   const norm = (v: number, min: number, range: number) => ((v - min) / range) * 100;
 
+  // Pre-compute isolation: distance to nearest neighbor for each point
+  const isolation: number[] = allPoints.map((p, i) => {
+    let minDist = Infinity;
+    for (let j = 0; j < allPoints.length; j++) {
+      if (i === j) continue;
+      const dx = norm(p.x, xMin, xRange) - norm(allPoints[j].x, xMin, xRange);
+      const dy = norm(p.y, yMin, yRange) - norm(allPoints[j].y, yMin, yRange);
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < minDist) minDist = d;
+    }
+    return minDist;
+  });
+  const avgIsolation = isolation.reduce((a, b) => a + b, 0) / isolation.length;
+
   const placed: Array<[number, number, number, number]> = [];
   const results: LabelPlacement[] = [];
 
-  for (const p of allPoints) {
+  for (let pi = 0; pi < allPoints.length; pi++) {
+    const p = allPoints[pi];
     const nx = norm(p.x, xMin, xRange);
     const ny = norm(p.y, yMin, yRange);
+    const iso = isolation[pi];
 
-    const nearTop = (yMax - p.y) / yRange < 0.10;
-    const nearBottom = (p.y - yMin) / yRange < 0.10;
-    const nearLeft = (p.x - xMin) / xRange < 0.08;
-    const nearRight = (xMax - p.x) / xRange < 0.08;
+    const nearTop = (yMax - p.y) / yRange < 0.08;
+    const nearBottom = (p.y - yMin) / yRange < 0.08;
+    const nearLeft = (p.x - xMin) / xRange < 0.06;
+    const nearRight = (xMax - p.x) / xRange < 0.06;
+
+    // Isolated dots prefer short lines; crowded dots get longer lines
+    const isIsolated = iso > avgIsolation * 1.5;
+    const lineLens = isIsolated
+      ? [12, 18, 24, 30]
+      : [18, 26, 34, 42, 50, 58, 66];
 
     const candidates: Array<[number, number]> = [];
     for (let dIdx = 0; dIdx < 8; dIdx++) {
@@ -140,14 +162,14 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
       if (nearBottom && dy > 0) continue;
       if (nearLeft && dx < 0) continue;
       if (nearRight && dx > 0) continue;
-      for (const lineLen of [22, 30, 38, 46, 54, 62]) {
+      for (const lineLen of lineLens) {
         candidates.push([dIdx, lineLen]);
       }
     }
 
     if (candidates.length === 0) {
       for (let dIdx = 0; dIdx < 8; dIdx++) {
-        for (const lineLen of [22, 30, 38, 46, 54]) {
+        for (const lineLen of lineLens) {
           candidates.push([dIdx, lineLen]);
         }
       }
@@ -155,7 +177,7 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
 
     const textWidth = (p.shortName || p.name).length * 3.2;
     const textHeight = 5;
-    const proximity = 3; // minimum gap between labels in normalized units
+    const proximity = 4;
 
     let best: [number, number] = candidates[0];
     let bestScore = Infinity;
@@ -169,25 +191,34 @@ function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
       const box: [number, number, number, number] = [lx - hw, ly - hh, lx + hw, ly + hh];
 
       let score = 0;
+
+      // overlap + proximity against already-placed labels
       for (const placedBox of placed) {
-        // overlap area
         const ox = Math.max(0, Math.min(box[2], placedBox[2]) - Math.max(box[0], placedBox[0]));
         const oy = Math.max(0, Math.min(box[3], placedBox[3]) - Math.max(box[1], placedBox[1]));
         if (ox > 0 && oy > 0) {
-          score += ox * oy * 10; // heavy penalty for actual overlap
+          score += ox * oy * 20;
         }
-
-        // proximity penalty — penalize even if not overlapping but too close
         const cx1 = (box[0] + box[2]) / 2;
         const cy1 = (box[1] + box[3]) / 2;
         const cx2 = (placedBox[0] + placedBox[2]) / 2;
         const cy2 = (placedBox[1] + placedBox[3]) / 2;
         const dist = Math.sqrt((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2);
         if (dist < proximity + Math.max(textWidth, textHeight)) {
-          score += (proximity + Math.max(textWidth, textHeight) - dist) ** 2 * 0.5;
+          score += (proximity + Math.max(textWidth, textHeight) - dist) ** 2 * 0.8;
         }
       }
-      score += lineLen * 0.005; // slight preference for shorter lines
+
+      // penalty for going far outside the data area (where quadrant labels used to be)
+      const outOfBounds =
+        Math.max(0, -lx) +
+        Math.max(0, lx - 100) +
+        Math.max(0, -ly) +
+        Math.max(0, ly - 100);
+      score += outOfBounds * 0.3;
+
+      // line length preference: isolated = strong preference for short; crowded = weak preference
+      score += lineLen * (isIsolated ? 0.05 : 0.003);
 
       if (score < bestScore) {
         bestScore = score;
@@ -483,7 +514,7 @@ export function ModelBenchmarkChart({
       {/* Chart */}
       <div className="relative h-[620px] w-full rounded-xl border border-gray-200 bg-white/50 dark:border-gray-800 dark:bg-gray-900/50">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 50, right: 100, bottom: 40, left: 30 }}>
+          <ScatterChart margin={{ top: 30, right: 60, bottom: 40, left: 30 }}>
             {/* Quadrant backgrounds */}
             <ReferenceArea
               x1={xDomain[0]}
@@ -599,55 +630,6 @@ export function ModelBenchmarkChart({
           </ScatterChart>
         </ResponsiveContainer>
 
-        {/* Quadrant Labels */}
-        <div
-          className="pointer-events-none absolute text-xs font-bold tracking-wide"
-          style={{
-            left: '25%',
-            top: '15%',
-            transform: 'translate(-50%, -50%)',
-            color: '#22c55e',
-            textShadow: '0 0 4px rgba(0,0,0,0.8)',
-          }}
-        >
-          ★ MOST ATTRACTIVE
-        </div>
-        <div
-          className="pointer-events-none absolute text-xs font-bold tracking-wide"
-          style={{
-            right: '15%',
-            top: '15%',
-            transform: 'translate(50%, -50%)',
-            color: '#f59e0b',
-            textShadow: '0 0 4px rgba(0,0,0,0.8)',
-          }}
-        >
-          EXPENSIVE
-        </div>
-        <div
-          className="pointer-events-none absolute text-xs font-bold tracking-wide"
-          style={{
-            left: '25%',
-            bottom: '12%',
-            transform: 'translate(-50%, 50%)',
-            color: '#3b82f6',
-            textShadow: '0 0 4px rgba(0,0,0,0.8)',
-          }}
-        >
-          BUDGET
-        </div>
-        <div
-          className="pointer-events-none absolute text-xs font-bold tracking-wide"
-          style={{
-            right: '15%',
-            bottom: '12%',
-            transform: 'translate(50%, 50%)',
-            color: '#ef4444',
-            textShadow: '0 0 4px rgba(0,0,0,0.8)',
-          }}
-        >
-          AVOID
-        </div>
       </div>
 
       {/* Legend */}
