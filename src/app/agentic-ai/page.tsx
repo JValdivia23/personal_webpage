@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
 import {
@@ -224,6 +225,8 @@ function MiniBarChart({
   metricKey: string;
   metricLabel: string;
 }) {
+  const [hiddenProviders, setHiddenProviders] = useState<Set<string>>(new Set());
+
   const data = useMemo(() => {
     return models
       .filter((m) => {
@@ -252,6 +255,26 @@ function MiniBarChart({
   const maxValue = Math.max(...data.map((d) => d.value));
   const niceMax = maxValue * 1.05;
 
+  const providers = Array.from(new Set(data.map((d) => d.provider))).sort();
+
+  const toggleProvider = (provider: string) => {
+    setHiddenProviders((prev) => {
+      const next = new Set(prev);
+      if (next.has(provider)) {
+        next.delete(provider);
+      } else {
+        next.add(provider);
+      }
+      return next;
+    });
+  };
+
+  // Preserve sort order; zero-out hidden providers so Y-axis stays identical
+  const displayData = data.map((d) => ({
+    ...d,
+    value: hiddenProviders.has(d.provider) ? 0 : d.value,
+  }));
+
   return (
     <div className="mt-6">
       <h4 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
@@ -260,7 +283,7 @@ function MiniBarChart({
       <div className="h-[500px] w-full rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={data}
+            data={displayData}
             layout="vertical"
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
@@ -280,8 +303,12 @@ function MiniBarChart({
               tick={{ fontSize: 11 }}
             />
             <Tooltip
-              formatter={(value: any) => {
+              formatter={(value: any, _name: any, props: any) => {
                 const num = Number(value);
+                const original = data[props.payload.index];
+                if (hiddenProviders.has(original.provider)) {
+                  return ["—", metricLabel];
+                }
                 const formatted =
                   !isNaN(num) && num < 10
                     ? num.toFixed(3)
@@ -295,16 +322,49 @@ function MiniBarChart({
               }}
             />
             <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={16}>
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+              {displayData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.value === 0 ? "transparent" : entry.color}
+                />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-600">
-        Sorted by score (highest first). Colors indicate model provider.
-      </p>
+
+      {/* Provider toggle legend */}
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+        {providers.map((provider) => {
+          const isHidden = hiddenProviders.has(provider);
+          const color = getProviderColor(provider);
+          return (
+            <button
+              key={provider}
+              onClick={() => toggleProvider(provider)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
+                isHidden
+                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 line-through"
+                  : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
+              title={isHidden ? `Show ${provider}` : `Hide ${provider}`}
+            >
+              <span
+                className="inline-block h-2 w-2 rounded-full"
+                style={{
+                  backgroundColor: isHidden ? "#d1d5db" : color,
+                }}
+              />
+              {provider}
+              {isHidden ? (
+                <EyeOff className="h-3 w-3" />
+              ) : (
+                <Eye className="h-3 w-3" />
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -13,6 +13,7 @@ import {
   ReferenceArea,
   Cell,
 } from 'recharts';
+import { Eye, EyeOff } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -418,19 +419,17 @@ export function ModelBenchmarkChart({
   priceMode,
   metricLabel,
 }: ModelBenchmarkChartProps) {
-  // Prepare chart data: X = cost/price, Y = selected metric
-  const chartData = useMemo<ChartPoint[]>(() => {
+  const [hiddenProviders, setHiddenProviders] = useState<Set<string>>(new Set());
+
+  // All valid points (used for stable axes / thresholds)
+  const allChartData = useMemo<ChartPoint[]>(() => {
     const raw = models
       .filter((m) => {
-        // Exclude models with null selected metric
         const metricVal = (m as any)[selectedMetric];
         if (metricVal == null || typeof metricVal !== 'number') return false;
-
-        // Exclude $0 price models in price mode
         if (priceMode === 'price') {
           if (m.blendedPrice == null || m.blendedPrice === 0) return false;
         }
-        // Exclude $0 cost models in cost mode
         if (priceMode === 'cost') {
           if (m.costToRunIndex == null || m.costToRunIndex === 0) return false;
         }
@@ -444,55 +443,74 @@ export function ModelBenchmarkChart({
         dx: 10,
         dy: 0,
       }));
-
-    // Sort by Y descending so higher scores get placed first (less overlap)
     raw.sort((a, b) => b.y - a.y);
     return raw;
   }, [models, selectedMetric, priceMode]);
 
-  // Compute axis domains
+  // Visible subset after provider toggles
+  const visibleChartData = useMemo<ChartPoint[]>(
+    () => allChartData.filter((d) => !hiddenProviders.has(d.provider)),
+    [allChartData, hiddenProviders]
+  );
+
+  // Compute axis domains from ALL data so limits stay identical when toggling
   const xDomain = useMemo<[number, number]>(() => {
-    const vals = chartData.map((d) => d.x);
+    const vals = allChartData.map((d) => d.x);
     if (vals.length === 0) return [0, 1];
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const pad = (max - min) * 0.15;
     return [Math.max(0, min - pad), max + pad];
-  }, [chartData]);
+  }, [allChartData]);
 
   const yDomain = useMemo<[number, number]>(() => {
-    const vals = chartData.map((d) => d.y);
+    const vals = allChartData.map((d) => d.y);
     if (vals.length === 0) return [0, 1];
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const pad = (max - min) * 0.12;
     return [Math.max(0, min - pad), max + pad];
-  }, [chartData]);
+  }, [allChartData]);
 
-  // Compute 75th percentile for price/cost axis (accounts for right-skewed distribution)
+  // Compute 75th percentile from ALL data
   const thresholdX = useMemo(() => {
-    const sorted = [...chartData].sort((a, b) => a.x - b.x);
+    const sorted = [...allChartData].sort((a, b) => a.x - b.x);
     const idx = Math.floor(sorted.length * 0.75);
     return sorted[Math.min(idx, sorted.length - 1)].x;
-  }, [chartData]);
+  }, [allChartData]);
 
   const medianY = useMemo(() => {
-    const sorted = [...chartData].sort((a, b) => a.y - b.y);
+    const sorted = [...allChartData].sort((a, b) => a.y - b.y);
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 === 0
       ? (sorted[mid - 1].y + sorted[mid].y) / 2
       : sorted[mid].y;
-  }, [chartData]);
+  }, [allChartData]);
 
-  // Assign collision-aware label placements
+  // Assign collision-aware label placements to VISIBLE data only
   const chartDataWithLabels = useMemo<ChartPoint[]>(() => {
-    const placements = placeLabels(chartData, xDomain, yDomain);
-    return chartData.map((m, i) => ({
+    if (visibleChartData.length === 0) return [];
+    const placements = placeLabels(visibleChartData, xDomain, yDomain);
+    return visibleChartData.map((m, i) => ({
       ...m,
       dx: placements[i].dx,
       dy: placements[i].dy,
     }));
-  }, [chartData, xDomain, yDomain]);
+  }, [visibleChartData, xDomain, yDomain]);
+
+  const providers = useMemo(
+    () => Array.from(new Set(allChartData.map((d) => d.provider))).sort(),
+    [allChartData]
+  );
+
+  const toggleProvider = (provider: string) => {
+    setHiddenProviders((prev) => {
+      const next = new Set(prev);
+      if (next.has(provider)) next.delete(provider);
+      else next.add(provider);
+      return next;
+    });
+  };
 
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
@@ -635,19 +653,37 @@ export function ModelBenchmarkChart({
 
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        {Array.from(new Set(models.map((m) => m.provider))).map((provider) => (
-          <div key={provider} className="flex items-center gap-1.5">
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: getProviderColor(provider) }}
-            />
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+      {/* Provider toggle legend */}
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        {providers.map((provider) => {
+          const isHidden = hiddenProviders.has(provider);
+          const color = getProviderColor(provider);
+          return (
+            <button
+              key={provider}
+              onClick={() => toggleProvider(provider)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
+                isHidden
+                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 line-through"
+                  : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
+              title={isHidden ? `Show ${provider}` : `Hide ${provider}`}
+            >
+              <span
+                className="inline-block h-2 w-2 rounded-full"
+                style={{
+                  backgroundColor: isHidden ? "#d1d5db" : color,
+                }}
+              />
               {provider}
-            </span>
-          </div>
-        ))}
+              {isHidden ? (
+                <EyeOff className="h-3 w-3" />
+              ) : (
+                <Eye className="h-3 w-3" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Quadrant explanation */}
