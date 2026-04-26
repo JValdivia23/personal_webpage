@@ -123,14 +123,14 @@ const CANDIDATES = [
   { dx: 40, dy: -40 },
   { dx: 40, dy: 40 },
   // — top / bottom —
-  { dx: 0, dy: -12 },     // immediately top
-  { dx: 0, dy: 12 },      // immediately bottom
-  { dx: 0, dy: -20 },     // higher top
-  { dx: 0, dy: 20 },      // lower bottom
-  { dx: 0, dy: -32 },
-  { dx: 0, dy: 32 },
-  { dx: 0, dy: -46 },
-  { dx: 0, dy: 46 },
+  { dx: 0, dy: -14 },     // immediately top
+  { dx: 0, dy: 14 },      // immediately bottom
+  { dx: 0, dy: -22 },     // higher top
+  { dx: 0, dy: 22 },      // lower bottom
+  { dx: 0, dy: -34 },
+  { dx: 0, dy: 34 },
+  { dx: 0, dy: -48 },
+  { dx: 0, dy: 48 },
   // — left side (only near left edge) —
   { dx: -10, dy: 0 },
   { dx: -10, dy: -10 },
@@ -152,16 +152,13 @@ function placeLabels(
   xDomain: [number, number],
   yDomain: [number, number]
 ): LabelPlacement[] {
-  // Plot size in px (approximate, matches rendered chart area)
   const PLOT_W = 800;
   const PLOT_H = 520;
-  const sx = PLOT_W / (xDomain[1] - xDomain[0]); // px per data X
-  const sy = PLOT_H / (yDomain[1] - yDomain[0]); // px per data Y
+  const sx = PLOT_W / (xDomain[1] - xDomain[0]);
+  const sy = PLOT_H / (yDomain[1] - yDomain[0]);
 
-  // Dot radius in data units
   const dotR = 5 / Math.min(sx, sy);
 
-  // Pre-compute dot bounding boxes
   const dotBoxes = allPoints.map((p) => ({
     l: p.x - dotR,
     r: p.x + dotR,
@@ -169,7 +166,6 @@ function placeLabels(
     t: p.y + dotR,
   }));
 
-  // Process points with most neighbours first (crowded clusters claim space early)
   const order = allPoints
     .map((p, i) => {
       let minD = Infinity;
@@ -192,13 +188,11 @@ function placeLabels(
     const p = allPoints[pi];
     const label = p.shortName || p.name;
 
-    // Text size in px → data units
-    const textWPx = label.length * 6.2; // 10px font
+    const textWPx = label.length * 6.2;
     const textHPx = 13;
     const textW = textWPx / sx;
     const textH = textHPx / sy;
 
-    // Is this dot near the left edge?
     const nearLeft =
       (p.x - xDomain[0]) / (xDomain[1] - xDomain[0]) < 0.10;
 
@@ -206,26 +200,54 @@ function placeLabels(
     let bestScore = Infinity;
 
     for (const cand of CANDIDATES) {
-      // Skip left-side candidates unless near left edge
       if (cand.dx < 0 && !nearLeft) continue;
 
-      // Anchor = bottom-left corner of text box in data coords
+      // Anchor point in data coords
       const ax = p.x + cand.dx / sx;
-      const ay = p.y - cand.dy / sy; // SVG dy negative = up = higher data Y
+      const ay = p.y - cand.dy / sy;
 
-      const box = {
-        l: ax,
-        r: ax + textW,
-        b: ay,           // bottom of text (anchor)
-        t: ay + textH,   // top of text (extends upward)
-      };
+      // Determine text box based on alignment
+      const isRight = cand.dx > 0 && Math.abs(cand.dx) >= Math.abs(cand.dy);
+      const isLeft = cand.dx < 0;
+      const isTopBottom = cand.dx === 0;
+
+      let box: { l: number; r: number; b: number; t: number };
+
+      if (isRight) {
+        // textAnchor="start", dominantBaseline="middle"
+        // text extends right from anchor, centered vertically
+        box = {
+          l: ax,
+          r: ax + textW,
+          b: ay - textH / 2,
+          t: ay + textH / 2,
+        };
+      } else if (isLeft) {
+        // textAnchor="end", dominantBaseline="middle"
+        // text extends left from anchor, centered vertically
+        box = {
+          l: ax - textW,
+          r: ax,
+          b: ay - textH / 2,
+          t: ay + textH / 2,
+        };
+      } else {
+        // textAnchor="middle", dominantBaseline="middle"
+        // text centered on anchor both ways
+        box = {
+          l: ax - textW / 2,
+          r: ax + textW / 2,
+          b: ay - textH / 2,
+          t: ay + textH / 2,
+        };
+      }
 
       let score = 0;
 
       // 1. Must not overlap any dot
       for (const db of dotBoxes) {
         if (overlaps(box, db)) {
-          score += 1_000_000; // hard reject
+          score += 1_000_000;
         }
       }
 
@@ -236,13 +258,13 @@ function placeLabels(
         }
       }
 
-      // 3. Prefer shorter distances (labels close to their dot)
+      // 3. Prefer shorter distances
       const dist = Math.sqrt(cand.dx * cand.dx + cand.dy * cand.dy);
       score += dist * dist * 0.03;
 
-      // 4. Prefer right side strongly
-      if (cand.dx < 0) score += 500; // left side penalty
-      if (cand.dx === 0) score += 100; // top/bottom mild penalty
+      // 4. Prefer right side
+      if (cand.dx < 0) score += 500;
+      if (cand.dx === 0) score += 100;
 
       if (score < bestScore) {
         bestScore = score;
@@ -250,15 +272,34 @@ function placeLabels(
       }
     }
 
-    // Record placed label box for future collision checks
+    // Record placed label box
     const ax = p.x + best.dx / sx;
     const ay = p.y - best.dy / sy;
-    placedLabels.push({
-      l: ax,
-      r: ax + textW,
-      b: ay,
-      t: ay + textH,
-    });
+    const isRight = best.dx > 0 && Math.abs(best.dx) >= Math.abs(best.dy);
+    const isLeft = best.dx < 0;
+
+    if (isRight) {
+      placedLabels.push({
+        l: ax,
+        r: ax + textW,
+        b: ay - textH / 2,
+        t: ay + textH / 2,
+      });
+    } else if (isLeft) {
+      placedLabels.push({
+        l: ax - textW,
+        r: ax,
+        b: ay - textH / 2,
+        t: ay + textH / 2,
+      });
+    } else {
+      placedLabels.push({
+        l: ax - textW / 2,
+        r: ax + textW / 2,
+        b: ay - textH / 2,
+        t: ay + textH / 2,
+      });
+    }
 
     results[pi] = best;
   }
@@ -277,8 +318,18 @@ function CustomScatterShape(props: any) {
   const dx = payload.dx ?? 10;
   const dy = payload.dy ?? 0;
 
-  const ax = cx + dx; // anchor X (SVG px)
-  const ay = cy + dy; // anchor Y (SVG px)
+  const ax = cx + dx;
+  const ay = cy + dy;
+
+  // Determine alignment from offset direction
+  const isRight = dx > 0 && Math.abs(dx) >= Math.abs(dy);
+  const isLeft = dx < 0;
+
+  const textAnchor: 'start' | 'middle' | 'end' = isRight
+    ? 'start'
+    : isLeft
+    ? 'end'
+    : 'middle';
 
   return (
     <g style={{ cursor: 'pointer' }} onClick={onClick}>
@@ -297,8 +348,8 @@ function CustomScatterShape(props: any) {
       <text
         x={ax}
         y={ay}
-        textAnchor="start"
-        dominantBaseline="auto"
+        textAnchor={textAnchor}
+        dominantBaseline="middle"
         fill="#000"
         fontSize={10}
         fontWeight={500}
@@ -313,8 +364,8 @@ function CustomScatterShape(props: any) {
       <text
         x={ax}
         y={ay}
-        textAnchor="start"
-        dominantBaseline="auto"
+        textAnchor={textAnchor}
+        dominantBaseline="middle"
         fill="#ffffff"
         fontSize={10}
         fontWeight={500}
