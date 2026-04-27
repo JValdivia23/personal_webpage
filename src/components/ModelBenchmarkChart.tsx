@@ -44,6 +44,7 @@ interface AIModel {
   mmmuPro: number | null;
   omniscience: number | null;
   lcr: number | null;
+  contextWindow: number | null;
 }
 
 interface ModelBenchmarkChartProps {
@@ -86,6 +87,20 @@ const PROVIDER_COLORS: Record<string, string> = {
 
 function getProviderColor(provider: string): string {
   return PROVIDER_COLORS[provider] || '#9ca3af';
+}
+
+function formatContextWindow(tokens: number | null): string {
+  if (tokens == null) return 'N/A';
+  if (tokens >= 1_000_000) {
+    const millions = tokens / 1_000_000;
+    // Show 1 decimal if not a whole number, e.g. 1.5M
+    return millions % 1 === 0 ? `${millions.toFixed(0)}M` : `${millions.toFixed(1)}M`;
+  }
+  if (tokens >= 1_000) {
+    const thousands = tokens / 1_000;
+    return thousands % 1 === 0 ? `${thousands.toFixed(0)}k` : `${thousands.toFixed(1)}k`;
+  }
+  return String(tokens);
 }
 
 // ---------------------------------------------------------------------------
@@ -400,6 +415,12 @@ function CustomTooltip({
             </span>
           </div>
         )}
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-400">Context:</span>
+          <span className="font-medium text-amber-400">
+            {formatContextWindow(model.contextWindow)}
+          </span>
+        </div>
         {model.isOpenWeights && (
           <div className="mt-1 inline-block rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-medium text-purple-300">
             Open Weights
