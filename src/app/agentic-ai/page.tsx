@@ -60,6 +60,19 @@ function getProviderColor(provider: string): string {
   return PROVIDER_COLORS[provider] || "#9ca3af";
 }
 
+function formatContextWindow(tokens: number | null): string {
+  if (tokens == null) return "N/A";
+  if (tokens >= 1_000_000) {
+    const millions = tokens / 1_000_000;
+    return millions % 1 === 0 ? `${millions.toFixed(0)}M` : `${millions.toFixed(1)}M`;
+  }
+  if (tokens >= 1_000) {
+    const thousands = tokens / 1_000;
+    return thousands % 1 === 0 ? `${thousands.toFixed(0)}k` : `${thousands.toFixed(1)}k`;
+  }
+  return String(tokens);
+}
+
 const METRICS: MetricDef[] = [
   {
     key: "intelligenceIndex",
@@ -214,6 +227,77 @@ function countAvailable(models: any[], key: string): number {
 }
 
 // ---------------------------------------------------------------------------
+// Custom tooltip for bar chart (matches scatter plot style)
+// ---------------------------------------------------------------------------
+function BarTooltip({
+  active,
+  payload,
+  metricLabel,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: any }>;
+  metricLabel: string;
+}) {
+  if (!active || !payload || !payload.length) return null;
+  const d = payload[0].payload;
+  if (d.value === 0) return null; // hidden provider
+
+  return (
+    <div className="rounded-lg border border-gray-700 bg-gray-900/95 px-4 py-3 shadow-xl backdrop-blur-sm">
+      <div className="mb-1 font-semibold text-white">{d.name}</div>
+      <div className="text-xs text-gray-400">{d.provider}</div>
+      <div className="mt-2 space-y-1 text-xs">
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-400">{metricLabel}:</span>
+          <span className="font-medium text-blue-400">
+            {typeof d.value === "number" ? d.value.toFixed(3) : d.value}
+          </span>
+        </div>
+        {d.blendedPrice != null && (
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Blended Price:</span>
+            <span className="font-medium text-emerald-400">
+              ${d.blendedPrice.toFixed(2)}/1M
+            </span>
+          </div>
+        )}
+        {d.inputPrice != null && (
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Input:</span>
+            <span className="text-gray-300">${d.inputPrice.toFixed(2)}/1M</span>
+          </div>
+        )}
+        {d.outputPrice != null && (
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Output:</span>
+            <span className="text-gray-300">${d.outputPrice.toFixed(2)}/1M</span>
+          </div>
+        )}
+        {d.costToRunIndex != null && (
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Cost to Run Index:</span>
+            <span className="font-medium text-emerald-400">
+              ${d.costToRunIndex.toFixed(0)}
+            </span>
+          </div>
+        )}
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-400">Context:</span>
+          <span className="font-medium text-amber-400">
+            {formatContextWindow(d.contextWindow)}
+          </span>
+        </div>
+        {d.isOpenWeights && (
+          <div className="mt-1 inline-block rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-medium text-purple-300">
+            Open Weights
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Mini bar chart for documentation view
 // ---------------------------------------------------------------------------
 function MiniBarChart({
@@ -238,6 +322,12 @@ function MiniBarChart({
         value: m[metricKey] as number,
         provider: m.provider,
         color: getProviderColor(m.provider),
+        inputPrice: m.inputPrice,
+        outputPrice: m.outputPrice,
+        blendedPrice: m.blendedPrice,
+        costToRunIndex: m.costToRunIndex,
+        contextWindow: m.contextWindow,
+        isOpenWeights: m.isOpenWeights,
       }))
       .sort((a, b) => b.value - a.value);
   }, [models, metricKey]);
@@ -299,26 +389,13 @@ function MiniBarChart({
             <YAxis
               type="category"
               dataKey="name"
-              width={130}
+              width={160}
               tick={{ fontSize: 11 }}
+              interval={0}
             />
             <Tooltip
-              formatter={(value: any, _name: any, props: any) => {
-                const num = Number(value);
-                if (hiddenProviders.has(props.payload.provider)) {
-                  return ["—", metricLabel];
-                }
-                const formatted =
-                  !isNaN(num) && num < 10
-                    ? num.toFixed(3)
-                    : String(Math.round(num));
-                return [formatted, metricLabel];
-              }}
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #e5e7eb",
-                fontSize: "12px",
-              }}
+              content={<BarTooltip metricLabel={metricLabel} />}
+              cursor={{ fill: "rgba(0,0,0,0.04)" }}
             />
             <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={16}>
               {displayData.map((entry, index) => (
