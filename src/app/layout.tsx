@@ -29,9 +29,9 @@ export const metadata: Metadata = {
     siteName: "Jairo M. Valdivia",
     images: [
       {
-        url: "/avatar.png", // Ensure this exists or use a default OG image
-        width: 800,
-        height: 800,
+        url: "/personal_webpage/photo.jpeg",
+        width: 1200,
+        height: 1200,
       },
     ],
     locale: "en_US",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Jairo M. Valdivia | Personal Webpage",
     description: "Radar Scientist and Ph.D. Student at CU Boulder.",
-    images: ["/avatar.png"],
+    images: ["/personal_webpage/photo.jpeg"],
   },
 };
 
