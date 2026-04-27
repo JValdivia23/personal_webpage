@@ -305,8 +305,7 @@ function MiniBarChart({
             <Tooltip
               formatter={(value: any, _name: any, props: any) => {
                 const num = Number(value);
-                const original = data[props.payload.index];
-                if (hiddenProviders.has(original.provider)) {
+                if (hiddenProviders.has(props.payload.provider)) {
                   return ["—", metricLabel];
                 }
                 const formatted =
