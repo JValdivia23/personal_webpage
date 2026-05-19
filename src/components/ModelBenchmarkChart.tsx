@@ -105,6 +105,8 @@ interface LabelPlacement {
 }
 
 function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
+  if (allPoints.length === 0) return [];
+
   const xs = allPoints.map((p) => p.x);
   const ys = allPoints.map((p) => p.y);
   const xMin = Math.min(...xs);
@@ -423,6 +425,7 @@ export function ModelBenchmarkChart({
 
   // Compute median lines for quadrants
   const medianX = useMemo(() => {
+    if (chartData.length === 0) return 0;
     const sorted = [...chartData].sort((a, b) => a.x - b.x);
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 === 0
@@ -431,6 +434,7 @@ export function ModelBenchmarkChart({
   }, [chartData]);
 
   const medianY = useMemo(() => {
+    if (chartData.length === 0) return 0;
     const sorted = [...chartData].sort((a, b) => a.y - b.y);
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 === 0
@@ -453,6 +457,21 @@ export function ModelBenchmarkChart({
     : 'Cost to Run Index ($) →';
 
   const chartTitle = `Cost vs. ${metricLabel}`;
+
+  if (chartData.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{chartTitle}</h3>
+        </div>
+        <div className="flex h-[400px] items-center justify-center rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No models have data for this cost mode. Try switching to &quot;Cost to Run&quot;.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

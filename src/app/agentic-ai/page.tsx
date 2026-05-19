@@ -119,12 +119,13 @@ const METRICS: MetricDef[] = [
   },
   {
     key: "gdpval",
-    label: "Validation Quality",
-    description: "Overall model quality and robustness",
+    label: "GDPval-AA Leaderboard",
+    description: "Real-world tasks across 44 occupations",
     testBadge: "GDPval",
-    scale: "Higher is better (no fixed upper bound)",
+    scale: "ELO rating (higher is better)",
     fullDescription:
-      "A validation metric from Artificial Analysis that correlates with overall model quality and robustness. Provides an additional signal of model reliability beyond raw benchmark scores.",
+      "Artificial Analysis' evaluation framework for OpenAI's GDPval dataset. Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing capabilities in an agentic loop via Stirrup to solve tasks, with ELO ratings derived from blind pairwise comparisons. The GDPval gold public dataset includes 220 tasks developed by OpenAI in collaboration with industry professionals, requiring models to produce diverse outputs including documents, slides, diagrams, and spreadsheets.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/gdpval-aa",
   },
   {
     key: "ifbench",
@@ -377,7 +378,7 @@ function DocumentationPanel({
 export default function AgenticAIPage() {
   const models = aiModels.models;
   const [selectedMetric, setSelectedMetric] = useState("intelligenceIndex");
-  const [priceMode, setPriceMode] = useState<"price" | "cost">("price");
+  const [priceMode, setPriceMode] = useState<"price" | "cost">("cost");
   const [sidebarTab, setSidebarTab] = useState<"metrics" | "docs">("metrics");
 
   const lastUpdated = new Date(aiModels.lastUpdated).toLocaleDateString(

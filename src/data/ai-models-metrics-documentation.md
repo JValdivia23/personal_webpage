@@ -58,11 +58,14 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 - **Why it matters:** Tests the intersection of coding ability and scientific understanding. Important for research automation.
 - **Current range (24 models):** 0.352 — 0.589
 
-### GDPval
-- **What it measures:** A validation metric from Artificial Analysis that appears to correlate with overall model quality and robustness.
-- **Scale:** Higher is better (no fixed upper bound)
-- **Why it matters:** Provides an additional signal of model reliability beyond raw benchmark scores.
+### GDPval (GDPval-AA Leaderboard)
+- **What it measures:** Artificial Analysis' evaluation framework for OpenAI's GDPval dataset. Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing capabilities in an agentic loop via Stirrup to solve tasks.
+- **Scale:** ELO rating (higher is better, no fixed upper bound)
+- **How it's calculated:** ELO ratings are derived from blind pairwise comparisons of model outputs.
+- **Background:** The GDPval gold public dataset includes 220 tasks developed by OpenAI in collaboration with industry professionals to reflect real-world complexity. The benchmark requires models to produce diverse outputs including documents, slides, diagrams, and spreadsheets, mirroring actual work products across finance, healthcare, legal, and other professional domains.
+- **Why it matters:** Tests practical, open-ended real-world agentic capabilities beyond traditional academic benchmarks.
 - **Current range (24 models):** 938.1 — 1781.7
+- **Official page:** https://artificialanalysis.ai/evaluations/gdpval-aa
 
 ### Tau-2 (τ²-Bench Telecom)
 - **What it measures:** A dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions to resolve telecom service issues.
@@ -204,3 +207,14 @@ Artificial Analysis independently evaluates models by:
 - Updating benchmarks regularly as new, harder tests are developed
 
 For the most current methodology, visit: https://artificialanalysis.ai
+
+---
+
+## How to Add New Models
+
+1. Go to [artificialanalysis.ai/models](https://artificialanalysis.ai/models) and find the model you want to add.
+2. Copy the model's slug from the URL (e.g., `gemini-3-5-flash` from `https://artificialanalysis.ai/models/gemini-3-5-flash`).
+3. Open `scripts/sync-ai-models.py` and add the slug to the `TARGET_URL` query parameter (comma-separated, no spaces).
+4. Run the sync script: `python scripts/sync-ai-models.py`
+5. The script fetches all benchmark data for the new model and regenerates `src/data/ai-models.json`. No component changes are needed — the chart auto-adapts.
+6. Verify the new model appears in the output, then commit and push.
