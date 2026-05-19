@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -13,7 +13,6 @@ import {
   ReferenceArea,
   Cell,
 } from 'recharts';
-import { Eye, EyeOff } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,7 +43,6 @@ interface AIModel {
   mmmuPro: number | null;
   omniscience: number | null;
   lcr: number | null;
-  contextWindow: number | null;
 }
 
 interface ModelBenchmarkChartProps {
@@ -58,8 +56,7 @@ interface ChartPoint extends AIModel {
   x: number;
   y: number;
   color: string;
-  dx: number;
-  dy: number;
+  labelPos: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -71,7 +68,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   'Google': '#4285f4',
   'DeepSeek': '#4f46e5',
   'Kimi': '#f59e0b',
-  'xAI': '#000000',
+  'xAI': '#ef4444',
   'Meta': '#06b6d4',
   'Mistral': '#f97316',
   'NVIDIA': '#76b900',
@@ -89,20 +86,6 @@ function getProviderColor(provider: string): string {
   return PROVIDER_COLORS[provider] || '#9ca3af';
 }
 
-function formatContextWindow(tokens: number | null): string {
-  if (tokens == null) return 'N/A';
-  if (tokens >= 1_000_000) {
-    const millions = tokens / 1_000_000;
-    // Show 1 decimal if not a whole number, e.g. 1.5M
-    return millions % 1 === 0 ? `${millions.toFixed(0)}M` : `${millions.toFixed(1)}M`;
-  }
-  if (tokens >= 1_000) {
-    const thousands = tokens / 1_000;
-    return thousands % 1 === 0 ? `${thousands.toFixed(0)}k` : `${thousands.toFixed(1)}k`;
-  }
-  return String(tokens);
-}
-
 // ---------------------------------------------------------------------------
 // Quadrant background colours (subtle, dark-theme friendly)
 // ---------------------------------------------------------------------------
@@ -117,242 +100,196 @@ const QUADRANT_BG = {
 // Collision-aware label placement with 8 directions
 // ---------------------------------------------------------------------------
 interface LabelPlacement {
-  dx: number;
-  dy: number;
+  pos: number;
+  lineLen: number;
 }
 
-/** Candidate offsets in pixels from dot centre.
- *  Order = fallback priority.  Right-side first, then top/bottom,
- *  then longer right, then left (only if near left edge).           */
-const CANDIDATES = [
-  // — right side (preferred) —
-  { dx: 10, dy: 0 },      // immediately right
-  { dx: 10, dy: -10 },    // 45° up-right
-  { dx: 10, dy: 10 },     // 45° down-right
-  { dx: 18, dy: 0 },      // further right
-  { dx: 18, dy: -18 },    // further up-right
-  { dx: 18, dy: 18 },     // further down-right
-  { dx: 28, dy: 0 },      // even further right
-  { dx: 28, dy: -28 },
-  { dx: 28, dy: 28 },
-  { dx: 40, dy: 0 },
-  { dx: 40, dy: -40 },
-  { dx: 40, dy: 40 },
-  // — top / bottom —
-  { dx: 0, dy: -14 },     // immediately top
-  { dx: 0, dy: 14 },      // immediately bottom
-  { dx: 0, dy: -22 },     // higher top
-  { dx: 0, dy: 22 },      // lower bottom
-  { dx: 0, dy: -34 },
-  { dx: 0, dy: 34 },
-  { dx: 0, dy: -48 },
-  { dx: 0, dy: 48 },
-  // — left side (only near left edge) —
-  { dx: -10, dy: 0 },
-  { dx: -10, dy: -10 },
-  { dx: -10, dy: 10 },
-  { dx: -18, dy: 0 },
-  { dx: -18, dy: -18 },
-  { dx: -18, dy: 18 },
-];
+function placeLabels(allPoints: ChartPoint[]): LabelPlacement[] {
+  if (allPoints.length === 0) return [];
 
-function overlaps(
-  a: { l: number; r: number; b: number; t: number },
-  b: { l: number; r: number; b: number; t: number }
-) {
-  return a.l < b.r && a.r > b.l && a.b < b.t && a.t > b.b;
-}
+  const xs = allPoints.map((p) => p.x);
+  const ys = allPoints.map((p) => p.y);
+  const xMin = Math.min(...xs);
+  const xMax = Math.max(...xs);
+  const yMin = Math.min(...ys);
+  const yMax = Math.max(...ys);
+  const xRange = xMax - xMin || 1;
+  const yRange = yMax - yMin || 1;
 
-function placeLabels(
-  allPoints: ChartPoint[],
-  xDomain: [number, number],
-  yDomain: [number, number]
-): LabelPlacement[] {
-  const PLOT_W = 800;
-  const PLOT_H = 520;
-  const xR = xDomain[1] - xDomain[0];
-  const yR = yDomain[1] - yDomain[0];
+  const directions = [
+    [0, -1], [0.7, -0.7], [1, 0], [0.7, 0.7],
+    [0, 1], [-0.7, 0.7], [-1, 0], [-0.7, -0.7],
+  ];
 
-  // Convert data coords → plot pixel coords (SVG-like, Y inverted)
-  const toPx = (p: ChartPoint) => ({
-    x: ((p.x - xDomain[0]) / xR) * PLOT_W,
-    y: PLOT_H - ((p.y - yDomain[0]) / yR) * PLOT_H,
-  });
+  const norm = (v: number, min: number, range: number) => ((v - min) / range) * 100;
 
-  const pixels = allPoints.map(toPx);
+  const placed: Array<[number, number, number, number]> = [];
+  const results: LabelPlacement[] = [];
 
-  // Dot boxes in pixels (radius = 5)
-  const dotBoxes = pixels.map((p) => ({
-    l: p.x - 5,
-    r: p.x + 5,
-    b: p.y - 5,
-    t: p.y + 5,
-  }));
+  for (const p of allPoints) {
+    const nx = norm(p.x, xMin, xRange);
+    const ny = norm(p.y, yMin, yRange);
 
-  // Process crowded points first
-  const order = allPoints
-    .map((_, i) => {
-      let minD = Infinity;
-      for (let j = 0; j < pixels.length; j++) {
-        if (i === j) continue;
-        const dx = pixels[j].x - pixels[i].x;
-        const dy = pixels[j].y - pixels[i].y;
-        const d = Math.sqrt(dx * dx + dy * dy);
-        if (d < minD) minD = d;
+    const nearTop = (yMax - p.y) / yRange < 0.10;
+    const nearBottom = (p.y - yMin) / yRange < 0.10;
+    const nearLeft = (p.x - xMin) / xRange < 0.08;
+    const nearRight = (xMax - p.x) / xRange < 0.08;
+
+    const candidates: Array<[number, number]> = [];
+    for (let dIdx = 0; dIdx < 8; dIdx++) {
+      const [dx, dy] = directions[dIdx];
+      if (nearTop && dy < 0) continue;
+      if (nearBottom && dy > 0) continue;
+      if (nearLeft && dx < 0) continue;
+      if (nearRight && dx > 0) continue;
+      for (const lineLen of [18, 26, 34, 42, 50]) {
+        candidates.push([dIdx, lineLen]);
       }
-      return { idx: i, minD };
-    })
-    .sort((a, b) => a.minD - b.minD)
-    .map((c) => c.idx);
+    }
 
-  const placedLabels: Array<{ l: number; r: number; b: number; t: number }> = [];
-  const results: LabelPlacement[] = new Array(allPoints.length);
+    if (candidates.length === 0) {
+      for (let dIdx = 0; dIdx < 8; dIdx++) {
+        for (const lineLen of [18, 26, 34, 42]) {
+          candidates.push([dIdx, lineLen]);
+        }
+      }
+    }
 
-  for (const pi of order) {
-    const p = pixels[pi];
-    const label = allPoints[pi].shortName || allPoints[pi].name;
+    const textWidth = (p.shortName || p.name).length * 1.8;
+    const textHeight = 3;
 
-    const textW = label.length * 6.2; // px
-    const textH = 13; // px
-
-    const nearLeft = p.x / PLOT_W < 0.10;
-
-    let best: LabelPlacement = { dx: 10, dy: 0 };
+    let best: [number, number] = candidates[0];
     let bestScore = Infinity;
 
-    for (const cand of CANDIDATES) {
-      if (cand.dx < 0 && !nearLeft) continue;
-
-      // Anchor point in plot pixels
-      const ax = p.x + cand.dx;
-      const ay = p.y + cand.dy;
-
-      // Text box in pixels (matches CustomScatterShape rendering)
-      const isRight = cand.dx > 0 && Math.abs(cand.dx) >= Math.abs(cand.dy);
-      const isLeft = cand.dx < 0;
-
-      let box: { l: number; r: number; b: number; t: number };
-
-      if (isRight) {
-        box = { l: ax, r: ax + textW, b: ay - textH / 2, t: ay + textH / 2 };
-      } else if (isLeft) {
-        box = { l: ax - textW, r: ax, b: ay - textH / 2, t: ay + textH / 2 };
-      } else {
-        box = { l: ax - textW / 2, r: ax + textW / 2, b: ay - textH / 2, t: ay + textH / 2 };
-      }
+    for (const [dIdx, lineLen] of candidates) {
+      const [dx, dy] = directions[dIdx];
+      const lx = nx + dx * lineLen * 0.15;
+      const ly = ny + dy * lineLen * 0.15;
+      const hw = textWidth / 2;
+      const hh = textHeight / 2;
+      const box: [number, number, number, number] = [lx - hw, ly - hh, lx + hw, ly + hh];
 
       let score = 0;
-
-      // 1. Must not overlap any dot
-      for (const db of dotBoxes) {
-        if (overlaps(box, db)) {
-          score += 1_000_000;
-        }
+      for (const placedBox of placed) {
+        const ox = Math.max(0, Math.min(box[2], placedBox[2]) - Math.max(box[0], placedBox[0]));
+        const oy = Math.max(0, Math.min(box[3], placedBox[3]) - Math.max(box[1], placedBox[1]));
+        if (ox > 0 && oy > 0) score += ox * oy;
       }
-
-      // 2. Must not overlap already-placed labels
-      for (const lb of placedLabels) {
-        if (overlaps(box, lb)) {
-          score += 100_000;
-        }
-      }
-
-      // 3. Prefer shorter distances (labels stay close to their dot)
-      const dist = Math.sqrt(cand.dx * cand.dx + cand.dy * cand.dy);
-      score += dist * dist * 0.03;
-
-      // 4. Prefer right side
-      if (cand.dx < 0) score += 500;
-      if (cand.dx === 0) score += 100;
+      score += lineLen * 0.01;
 
       if (score < bestScore) {
         bestScore = score;
-        best = cand;
+        best = [dIdx, lineLen];
       }
     }
 
-    // Record placed label box in pixels
-    const ax = p.x + best.dx;
-    const ay = p.y + best.dy;
-    const isRight = best.dx > 0 && Math.abs(best.dx) >= Math.abs(best.dy);
-    const isLeft = best.dx < 0;
-
-    if (isRight) {
-      placedLabels.push({ l: ax, r: ax + textW, b: ay - textH / 2, t: ay + textH / 2 });
-    } else if (isLeft) {
-      placedLabels.push({ l: ax - textW, r: ax, b: ay - textH / 2, t: ay + textH / 2 });
-    } else {
-      placedLabels.push({ l: ax - textW / 2, r: ax + textW / 2, b: ay - textH / 2, t: ay + textH / 2 });
-    }
-
-    results[pi] = best;
+    const [dIdx, lineLen] = best;
+    const [dx, dy] = directions[dIdx];
+    const lx = nx + dx * lineLen * 0.15;
+    const ly = ny + dy * lineLen * 0.15;
+    const hw = textWidth / 2;
+    const hh = textHeight / 2;
+    placed.push([lx - hw, ly - hh, lx + hw, ly + hh]);
+    results.push({ pos: dIdx, lineLen });
   }
 
   return results;
 }
 
 // ---------------------------------------------------------------------------
-// Custom Scatter Shape — label at fixed (dx, dy) offset from dot
+// Custom Scatter Shape with leader line + label (8-direction support)
 // ---------------------------------------------------------------------------
 function CustomScatterShape(props: any) {
-  const { cx, cy, fill, payload, onClick } = props;
+  const { cx, cy, fill, stroke, payload } = props;
   if (cx == null || cy == null) return null;
 
   const label = payload.shortName || payload.name;
-  const dx = payload.dx ?? 10;
-  const dy = payload.dy ?? 0;
+  const labelPos = payload.labelPos ?? 0;
+  const lineLen = payload.lineLen ?? 24;
+  const textOffset = 5;
 
-  const ax = cx + dx;
-  const ay = cy + dy;
+  const dirs = [
+    [0, -1], [0.7, -0.7], [1, 0], [0.7, 0.7],
+    [0, 1], [-0.7, 0.7], [-1, 0], [-0.7, -0.7],
+  ];
+  const [dx, dy] = dirs[labelPos % 8];
 
-  // Determine alignment from offset direction
-  const isRight = dx > 0 && Math.abs(dx) >= Math.abs(dy);
-  const isLeft = dx < 0;
+  const lx = cx + dx * lineLen;
+  const ly = cy + dy * lineLen;
 
-  const textAnchor: 'start' | 'middle' | 'end' = isRight
-    ? 'start'
-    : isLeft
-    ? 'end'
-    : 'middle';
+  let tx: number, ty: number, textAnchor: 'middle' | 'start' | 'end', dominantBaseline: 'auto' | 'middle' | 'hanging';
+
+  switch (labelPos % 8) {
+    case 0:
+      tx = lx; ty = ly - textOffset;
+      textAnchor = 'middle'; dominantBaseline = 'auto';
+      break;
+    case 1:
+      tx = lx + textOffset; ty = ly - textOffset;
+      textAnchor = 'start'; dominantBaseline = 'auto';
+      break;
+    case 2:
+      tx = lx + textOffset; ty = ly;
+      textAnchor = 'start'; dominantBaseline = 'middle';
+      break;
+    case 3:
+      tx = lx + textOffset; ty = ly + textOffset;
+      textAnchor = 'start'; dominantBaseline = 'hanging';
+      break;
+    case 4:
+      tx = lx; ty = ly + textOffset + 8;
+      textAnchor = 'middle'; dominantBaseline = 'hanging';
+      break;
+    case 5:
+      tx = lx - textOffset; ty = ly + textOffset;
+      textAnchor = 'end'; dominantBaseline = 'hanging';
+      break;
+    case 6:
+      tx = lx - textOffset; ty = ly;
+      textAnchor = 'end'; dominantBaseline = 'middle';
+      break;
+    default:
+      tx = lx - textOffset; ty = ly - textOffset;
+      textAnchor = 'end'; dominantBaseline = 'auto';
+      break;
+  }
 
   return (
-    <g style={{ cursor: 'pointer' }} onClick={onClick}>
+    <g style={{ pointerEvents: 'none' }}>
       <line
         x1={cx}
         y1={cy}
-        x2={ax}
-        y2={ay}
+        x2={lx}
+        y2={ly}
         stroke={fill}
         strokeWidth={1.5}
         strokeDasharray="3 2"
         opacity={0.5}
       />
-      <circle cx={cx} cy={cy} r={5} fill={fill} stroke="none" />
-      {/* outline */}
+      <circle cx={cx} cy={cy} r={5} fill={fill} stroke={stroke || '#fff'} strokeWidth={1.5} />
       <text
-        x={ax}
-        y={ay}
+        x={tx}
+        y={ty}
         textAnchor={textAnchor}
-        dominantBaseline="middle"
+        dominantBaseline={dominantBaseline}
         fill="#000"
-        fontSize={10}
-        fontWeight={500}
+        fontSize={12}
+        fontWeight={700}
         stroke="#000"
-        strokeWidth={2.5}
+        strokeWidth={4}
         strokeLinejoin="round"
         paintOrder="stroke"
       >
         {label}
       </text>
-      {/* fill */}
       <text
-        x={ax}
-        y={ay}
+        x={tx}
+        y={ty}
         textAnchor={textAnchor}
-        dominantBaseline="middle"
+        dominantBaseline={dominantBaseline}
         fill="#ffffff"
-        fontSize={10}
-        fontWeight={500}
+        fontSize={12}
+        fontWeight={700}
       >
         {label}
       </text>
@@ -415,12 +352,6 @@ function CustomTooltip({
             </span>
           </div>
         )}
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">Context:</span>
-          <span className="font-medium text-amber-400">
-            {formatContextWindow(model.contextWindow)}
-          </span>
-        </div>
         {model.isOpenWeights && (
           <div className="mt-1 inline-block rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-medium text-purple-300">
             Open Weights
@@ -440,17 +371,19 @@ export function ModelBenchmarkChart({
   priceMode,
   metricLabel,
 }: ModelBenchmarkChartProps) {
-  const [hiddenProviders, setHiddenProviders] = useState<Set<string>>(new Set());
-
-  // All valid points (used for stable axes / thresholds)
-  const allChartData = useMemo<ChartPoint[]>(() => {
+  // Prepare chart data: X = cost/price, Y = selected metric
+  const chartData = useMemo<ChartPoint[]>(() => {
     const raw = models
       .filter((m) => {
+        // Exclude models with null selected metric
         const metricVal = (m as any)[selectedMetric];
         if (metricVal == null || typeof metricVal !== 'number') return false;
+
+        // Exclude $0 price models in price mode
         if (priceMode === 'price') {
           if (m.blendedPrice == null || m.blendedPrice === 0) return false;
         }
+        // Exclude $0 cost models in cost mode
         if (priceMode === 'cost') {
           if (m.costToRunIndex == null || m.costToRunIndex === 0) return false;
         }
@@ -461,83 +394,84 @@ export function ModelBenchmarkChart({
         x: priceMode === 'price' ? (m.blendedPrice ?? 0) : (m.costToRunIndex ?? 0),
         y: (m as any)[selectedMetric] as number,
         color: getProviderColor(m.provider),
-        dx: 10,
-        dy: 0,
+        labelPos: 0,
       }));
+
+    // Sort by Y descending so higher scores get placed first (less overlap)
     raw.sort((a, b) => b.y - a.y);
     return raw;
   }, [models, selectedMetric, priceMode]);
 
-  // Visible subset after provider toggles
-  const visibleChartData = useMemo<ChartPoint[]>(
-    () => allChartData.filter((d) => !hiddenProviders.has(d.provider)),
-    [allChartData, hiddenProviders]
-  );
-
-  // Compute axis domains from ALL data so limits stay identical when toggling
+  // Compute axis domains
   const xDomain = useMemo<[number, number]>(() => {
-    const vals = allChartData.map((d) => d.x);
+    const vals = chartData.map((d) => d.x);
     if (vals.length === 0) return [0, 1];
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const pad = (max - min) * 0.15;
     return [Math.max(0, min - pad), max + pad];
-  }, [allChartData]);
+  }, [chartData]);
 
   const yDomain = useMemo<[number, number]>(() => {
-    const vals = allChartData.map((d) => d.y);
+    const vals = chartData.map((d) => d.y);
     if (vals.length === 0) return [0, 1];
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const pad = (max - min) * 0.12;
-    return [Math.max(0, min - pad), max + pad];
-  }, [allChartData]);
+    const lo = Math.max(0, Math.round((min - pad) * 10) / 10);
+    const hi = Math.round((max + pad) * 10) / 10;
+    return [lo, hi];
+  }, [chartData]);
 
-  // Compute 75th percentile from ALL data
-  const thresholdX = useMemo(() => {
-    const sorted = [...allChartData].sort((a, b) => a.x - b.x);
-    const idx = Math.floor(sorted.length * 0.75);
-    return sorted[Math.min(idx, sorted.length - 1)].x;
-  }, [allChartData]);
+  // Compute median lines for quadrants
+  const medianX = useMemo(() => {
+    if (chartData.length === 0) return 0;
+    const sorted = [...chartData].sort((a, b) => a.x - b.x);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? (sorted[mid - 1].x + sorted[mid].x) / 2
+      : sorted[mid].x;
+  }, [chartData]);
 
   const medianY = useMemo(() => {
-    const sorted = [...allChartData].sort((a, b) => a.y - b.y);
+    if (chartData.length === 0) return 0;
+    const sorted = [...chartData].sort((a, b) => a.y - b.y);
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 === 0
       ? (sorted[mid - 1].y + sorted[mid].y) / 2
       : sorted[mid].y;
-  }, [allChartData]);
+  }, [chartData]);
 
-  // Assign collision-aware label placements to VISIBLE data only
+  // Assign collision-aware label placements
   const chartDataWithLabels = useMemo<ChartPoint[]>(() => {
-    if (visibleChartData.length === 0) return [];
-    const placements = placeLabels(visibleChartData, xDomain, yDomain);
-    return visibleChartData.map((m, i) => ({
+    const placements = placeLabels(chartData);
+    return chartData.map((m, i) => ({
       ...m,
-      dx: placements[i].dx,
-      dy: placements[i].dy,
+      labelPos: placements[i].pos,
+      lineLen: placements[i].lineLen,
     }));
-  }, [visibleChartData, xDomain, yDomain]);
-
-  const providers = useMemo(
-    () => Array.from(new Set(allChartData.map((d) => d.provider))).sort(),
-    [allChartData]
-  );
-
-  const toggleProvider = (provider: string) => {
-    setHiddenProviders((prev) => {
-      const next = new Set(prev);
-      if (next.has(provider)) next.delete(provider);
-      else next.add(provider);
-      return next;
-    });
-  };
+  }, [chartData]);
 
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
     : 'Cost to Run Index ($) →';
 
   const chartTitle = `Cost vs. ${metricLabel}`;
+
+  if (chartData.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{chartTitle}</h3>
+        </div>
+        <div className="flex h-[400px] items-center justify-center rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No models have data for this cost mode. Try switching to &quot;Cost to Run&quot;.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -556,11 +490,11 @@ export function ModelBenchmarkChart({
       {/* Chart */}
       <div className="relative h-[620px] w-full rounded-xl border border-gray-200 bg-white/50 dark:border-gray-800 dark:bg-gray-900/50">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 30, right: 60, bottom: 40, left: 30 }}>
+          <ScatterChart margin={{ top: 50, right: 100, bottom: 40, left: 30 }}>
             {/* Quadrant backgrounds */}
             <ReferenceArea
               x1={xDomain[0]}
-              x2={thresholdX}
+              x2={medianX}
               y1={medianY}
               y2={yDomain[1]}
               fill={QUADRANT_BG.topLeft.fill}
@@ -568,7 +502,7 @@ export function ModelBenchmarkChart({
               stroke="none"
             />
             <ReferenceArea
-              x1={thresholdX}
+              x1={medianX}
               x2={xDomain[1]}
               y1={medianY}
               y2={yDomain[1]}
@@ -578,7 +512,7 @@ export function ModelBenchmarkChart({
             />
             <ReferenceArea
               x1={xDomain[0]}
-              x2={thresholdX}
+              x2={medianX}
               y1={yDomain[0]}
               y2={medianY}
               fill={QUADRANT_BG.bottomLeft.fill}
@@ -586,7 +520,7 @@ export function ModelBenchmarkChart({
               stroke="none"
             />
             <ReferenceArea
-              x1={thresholdX}
+              x1={medianX}
               x2={xDomain[1]}
               y1={yDomain[0]}
               y2={medianY}
@@ -625,7 +559,7 @@ export function ModelBenchmarkChart({
               className="text-gray-500 dark:text-gray-400"
               tickFormatter={(v: number) => v.toFixed(1)}
               label={{
-                value: `${metricLabel} →`,
+                value: `${metricLabel} ↑`,
                 angle: -90,
                 position: 'insideLeft',
                 style: { fill: 'currentColor', fontSize: 12, fontWeight: 600 },
@@ -639,7 +573,7 @@ export function ModelBenchmarkChart({
             />
 
             <ReferenceLine
-              x={thresholdX}
+              x={medianX}
               stroke="currentColor"
               strokeDasharray="5 5"
               strokeOpacity={0.35}
@@ -672,39 +606,70 @@ export function ModelBenchmarkChart({
           </ScatterChart>
         </ResponsiveContainer>
 
+        {/* Quadrant Labels */}
+        <div
+          className="pointer-events-none absolute text-xs font-bold tracking-wide"
+          style={{
+            left: '25%',
+            top: '15%',
+            transform: 'translate(-50%, -50%)',
+            color: '#22c55e',
+            textShadow: '0 0 4px rgba(0,0,0,0.8)',
+          }}
+        >
+          ★ MOST ATTRACTIVE
+        </div>
+        <div
+          className="pointer-events-none absolute text-xs font-bold tracking-wide"
+          style={{
+            right: '15%',
+            top: '15%',
+            transform: 'translate(50%, -50%)',
+            color: '#f59e0b',
+            textShadow: '0 0 4px rgba(0,0,0,0.8)',
+          }}
+        >
+          EXPENSIVE
+        </div>
+        <div
+          className="pointer-events-none absolute text-xs font-bold tracking-wide"
+          style={{
+            left: '25%',
+            bottom: '12%',
+            transform: 'translate(-50%, 50%)',
+            color: '#3b82f6',
+            textShadow: '0 0 4px rgba(0,0,0,0.8)',
+          }}
+        >
+          BUDGET
+        </div>
+        <div
+          className="pointer-events-none absolute text-xs font-bold tracking-wide"
+          style={{
+            right: '15%',
+            bottom: '12%',
+            transform: 'translate(50%, 50%)',
+            color: '#ef4444',
+            textShadow: '0 0 4px rgba(0,0,0,0.8)',
+          }}
+        >
+          AVOID
+        </div>
       </div>
 
-      {/* Provider toggle legend */}
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-        {providers.map((provider) => {
-          const isHidden = hiddenProviders.has(provider);
-          const color = getProviderColor(provider);
-          return (
-            <button
-              key={provider}
-              onClick={() => toggleProvider(provider)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
-                isHidden
-                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 line-through"
-                  : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-              title={isHidden ? `Show ${provider}` : `Hide ${provider}`}
-            >
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{
-                  backgroundColor: isHidden ? "#d1d5db" : color,
-                }}
-              />
+      {/* Legend */}
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+        {Array.from(new Set(models.map((m) => m.provider))).map((provider) => (
+          <div key={provider} className="flex items-center gap-1.5">
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: getProviderColor(provider) }}
+            />
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {provider}
-              {isHidden ? (
-                <EyeOff className="h-3 w-3" />
-              ) : (
-                <Eye className="h-3 w-3" />
-              )}
-            </button>
-          );
-        })}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Quadrant explanation */}

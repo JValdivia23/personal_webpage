@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
 import {
@@ -60,78 +59,62 @@ function getProviderColor(provider: string): string {
   return PROVIDER_COLORS[provider] || "#9ca3af";
 }
 
-function formatContextWindow(tokens: number | null): string {
-  if (tokens == null) return "N/A";
-  if (tokens >= 1_000_000) {
-    const millions = tokens / 1_000_000;
-    return millions % 1 === 0 ? `${millions.toFixed(0)}M` : `${millions.toFixed(1)}M`;
-  }
-  if (tokens >= 1_000) {
-    const thousands = tokens / 1_000;
-    return thousands % 1 === 0 ? `${thousands.toFixed(0)}k` : `${thousands.toFixed(1)}k`;
-  }
-  return String(tokens);
-}
-
 const METRICS: MetricDef[] = [
   {
     key: "intelligenceIndex",
     label: "Overall Intelligence",
-    description: "Weighted composite across agents, coding, general reasoning, and scientific reasoning",
+    description: "Aggregate across all benchmarks",
     testBadge: "AA Index",
     scale: "Higher is better (current leader ~60)",
     fullDescription:
-      "Artificial Analysis Intelligence Index v4.0 combines a comprehensive suite of 10 evaluation datasets to assess language model capabilities across reasoning, knowledge, maths and programming. It is calculated as a weighted average across four categories, each contributing 25% to the overall score: Agents (GDPval-AA 16.7%, 𝜏²-Bench Telecom 8.3%), Coding (Terminal-Bench Hard 16.7%, SciCode 8.3%), General (AA-LCR 6.25%, AA-Omniscience 12.5%, IFBench 6.25%), and Scientific Reasoning (HLE 12.5%, GPQA Diamond 6.25%, CritPt 6.25%). Artificial Analysis estimates a 95% confidence interval of less than ±1% based on experiments with >10 repeats on certain models. The Intelligence Index is a text-only, English language evaluation suite; multimodal and multilingual performance are benchmarked separately. All evaluations are conducted independently by Artificial Analysis.",
-    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+      "The single best metric for comparing overall model capability. Computed as the average of all intelligence evaluation benchmarks measured independently by Artificial Analysis, including GPQA, HLE, SciCode, IFBench, Tau2, TerminalBench Hard, CritPT, and others.",
   },
   {
     key: "codingIndex",
     label: "Coding Ability",
-    description: "Weighted average of coding benchmarks in the Intelligence Index",
+    description: "Programming and software development",
     testBadge: "AA Coding",
     scale: "Higher is better",
     fullDescription:
-      "Represents the weighted average of coding benchmarks in the Artificial Analysis Intelligence Index: Terminal-Bench Hard (66.7%) and SciCode (33.3%). Terminal-Bench Hard evaluates agentic capabilities in terminal environments through software engineering, system administration, and data processing tasks. SciCode tests scientific code generation with 288 test-set subproblems from 80 laboratory problems across 16 scientific disciplines. Critical for developers choosing models for code generation, debugging, and software engineering tasks. All evaluations are conducted independently by Artificial Analysis.",
-    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+      "Average of coding-specific benchmarks including HumanEval, LiveCodeBench, SciCode, and others. Critical for developers choosing models for code generation, debugging, and software engineering tasks.",
   },
   {
     key: "agenticIndex",
     label: "Agentic Capability",
-    description: "Average of agentic capabilities benchmarks in the Intelligence Index",
+    description: "Planning, tool use, multi-step reasoning",
     testBadge: "AA Agentic",
     scale: "Higher is better",
     fullDescription:
-      "Represents the average of agentic capabilities benchmarks in the Artificial Analysis Intelligence Index: GDPval-AA and 𝜏²-Bench Telecom. GDPval-AA tests AI models on real-world tasks across 44 occupations and 9 major industries via an agentic loop with shell access and web browsing. 𝜏²-Bench Telecom is a dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions. Measures the model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and task completion. Important for applications where the model needs to perform complex workflows or operate autonomously. All evaluations are conducted independently by Artificial Analysis.",
-    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+      "Average of agentic capabilities benchmarks. Measures the model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and task completion. Important for applications where the model needs to perform complex workflows or operate autonomously.",
   },
   {
     key: "gpqa",
     label: "Graduate-Level Science Q&A",
-    description: "PhD-level biology, chemistry, physics — Google-proof questions",
+    description: "PhD-level biology, chemistry, physics",
     testBadge: "GPQA",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "The most challenging 198 questions from GPQA, where PhD experts achieve 65% accuracy but skilled non-experts only reach 34% despite web access. These graduate-level physics, biology, and chemistry questions are designed to be 'Google-proof' and require genuine scientific expertise rather than search skills. They can only be consistently solved by domain experts with PhDs, making them ideal for testing true scientific reasoning capabilities. A score above 0.85 indicates strong scientific reasoning. All evaluations are conducted independently by Artificial Analysis.",
+      "Performance on the most challenging 198 questions from GPQA Diamond, where PhD experts achieve 65% accuracy but skilled non-experts only reach 34% despite web access. Multiple-choice questions at PhD level. A score above 0.85 indicates strong scientific reasoning.",
     officialUrl: "https://artificialanalysis.ai/evaluations/gpqa-diamond",
   },
   {
     key: "hle",
     label: "Humanity's Last Exam",
-    description: "Frontier-level benchmark across mathematics, sciences, and humanities",
+    description: "Near-frontier expert knowledge",
     testBadge: "HLE",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A frontier-level benchmark with 2,500 expert-vetted questions across mathematics, sciences, and humanities, designed to be the final closed-ended academic evaluation. A collaborative effort by the Center for AI Safety involving over 1,000 contributors to create frontier-level academic questions that challenge current AI capabilities. The 2,500 expert-vetted questions are designed to be 'Google-proof' and require genuine understanding rather than information retrieval, serving as the intended final closed-ended academic benchmark. One of the hardest existing benchmarks — even top models score below 0.5, leaving significant headroom. All evaluations are conducted independently by Artificial Analysis.",
+      "Performance on 2,500 expert-vetted questions designed to be the final closed-ended academic evaluation, near the frontier of human knowledge. One of the hardest existing benchmarks — even top models score below 0.5, leaving significant headroom.",
     officialUrl: "https://artificialanalysis.ai/evaluations/humanitys-last-exam",
   },
   {
     key: "scicode",
     label: "Scientific Code Generation",
-    description: "Scientist-curated coding benchmark with real laboratory problems",
+    description: "Code for research problems",
     testBadge: "SciCode",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A scientist-curated coding benchmark featuring 288 test set subproblems from 80 laboratory problems across 16 scientific disciplines. Unlike traditional coding benchmarks, SciCode requires integrating scientific knowledge with programming skills to solve real research problems rather than abstract puzzles. The benchmark was developed by domain experts across 16 diverse natural science sub-fields, including mathematics, physics, chemistry, biology, and materials science. Problems naturally factorize into multiple subproblems, each involving knowledge recall, reasoning, and code synthesis. It offers optional descriptions specifying useful scientific background information and scientist-annotated gold-standard solutions and test cases for evaluation. All evaluations are conducted independently by Artificial Analysis.",
+      "Scientist-curated coding benchmark featuring 288 test-set subproblems from 80 laboratory problems across 16 scientific disciplines. Tests the intersection of coding ability and scientific understanding, important for research automation.",
     officialUrl: "https://artificialanalysis.ai/evaluations/scicode",
   },
   {
@@ -147,72 +130,71 @@ const METRICS: MetricDef[] = [
   {
     key: "ifbench",
     label: "Instruction Following",
-    description: "Precise instruction-following on 58 diverse, verifiable constraints",
+    description: "Complex instruction adherence",
     testBadge: "IFBench",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A benchmark evaluating precise instruction-following generalization on 58 diverse, verifiable out-of-domain constraints that test models' ability to follow specific output requirements. IFBench addresses the problem that current language models strongly overfit to a small set of verifiable constraints and cannot generalize well to unseen output constraints, a critical skill for practical AI applications. The benchmark introduces 58 new, diverse, and challenging verifiable constraints to test precise instruction-following generalization, going beyond existing benchmarks that focus on a limited set of constraint types. Developed by the Allen Institute for AI, IFBench uses reinforcement learning with verifiable rewards (RLVR) to improve instruction following and includes 29 additional hand-annotated training constraints with verification functions. All evaluations are conducted independently by Artificial Analysis.",
+      "Evaluates precise instruction-following generalization on 58 diverse, verifiable out-of-domain constraints that test models' ability to follow specific output requirements. Critical for real-world applications where precise adherence to instructions is required.",
     officialUrl: "https://artificialanalysis.ai/evaluations/ifbench",
   },
   {
     key: "tau2",
     label: "Tau-2 Telecom Agent",
-    description: "Dual-control conversational AI benchmark for technical support",
+    description: "Dual-control conversational AI benchmark",
     testBadge: "Tau-2",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions to resolve telecom service issues. 𝜏²-Bench (Tau-2 Bench) introduces a new paradigm for evaluating conversational AI by simulating both the agent and user to actively modify a shared world state. The telecom domain tests agents' abilities to guide users through technical troubleshooting to test problem-solving and effective communication skills. Developed by Sierra Research, this benchmark addresses gaps between other benchmarks and real-world customer service scenarios where users are active participants in problem resolution. All evaluations are conducted independently by Artificial Analysis.",
+      "A dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions to resolve telecom service issues. Tests multi-turn agent coordination and task completion in realistic customer-service dialogues.",
     officialUrl: "https://artificialanalysis.ai/evaluations/tau2-bench",
   },
   {
     key: "terminalbenchHard",
     label: "Terminal / System Operations",
-    description: "Agentic tasks in terminal environments (hard subset)",
+    description: "Command-line and system tasks",
     testBadge: "TerminalBench",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "An agentic benchmark evaluating AI capabilities in terminal environments through software engineering, system administration, and data processing tasks. Terminal-Bench is a comprehensive benchmark developed by Stanford University and the Laude Institute for evaluating AI agents in realistic terminal environments. The 'hard' subset contains challenging tasks that test agents' abilities to compile code, train models, configure servers, play games, and debug systems in representative scenarios for real-world problems and terminal use patterns. Tasks cover a wide range of engineering, game playing, and system administration tasks that are unlikely to be pattern-matched on training data. Outcomes are evaluated programmatically with verification scripts executed in the agent's Docker environment, requiring agents to successfully meet a range of output conditions. All evaluations are conducted independently by Artificial Analysis.",
+      "An agentic benchmark evaluating AI capabilities in terminal environments through software engineering, system administration, and data processing tasks. Tests practical system administration and command-line reasoning abilities.",
     officialUrl: "https://artificialanalysis.ai/evaluations/terminalbench-hard",
   },
   {
     key: "critpt",
     label: "Physics Reasoning",
-    description: "Research-level physics reasoning across 11 subfields",
+    description: "Research-level physics reasoning",
     testBadge: "CritPT",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A benchmark designed to test LLMs on research-level physics reasoning tasks, featuring 71 composite research challenges. CritPt evaluates language models on solving unpublished, frontier-level physics problems that require genuine research-scale reasoning. The benchmark comprises 71 challenges (70 test challenges and one example), created by over 50 active physics researchers across 30 institutions and spanning 11 physics subfields including condensed matter, quantum physics, astrophysics, high energy physics, and biophysics. Each problem underwent extensive review (averaging 40+ hours per challenge) and uses 'guess-resistant' answer formats including floating-point arrays, symbolic expressions, and Python functions. Leading models in 2025 achieve only single-digit accuracy, highlighting the substantial gap between current AI capabilities and research-level physics reasoning. All evaluations are conducted independently by Artificial Analysis.",
+      "A benchmark designed to test LLMs on research-level physics reasoning tasks, featuring 71 composite research challenges. Tests advanced scientific reasoning in physics beyond standard textbook problems.",
     officialUrl: "https://artificialanalysis.ai/evaluations/critpt",
   },
   {
     key: "mmmuPro",
     label: "Multimodal Understanding",
-    description: "Enhanced multimodal benchmark across 30 academic disciplines",
+    description: "Vision + text at professional level",
     testBadge: "MMMU Pro",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "An enhanced MMMU benchmark that eliminates shortcuts and guessing strategies to more rigorously test multimodal models across 30 academic disciplines. MMMU-Pro addresses limitations in the original MMMU through a three-step enhancement process: filtering out questions answerable by text-only models, expanding multiple-choice options from 4 to 10, and introducing a vision-only input format where questions are embedded within screenshots or photos. The benchmark contains 3,460 questions across six core disciplines (Art & Design, Business, Science, Health & Medicine, Humanities & Social Science, and Tech & Engineering) and requires models to simultaneously process visual and textual information in a more realistic setting. Performance results show substantial drops across all tested models compared to the original MMMU, demonstrating the benchmark's effectiveness in exposing current limitations in multimodal AI systems. Only available for models with multimodal support. All evaluations are conducted independently by Artificial Analysis.",
+      "An enhanced MMMU benchmark that eliminates shortcuts and guessing strategies to more rigorously test multimodal models across 30 academic disciplines. Tests vision-language capabilities at expert level. Only available for models with multimodal support.",
     officialUrl: "https://artificialanalysis.ai/evaluations/mmmu-pro",
   },
   {
     key: "omniscience",
     label: "Knowledge & Hallucination",
-    description: "Factual recall and hallucination across 6 economically relevant domains",
+    description: "Factual knowledge and hallucination",
     testBadge: "Omniscience",
-    scale: "-100 to 100 (higher is better, can be negative)",
+    scale: "Higher is better (can be negative)",
     fullDescription:
-      "A benchmark measuring factual recall and hallucination across various economically relevant domains. AA-Omniscience is a knowledge and hallucination benchmark that rewards accuracy, punishes bad guesses, and provides a comprehensive view of which models produce factually reliable outputs across different domains. The benchmark contains 6,000 questions across 6 major domains, derived from authoritative academic and industry sources and generated automatically using an LLM-based question generation agent to ensure unambiguity, scalability, and factual precision. The evaluation measures a model's AA-Omniscience Index, a bounded metric (-100 to 100) measuring factual recall that jointly penalizes hallucinations and rewards abstention when uncertain, with 0 equating to a model that answers questions correctly as much as it does incorrectly. Performance varies by domain, with models from three different research labs leading across the six domains. This suggests models should be chosen according to the demands of the use case rather than general performance for tasks where knowledge is important. All evaluations are conducted independently by Artificial Analysis.",
+      "Measures factual recall and hallucination across various economically relevant domains. Indicates the breadth of the model's training knowledge and its tendency to hallucinate.",
     officialUrl: "https://artificialanalysis.ai/evaluations/omniscience",
   },
   {
     key: "lcr",
-    label: "Long Context Reasoning",
-    description: "Extract, reason, and synthesize from long documents (10k–100k tokens)",
+    label: "Long Context Retrieval",
+    description: "Finding info in very long texts",
     testBadge: "LCR",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A challenging benchmark measuring language models' ability to extract, reason about, and synthesize information from long-form documents ranging from 10k to 100k tokens (measured using the cl100k_base tokenizer). Long-form text comprehension represents an under-studied class of evaluations where humans dramatically outscore language models, despite expanding context windows in current AI systems. LCR features 100 questions across diverse document types including academic papers, company financials, government consultations, legal documents, industry reports, and marketing materials, requiring genuine reasoning rather than simple data extraction. Each question demands multi-step reasoning to synthesize information from dispersed sections, understand complex domain-specific content, and produce unambiguous answers that mid-2024 frontier models achieve less than 50% accuracy on. All evaluations are conducted independently by Artificial Analysis.",
-    officialUrl: "https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning",
+      "Ability to retrieve and use information from very long contexts. Critical for applications processing long documents, where the model must find relevant information in extensive text.",
   },
 ];
 
@@ -227,77 +209,6 @@ function countAvailable(models: any[], key: string): number {
 }
 
 // ---------------------------------------------------------------------------
-// Custom tooltip for bar chart (matches scatter plot style)
-// ---------------------------------------------------------------------------
-function BarTooltip({
-  active,
-  payload,
-  metricLabel,
-}: {
-  active?: boolean;
-  payload?: Array<{ payload: any }>;
-  metricLabel: string;
-}) {
-  if (!active || !payload || !payload.length) return null;
-  const d = payload[0].payload;
-  if (d.value === 0) return null; // hidden provider
-
-  return (
-    <div className="rounded-lg border border-gray-700 bg-gray-900/95 px-4 py-3 shadow-xl backdrop-blur-sm">
-      <div className="mb-1 font-semibold text-white">{d.name}</div>
-      <div className="text-xs text-gray-400">{d.provider}</div>
-      <div className="mt-2 space-y-1 text-xs">
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">{metricLabel}:</span>
-          <span className="font-medium text-blue-400">
-            {typeof d.value === "number" ? d.value.toFixed(3) : d.value}
-          </span>
-        </div>
-        {d.blendedPrice != null && (
-          <div className="flex justify-between gap-4">
-            <span className="text-gray-400">Blended Price:</span>
-            <span className="font-medium text-emerald-400">
-              ${d.blendedPrice.toFixed(2)}/1M
-            </span>
-          </div>
-        )}
-        {d.inputPrice != null && (
-          <div className="flex justify-between gap-4">
-            <span className="text-gray-400">Input:</span>
-            <span className="text-gray-300">${d.inputPrice.toFixed(2)}/1M</span>
-          </div>
-        )}
-        {d.outputPrice != null && (
-          <div className="flex justify-between gap-4">
-            <span className="text-gray-400">Output:</span>
-            <span className="text-gray-300">${d.outputPrice.toFixed(2)}/1M</span>
-          </div>
-        )}
-        {d.costToRunIndex != null && (
-          <div className="flex justify-between gap-4">
-            <span className="text-gray-400">Cost to Run Index:</span>
-            <span className="font-medium text-emerald-400">
-              ${d.costToRunIndex.toFixed(0)}
-            </span>
-          </div>
-        )}
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">Context:</span>
-          <span className="font-medium text-amber-400">
-            {formatContextWindow(d.contextWindow)}
-          </span>
-        </div>
-        {d.isOpenWeights && (
-          <div className="mt-1 inline-block rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-medium text-purple-300">
-            Open Weights
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Mini bar chart for documentation view
 // ---------------------------------------------------------------------------
 function MiniBarChart({
@@ -309,8 +220,6 @@ function MiniBarChart({
   metricKey: string;
   metricLabel: string;
 }) {
-  const [hiddenProviders, setHiddenProviders] = useState<Set<string>>(new Set());
-
   const data = useMemo(() => {
     return models
       .filter((m) => {
@@ -322,12 +231,6 @@ function MiniBarChart({
         value: m[metricKey] as number,
         provider: m.provider,
         color: getProviderColor(m.provider),
-        inputPrice: m.inputPrice,
-        outputPrice: m.outputPrice,
-        blendedPrice: m.blendedPrice,
-        costToRunIndex: m.costToRunIndex,
-        contextWindow: m.contextWindow,
-        isOpenWeights: m.isOpenWeights,
       }))
       .sort((a, b) => b.value - a.value);
   }, [models, metricKey]);
@@ -345,26 +248,6 @@ function MiniBarChart({
   const maxValue = Math.max(...data.map((d) => d.value));
   const niceMax = maxValue * 1.05;
 
-  const providers = Array.from(new Set(data.map((d) => d.provider))).sort();
-
-  const toggleProvider = (provider: string) => {
-    setHiddenProviders((prev) => {
-      const next = new Set(prev);
-      if (next.has(provider)) {
-        next.delete(provider);
-      } else {
-        next.add(provider);
-      }
-      return next;
-    });
-  };
-
-  // Preserve sort order; zero-out hidden providers so Y-axis stays identical
-  const displayData = data.map((d) => ({
-    ...d,
-    value: hiddenProviders.has(d.provider) ? 0 : d.value,
-  }));
-
   return (
     <div className="mt-6">
       <h4 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
@@ -373,7 +256,7 @@ function MiniBarChart({
       <div className="h-[500px] w-full rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={displayData}
+            data={data}
             layout="vertical"
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
@@ -389,58 +272,35 @@ function MiniBarChart({
             <YAxis
               type="category"
               dataKey="name"
-              width={160}
+              width={130}
               tick={{ fontSize: 11 }}
-              interval={0}
             />
             <Tooltip
-              content={<BarTooltip metricLabel={metricLabel} />}
-              cursor={{ fill: "rgba(0,0,0,0.04)" }}
+              formatter={(value: any) => {
+                const num = Number(value);
+                const formatted =
+                  !isNaN(num) && num < 10
+                    ? num.toFixed(3)
+                    : String(Math.round(num));
+                return [formatted, metricLabel];
+              }}
+              contentStyle={{
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb",
+                fontSize: "12px",
+              }}
             />
             <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={16}>
-              {displayData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.value === 0 ? "transparent" : entry.color}
-                />
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Provider toggle legend */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-        {providers.map((provider) => {
-          const isHidden = hiddenProviders.has(provider);
-          const color = getProviderColor(provider);
-          return (
-            <button
-              key={provider}
-              onClick={() => toggleProvider(provider)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
-                isHidden
-                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 line-through"
-                  : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-              title={isHidden ? `Show ${provider}` : `Hide ${provider}`}
-            >
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{
-                  backgroundColor: isHidden ? "#d1d5db" : color,
-                }}
-              />
-              {provider}
-              {isHidden ? (
-                <EyeOff className="h-3 w-3" />
-              ) : (
-                <Eye className="h-3 w-3" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-600">
+        Sorted by score (highest first). Colors indicate model provider.
+      </p>
     </div>
   );
 }
@@ -518,7 +378,7 @@ function DocumentationPanel({
 export default function AgenticAIPage() {
   const models = aiModels.models;
   const [selectedMetric, setSelectedMetric] = useState("intelligenceIndex");
-  const [priceMode, setPriceMode] = useState<"price" | "cost">("price");
+  const [priceMode, setPriceMode] = useState<"price" | "cost">("cost");
   const [sidebarTab, setSidebarTab] = useState<"metrics" | "docs">("metrics");
 
   const lastUpdated = new Date(aiModels.lastUpdated).toLocaleDateString(
@@ -582,12 +442,19 @@ export default function AgenticAIPage() {
           <div className="sticky top-6">
             {/* Tab switcher */}
             <div className="mb-4 flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
-              <div className="relative flex flex-1 items-center justify-center gap-1.5 rounded-md bg-white px-3 py-2 text-xs font-medium text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white">
+              <button
+                onClick={() => setSidebarTab("metrics")}
+                className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all ${
+                  sidebarTab === "metrics"
+                    ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
+                    : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                }`}
+              >
                 <BarChart3 className="h-3.5 w-3.5" />
                 Select Metric
-              </div>
+              </button>
               <button
-                onClick={() => setSidebarTab(sidebarTab === "docs" ? "metrics" : "docs")}
+                onClick={() => setSidebarTab("docs")}
                 className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all ${
                   sidebarTab === "docs"
                     ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
