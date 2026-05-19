@@ -168,6 +168,10 @@ def clean_model(raw: dict) -> dict | None:
     output_price = raw.get("price_1m_output_tokens")
     blended_price = raw.get("price_1m_blended_3_to_1")
 
+    # Compute blended price (3:1 ratio) if not provided by the API
+    if blended_price is None and input_price is not None and output_price is not None:
+        blended_price = (float(input_price) * 3 + float(output_price)) / 4
+
     # Cost to run intelligence index
     cost_data = raw.get("intelligence_index_cost", {})
     total_cost = cost_data.get("total_cost") if isinstance(cost_data, dict) else None
