@@ -168,6 +168,8 @@ function placeLabels(
   xDomain: [number, number],
   yDomain: [number, number]
 ): LabelPlacement[] {
+  if (allPoints.length === 0) return [];
+
   const PLOT_W = 800;
   const PLOT_H = 520;
   const xR = xDomain[1] - xDomain[0];
@@ -495,12 +497,14 @@ export function ModelBenchmarkChart({
 
   // Compute 75th percentile from ALL data
   const thresholdX = useMemo(() => {
+    if (allChartData.length === 0) return 0;
     const sorted = [...allChartData].sort((a, b) => a.x - b.x);
     const idx = Math.floor(sorted.length * 0.75);
     return sorted[Math.min(idx, sorted.length - 1)].x;
   }, [allChartData]);
 
   const medianY = useMemo(() => {
+    if (allChartData.length === 0) return 0;
     const sorted = [...allChartData].sort((a, b) => a.y - b.y);
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 === 0
@@ -538,6 +542,21 @@ export function ModelBenchmarkChart({
     : 'Cost to Run Index ($) →';
 
   const chartTitle = `Cost vs. ${metricLabel}`;
+
+  if (allChartData.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{chartTitle}</h3>
+        </div>
+        <div className="flex h-[400px] items-center justify-center rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No models have data for this cost mode. Try switching to &quot;Cost to Run&quot;.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
