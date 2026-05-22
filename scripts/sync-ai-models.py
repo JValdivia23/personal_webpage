@@ -41,7 +41,7 @@ TARGET_URL = (
     "deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,"
     "deepseek-v3-2-reasoning,grok-4-20,minimax-m2-7,"
     "nvidia-nemotron-3-super-120b-a12b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-pro,"
-    "glm-5-1,qwen3-6-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
+    "glm-5-1,qwen3-6-plus,qwen3-7-max,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
     "minimax-m2-5,kimi-k2-5"
     "&intelligence=coding-index"
     "&intelligence-index-cost=intelligence-vs-cost"

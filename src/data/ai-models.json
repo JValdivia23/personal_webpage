@@ -1,7 +1,7 @@
 {
-  "lastUpdated": "2026-05-19T16:57:10.050454",
-  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,muse-spark,gemini-3-1-pro-preview,gemini-3-5-flash,claude-sonnet-4-6-adaptive,claude-opus-4-7,deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,deepseek-v3-2-reasoning,grok-4-20,minimax-m2-7,nvidia-nemotron-3-super-120b-a12b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-pro,glm-5-1,qwen3-6-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
-  "modelCount": 26,
+  "lastUpdated": "2026-05-22T11:08:40.432201",
+  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,muse-spark,gemini-3-1-pro-preview,gemini-3-5-flash,claude-sonnet-4-6-adaptive,claude-opus-4-7,deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,deepseek-v3-2-reasoning,grok-4-20,minimax-m2-7,nvidia-nemotron-3-super-120b-a12b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-pro,glm-5-1,qwen3-6-plus,qwen3-7-max,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
+  "modelCount": 27,
   "models": [
     {
       "id": "gpt-5-5",
@@ -323,6 +323,43 @@
       "intelligenceRank": 4
     },
     {
+      "id": "qwen3-7-max",
+      "name": "Qwen3.7 Max",
+      "shortName": "Qwen3.7 Max",
+      "provider": "Alibaba",
+      "intelligenceIndex": 56.5844517545098,
+      "codingIndex": 50.1192480359147,
+      "agenticIndex": 66.5557245964551,
+      "mathIndex": null,
+      "inputPrice": 2.5,
+      "outputPrice": 7.5,
+      "blendedPrice": 3.75,
+      "costToRunIndex": 1202.4919399999999,
+      "isOpenWeights": false,
+      "releaseDate": "2026-05-19",
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/qwen3-7-max",
+      "gpqa": 0.923232323232323,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": 0.488425925925926,
+      "mmluPro": null,
+      "math500": null,
+      "hle": 0.380908248378128,
+      "gdpval": 1544.32603588024,
+      "ifbench": 0.805442176870748,
+      "tau2": 0.947368421052632,
+      "terminalbenchHard": 0.507575757575758,
+      "critpt": 0.134285714285714,
+      "mmmuPro": null,
+      "multilingualAA": null,
+      "omniscience": 14.0833333333333,
+      "lcr": 0.69,
+      "intelligenceRank": 5
+    },
+    {
       "id": "gemini-3-5-flash",
       "name": "Gemini 3.5 Flash (high)",
       "shortName": "Gemini 3.5 Flash",
@@ -357,7 +394,7 @@
       "multilingualAA": null,
       "omniscience": 22.6833333333333,
       "lcr": 0.693333333333333,
-      "intelligenceRank": 5
+      "intelligenceRank": 6
     },
     {
       "id": "kimi-k2-6",
@@ -394,7 +431,7 @@
       "multilingualAA": null,
       "omniscience": 6.41666666666667,
       "lcr": 0.696666666666667,
-      "intelligenceRank": 6
+      "intelligenceRank": 7
     },
     {
       "id": "mimo-v2-5-pro",
@@ -431,7 +468,7 @@
       "multilingualAA": null,
       "omniscience": 3.6,
       "lcr": 0.733333333333333,
-      "intelligenceRank": 7
+      "intelligenceRank": 8
     },
     {
       "id": "claude-opus-4-6-adaptive",
@@ -639,7 +676,7 @@
       },
       "omniscience": 13.5,
       "lcr": 0.706666666666667,
-      "intelligenceRank": 8
+      "intelligenceRank": 9
     },
     {
       "id": "muse-spark",
@@ -676,7 +713,7 @@
       "multilingualAA": null,
       "omniscience": 4.08333333333333,
       "lcr": 0.696666666666667,
-      "intelligenceRank": 9
+      "intelligenceRank": 10
     },
     {
       "id": "claude-sonnet-4-6-adaptive",
@@ -884,7 +921,7 @@
       },
       "omniscience": 12.3666666666667,
       "lcr": 0.706666666666667,
-      "intelligenceRank": 10
+      "intelligenceRank": 11
     },
     {
       "id": "deepseek-v4-pro",
@@ -921,7 +958,7 @@
       "multilingualAA": null,
       "omniscience": -10.0166666666667,
       "lcr": 0.663333333333333,
-      "intelligenceRank": 11
+      "intelligenceRank": 12
     },
     {
       "id": "glm-5-1",
@@ -958,7 +995,7 @@
       "multilingualAA": null,
       "omniscience": 1.93333333333333,
       "lcr": 0.623333333333333,
-      "intelligenceRank": 12
+      "intelligenceRank": 13
     },
     {
       "id": "qwen3-6-plus",
@@ -986,7 +1023,7 @@
       "mmluPro": null,
       "math500": null,
       "hle": 0.257182576459685,
-      "gdpval": 1350.00603545999,
+      "gdpval": 1351.25938649654,
       "ifbench": 0.751700680272109,
       "tau2": 0.976608187134503,
       "terminalbenchHard": 0.439393939393939,
@@ -995,7 +1032,7 @@
       "multilingualAA": null,
       "omniscience": 2.65,
       "lcr": 0.696666666666667,
-      "intelligenceRank": 13
+      "intelligenceRank": 14
     },
     {
       "id": "minimax-m2-7",
@@ -1032,7 +1069,7 @@
       "multilingualAA": null,
       "omniscience": 0.683333333333333,
       "lcr": 0.686666666666667,
-      "intelligenceRank": 14
+      "intelligenceRank": 15
     },
     {
       "id": "grok-4-20",
@@ -1060,7 +1097,7 @@
       "mmluPro": null,
       "math500": null,
       "hle": 0.322057460611678,
-      "gdpval": 1173.53621600365,
+      "gdpval": 1171.78540397024,
       "ifbench": 0.812244897959184,
       "tau2": 0.929824561403509,
       "terminalbenchHard": 0.378787878787879,
@@ -1069,7 +1106,7 @@
       "multilingualAA": null,
       "omniscience": 15.35,
       "lcr": 0.58,
-      "intelligenceRank": 15
+      "intelligenceRank": 16
     },
     {
       "id": "mimo-v2-pro",
@@ -1097,7 +1134,7 @@
       "mmluPro": null,
       "math500": null,
       "hle": 0.283132530120482,
-      "gdpval": 1407.99489852123,
+      "gdpval": 1407.94115102652,
       "ifbench": 0.68843537414966,
       "tau2": 0.950292397660819,
       "terminalbenchHard": 0.409090909090909,
@@ -1106,7 +1143,7 @@
       "multilingualAA": null,
       "omniscience": 4.91666666666667,
       "lcr": 0.606666666666667,
-      "intelligenceRank": 16
+      "intelligenceRank": 17
     },
     {
       "id": "gpt-5-4-mini",
@@ -1314,7 +1351,7 @@
       },
       "omniscience": -18.6833333333333,
       "lcr": 0.693333333333333,
-      "intelligenceRank": 17
+      "intelligenceRank": 18
     },
     {
       "id": "kimi-k2-5",
@@ -1325,10 +1362,10 @@
       "codingIndex": 39.5517676767677,
       "agenticIndex": 58.9406156983764,
       "mathIndex": null,
-      "inputPrice": 0.54,
-      "outputPrice": 2.925,
-      "blendedPrice": 1.13625,
-      "costToRunIndex": 353.53437849,
+      "inputPrice": 0.58,
+      "outputPrice": 3.0,
+      "blendedPrice": 1.185,
+      "costToRunIndex": 367.16497267999995,
       "isOpenWeights": true,
       "releaseDate": "2026-01-27",
       "contextWindow": 256000,
@@ -1342,7 +1379,7 @@
       "mmluPro": null,
       "math500": null,
       "hle": 0.293790546802595,
-      "gdpval": 1286.27469544633,
+      "gdpval": 1286.57732958279,
       "ifbench": 0.702040816326531,
       "tau2": 0.95906432748538,
       "terminalbenchHard": 0.348484848484849,
@@ -1351,7 +1388,7 @@
       "multilingualAA": null,
       "omniscience": -8.11666666666667,
       "lcr": 0.653333333333333,
-      "intelligenceRank": 18
+      "intelligenceRank": 19
     },
     {
       "id": "deepseek-v4-flash",
@@ -1388,7 +1425,7 @@
       "multilingualAA": null,
       "omniscience": -22.9,
       "lcr": 0.63,
-      "intelligenceRank": 19
+      "intelligenceRank": 20
     },
     {
       "id": "deepseek-v4-flash-high",
@@ -1425,7 +1462,7 @@
       "multilingualAA": null,
       "omniscience": -22.2833333333333,
       "lcr": 0.626666666666667,
-      "intelligenceRank": 20
+      "intelligenceRank": 21
     },
     {
       "id": "mimo-v2-omni",
@@ -1453,7 +1490,7 @@
       "mmluPro": null,
       "math500": null,
       "hle": 0.199258572752549,
-      "gdpval": 1319.86875190142,
+      "gdpval": 1320.36664183554,
       "ifbench": 0.535374149659864,
       "tau2": 0.912280701754386,
       "terminalbenchHard": 0.348484848484849,
@@ -1462,7 +1499,7 @@
       "multilingualAA": null,
       "omniscience": -17.4333333333333,
       "lcr": 0.666666666666667,
-      "intelligenceRank": 21
+      "intelligenceRank": 22
     },
     {
       "id": "claude-4-5-sonnet-thinking",
@@ -1490,7 +1527,7 @@
       "mmluPro": 0.874501329787234,
       "math500": null,
       "hle": 0.172845227062095,
-      "gdpval": 1321.39844233543,
+      "gdpval": 1322.35786902947,
       "ifbench": 0.572789115646258,
       "tau2": 0.780701754385965,
       "terminalbenchHard": 0.356060606060606,
@@ -1670,7 +1707,7 @@
       },
       "omniscience": 0.333333333333333,
       "lcr": 0.656666666666667,
-      "intelligenceRank": 22
+      "intelligenceRank": 23
     },
     {
       "id": "minimax-m2-5",
@@ -1698,7 +1735,7 @@
       "mmluPro": null,
       "math500": null,
       "hle": 0.191380908248378,
-      "gdpval": 1179.68758729859,
+      "gdpval": 1179.78383945456,
       "ifbench": 0.716326530612245,
       "tau2": 0.953216374269006,
       "terminalbenchHard": 0.348484848484849,
@@ -1878,7 +1915,7 @@
       },
       "omniscience": -39.7,
       "lcr": 0.66,
-      "intelligenceRank": 23
+      "intelligenceRank": 24
     },
     {
       "id": "deepseek-v3-2-reasoning",
@@ -2086,7 +2123,7 @@
       },
       "omniscience": -20.8833333333333,
       "lcr": 0.65,
-      "intelligenceRank": 24
+      "intelligenceRank": 25
     },
     {
       "id": "nvidia-nemotron-3-super-120b-a12b",
@@ -2123,12 +2160,12 @@
       "multilingualAA": null,
       "omniscience": -42.0666666666667,
       "lcr": 0.6,
-      "intelligenceRank": 25
+      "intelligenceRank": 26
     },
     {
       "id": "gpt-oss-120b",
-      "name": "gpt-oss-120B (high)",
-      "shortName": "gpt-oss-120B (high)",
+      "name": "gpt-oss-120b (high)",
+      "shortName": "gpt-oss-120b (high)",
       "provider": "OpenAI",
       "intelligenceIndex": 33.2656574231208,
       "codingIndex": 28.6195286195286,
@@ -2331,7 +2368,7 @@
       },
       "omniscience": -50.05,
       "lcr": 0.506666666,
-      "intelligenceRank": 26
+      "intelligenceRank": 27
     }
   ]
 }
