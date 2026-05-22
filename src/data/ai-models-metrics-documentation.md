@@ -212,10 +212,11 @@ The following benchmarks are only available for a subset of models (typically 3 
 - **Unit:** USD per 1 million output tokens
 - **Why it matters:** Cost of receiving generated text from the model.
 
-### Blended Price (3:1)
+### Blended Price (7:2:1)
 - **Unit:** USD per 1 million tokens
-- **Calculation:** Weighted average assuming 3 input tokens for every 1 output token.
-- **Why it matters:** Best single metric for estimating total API costs.
+- **Calculation:** Weighted average assuming 7 parts cache hits, 2 parts regular input, and 1 part output tokens. Formula: `(cachePrice × 7 + inputPrice × 2 + outputPrice × 1) / 10`
+- **Why it matters:** Best single metric for estimating total API costs. Reflects real-world usage where ~70% of input tokens are served from prompt cache at a steep discount (typically 90% off regular input price).
+- **Source:** [Artificial Analysis Methodology](https://artificialanalysis.ai/methodology)
 
 ### Cost to Run Intelligence Index
 - **Unit:** USD

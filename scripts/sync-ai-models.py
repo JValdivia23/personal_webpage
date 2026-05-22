@@ -75,23 +75,14 @@ def extract_models_from_page(page) -> list[dict]:
             const next_f = window.__next_f;
             if (!next_f) return {error: 'no __next_f'};
 
-            // Find the entry with the most intelligence_index occurrences
-            let bestEntry = null;
-            let bestCount = 0;
+            // Concatenate all entries — model data spans across entry boundaries
+            let text = '';
             for (const entry of next_f) {
                 if (Array.isArray(entry) && entry.length > 1) {
-                    const text = String(entry[1]);
-                    const count = (text.match(/"intelligence_index":/g) || []).length;
-                    if (count > bestCount) {
-                        bestCount = count;
-                        bestEntry = entry;
-                    }
+                    text += String(entry[1]);
                 }
             }
 
-            if (!bestEntry) return {error: 'no data entry found'};
-
-            const text = String(bestEntry[1]);
             const models = [];
             let pos = 0;
 
@@ -166,9 +157,12 @@ def clean_model(raw: dict) -> dict | None:
     # Price fields
     input_price = raw.get("price_1m_input_tokens")
     output_price = raw.get("price_1m_output_tokens")
-    blended_price = raw.get("price_1m_blended_3_to_1")
+    cache_hit_price = raw.get("cache_hit_price")
 
-    # Compute blended price (3:1 ratio) if not provided by the API
+    # Blended price: prefer 7:2:1 (cache:input:output), fallback to 3:1, then compute
+    blended_price = raw.get("price_1m_blended_7_2_1")
+    if blended_price is None:
+        blended_price = raw.get("price_1m_blended_0_3_1")
     if blended_price is None and input_price is not None and output_price is not None:
         blended_price = (float(input_price) * 3 + float(output_price)) / 4
 
@@ -187,6 +181,7 @@ def clean_model(raw: dict) -> dict | None:
         "mathIndex": raw.get("math_index"),
         "inputPrice": float(input_price) if input_price is not None else None,
         "outputPrice": float(output_price) if output_price is not None else None,
+        "cacheInputPrice": float(cache_hit_price) if cache_hit_price is not None else None,
         "blendedPrice": float(blended_price) if blended_price is not None else None,
         "costToRunIndex": float(total_cost) if total_cost is not None else None,
         "isOpenWeights": raw.get("is_open_weights"),
@@ -226,7 +221,7 @@ def fetch_and_clean(url: str) -> list[dict]:
 
         log(f"Navigating to Artificial Analysis...")
         page.goto(url, wait_until="networkidle", timeout=60000)
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(5000)
 
         raw_models = extract_models_from_page(page)
         browser.close()
