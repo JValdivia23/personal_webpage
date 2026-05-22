@@ -684,7 +684,7 @@ export default function AgenticAIPage() {
               </div>
               <p className="mt-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
                 {priceMode === "price"
-                  ? "Blended price assuming 3 input tokens for every 1 output token."
+                  ? "Blended price assuming 7:2:1 ratio of cache hits, input, and output tokens."
                   : "Total API cost to evaluate the model on the full benchmark suite."}
               </p>
             </div>
