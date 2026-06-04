@@ -296,7 +296,7 @@ function placeLabels(
 // Custom Scatter Shape — label at fixed (dx, dy) offset from dot
 // ---------------------------------------------------------------------------
 function CustomScatterShape(props: any) {
-  const { cx, cy, fill, payload, onClick } = props;
+  const { cx, cy, fill, payload, onClick, fillOpacity, strokeOpacity } = props;
   if (cx == null || cy == null) return null;
 
   const label = payload.shortName || payload.name;
@@ -316,8 +316,10 @@ function CustomScatterShape(props: any) {
     ? 'end'
     : 'middle';
 
+  const shapeOpacity = fillOpacity ?? 1;
+
   return (
-    <g style={{ cursor: 'pointer' }} onClick={onClick}>
+    <g style={{ cursor: 'pointer', opacity: shapeOpacity }} onClick={onClick}>
       <line
         x1={cx}
         y1={cy}
