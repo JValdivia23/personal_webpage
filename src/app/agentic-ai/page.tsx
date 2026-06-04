@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
 import {
@@ -309,7 +308,7 @@ function MiniBarChart({
   metricKey: string;
   metricLabel: string;
 }) {
-  const [hiddenProviders, setHiddenProviders] = useState<Set<string>>(new Set());
+  const [highlightedProvider, setHighlightedProvider] = useState<string | null>(null);
 
   const data = useMemo(() => {
     return models
@@ -347,23 +346,8 @@ function MiniBarChart({
 
   const providers = Array.from(new Set(data.map((d) => d.provider))).sort();
 
-  const toggleProvider = (provider: string) => {
-    setHiddenProviders((prev) => {
-      const next = new Set(prev);
-      if (next.has(provider)) {
-        next.delete(provider);
-      } else {
-        next.add(provider);
-      }
-      return next;
-    });
-  };
-
-  // Preserve sort order; zero-out hidden providers so Y-axis stays identical
-  const displayData = data.map((d) => ({
-    ...d,
-    value: hiddenProviders.has(d.provider) ? 0 : d.value,
-  }));
+  const handleProviderHover = (provider: string) => setHighlightedProvider(provider);
+  const handleProviderLeave = () => setHighlightedProvider(null);
 
   return (
     <div className="mt-6">
@@ -373,7 +357,7 @@ function MiniBarChart({
       <div className="h-[500px] w-full rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={displayData}
+            data={data}
             layout="vertical"
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
@@ -398,45 +382,48 @@ function MiniBarChart({
               cursor={{ fill: "rgba(0,0,0,0.04)" }}
             />
             <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={16}>
-              {displayData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.value === 0 ? "transparent" : entry.color}
-                />
-              ))}
+              {data.map((entry, index) => {
+                const isHighlighted = !highlightedProvider || highlightedProvider === entry.provider;
+                return (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    fillOpacity={isHighlighted ? 1 : 0.2}
+                  />
+                );
+              })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Provider toggle legend */}
+      {/* Provider legend — hover to highlight */}
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
         {providers.map((provider) => {
-          const isHidden = hiddenProviders.has(provider);
+          const isHighlighted = highlightedProvider === provider;
+          const isDimmed = highlightedProvider !== null && !isHighlighted;
           const color = getProviderColor(provider);
           return (
             <button
               key={provider}
-              onClick={() => toggleProvider(provider)}
+              onMouseEnter={() => handleProviderHover(provider)}
+              onMouseLeave={handleProviderLeave}
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
-                isHidden
-                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 line-through"
-                  : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+                isDimmed
+                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-500"
+                  : isHighlighted
+                    ? "border-transparent bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white shadow-sm"
+                    : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
-              title={isHidden ? `Show ${provider}` : `Hide ${provider}`}
+              title={`Highlight ${provider}`}
             >
               <span
                 className="inline-block h-2 w-2 rounded-full"
                 style={{
-                  backgroundColor: isHidden ? "#d1d5db" : color,
+                  backgroundColor: isDimmed ? "#d1d5db" : color,
                 }}
               />
               {provider}
-              {isHidden ? (
-                <EyeOff className="h-3 w-3" />
-              ) : (
-                <Eye className="h-3 w-3" />
-              )}
             </button>
           );
         })}

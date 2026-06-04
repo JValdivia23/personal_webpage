@@ -13,7 +13,6 @@ import {
   ReferenceArea,
   Cell,
 } from 'recharts';
-import { Eye, EyeOff } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -442,7 +441,7 @@ export function ModelBenchmarkChart({
   priceMode,
   metricLabel,
 }: ModelBenchmarkChartProps) {
-  const [hiddenProviders, setHiddenProviders] = useState<Set<string>>(new Set());
+  const [highlightedProvider, setHighlightedProvider] = useState<string | null>(null);
 
   // All valid points (used for stable axes / thresholds)
   const allChartData = useMemo<ChartPoint[]>(() => {
@@ -470,13 +469,7 @@ export function ModelBenchmarkChart({
     return raw;
   }, [models, selectedMetric, priceMode]);
 
-  // Visible subset after provider toggles
-  const visibleChartData = useMemo<ChartPoint[]>(
-    () => allChartData.filter((d) => !hiddenProviders.has(d.provider)),
-    [allChartData, hiddenProviders]
-  );
-
-  // Compute axis domains from ALL data so limits stay identical when toggling
+  // Compute axis domains from ALL data so limits stay identical
   const xDomain = useMemo<[number, number]>(() => {
     const vals = allChartData.map((d) => d.x);
     if (vals.length === 0) return [0, 1];
@@ -495,7 +488,6 @@ export function ModelBenchmarkChart({
     return [Math.max(0, min - pad), max + pad];
   }, [allChartData]);
 
-  // Compute 75th percentile from ALL data
   const thresholdX = useMemo(() => {
     if (allChartData.length === 0) return 0;
     const sorted = [...allChartData].sort((a, b) => a.x - b.x);
@@ -512,30 +504,24 @@ export function ModelBenchmarkChart({
       : sorted[mid].y;
   }, [allChartData]);
 
-  // Assign collision-aware label placements to VISIBLE data only
+  // Assign collision-aware label placements to ALL data
   const chartDataWithLabels = useMemo<ChartPoint[]>(() => {
-    if (visibleChartData.length === 0) return [];
-    const placements = placeLabels(visibleChartData, xDomain, yDomain);
-    return visibleChartData.map((m, i) => ({
+    if (allChartData.length === 0) return [];
+    const placements = placeLabels(allChartData, xDomain, yDomain);
+    return allChartData.map((m, i) => ({
       ...m,
       dx: placements[i].dx,
       dy: placements[i].dy,
     }));
-  }, [visibleChartData, xDomain, yDomain]);
+  }, [allChartData, xDomain, yDomain]);
 
   const providers = useMemo(
     () => Array.from(new Set(allChartData.map((d) => d.provider))).sort(),
     [allChartData]
   );
 
-  const toggleProvider = (provider: string) => {
-    setHiddenProviders((prev) => {
-      const next = new Set(prev);
-      if (next.has(provider)) next.delete(provider);
-      else next.add(provider);
-      return next;
-    });
-  };
+  const handleProviderHover = (provider: string) => setHighlightedProvider(provider);
+  const handleProviderLeave = () => setHighlightedProvider(null);
 
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
@@ -681,6 +667,12 @@ export function ModelBenchmarkChart({
                   key={entry.id}
                   fill={entry.color}
                   stroke="#ffffff"
+                  fillOpacity={
+                    highlightedProvider && highlightedProvider !== entry.provider ? 0.2 : 1
+                  }
+                  strokeOpacity={
+                    highlightedProvider && highlightedProvider !== entry.provider ? 0.3 : 1
+                  }
                   cursor="pointer"
                   onClick={() => {
                     window.open(entry.url, '_blank');
@@ -693,34 +685,33 @@ export function ModelBenchmarkChart({
 
       </div>
 
-      {/* Provider toggle legend */}
+      {/* Provider legend — hover to highlight */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
         {providers.map((provider) => {
-          const isHidden = hiddenProviders.has(provider);
+          const isHighlighted = highlightedProvider === provider;
+          const isDimmed = highlightedProvider !== null && !isHighlighted;
           const color = getProviderColor(provider);
           return (
             <button
               key={provider}
-              onClick={() => toggleProvider(provider)}
+              onMouseEnter={() => handleProviderHover(provider)}
+              onMouseLeave={handleProviderLeave}
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
-                isHidden
-                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 line-through"
-                  : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+                isDimmed
+                  ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-500"
+                  : isHighlighted
+                    ? "border-transparent bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white shadow-sm"
+                    : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
-              title={isHidden ? `Show ${provider}` : `Hide ${provider}`}
+              title={`Highlight ${provider}`}
             >
               <span
                 className="inline-block h-2 w-2 rounded-full"
                 style={{
-                  backgroundColor: isHidden ? "#d1d5db" : color,
+                  backgroundColor: isDimmed ? "#d1d5db" : color,
                 }}
               />
               {provider}
-              {isHidden ? (
-                <EyeOff className="h-3 w-3" />
-              ) : (
-                <Eye className="h-3 w-3" />
-              )}
             </button>
           );
         })}
