@@ -37,15 +37,21 @@ TARGET_URL = (
     "https://artificialanalysis.ai/models/deepseek-v4-pro"
     "?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,muse-spark,"
     "gemini-3-1-pro-preview,gemini-3-5-flash,"
-    "claude-sonnet-4-6-adaptive,claude-opus-4-7,"
+    "claude-sonnet-4-6-adaptive,claude-opus-4-7,claude-opus-4-8,"
     "deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,"
-    "deepseek-v3-2-reasoning,grok-4-20,minimax-m2-7,"
-    "nvidia-nemotron-3-super-120b-a12b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-pro,"
-    "glm-5-1,qwen3-6-plus,qwen3-7-max,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
+    "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,minimax-m2-7,minimax-m3,"
+    "nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,"
+    "kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,"
+    "glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
     "minimax-m2-5,kimi-k2-5"
     "&intelligence=coding-index"
     "&intelligence-index-cost=intelligence-vs-cost"
 )
+
+# Custom display names for models with ugly slugs
+DISPLAY_NAMES = {
+    "mimo-v2-5-0424": "MiMo-V2.5",
+}
 
 MIN_MODELS = 5
 
@@ -173,7 +179,7 @@ def clean_model(raw: dict) -> dict | None:
     return {
         "id": slug,
         "name": name,
-        "shortName": raw.get("short_name") or name,
+        "shortName": DISPLAY_NAMES.get(slug, raw.get("short_name") or name),
         "provider": creator_name,
         "intelligenceIndex": float(intelligence),
         "codingIndex": raw.get("coding_index"),
