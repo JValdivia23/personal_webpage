@@ -11,6 +11,7 @@ const navItems = [
   { name: 'Research', path: '/research' },
   { name: 'Publications', path: '/publications' },
   { name: 'Agentic AI', path: '/agentic-ai' },
+  { name: 'Radar', path: '/radar/' },
   { name: 'Contact', path: '/contact' },
 ];
 
@@ -29,20 +30,24 @@ export function NavBar() {
         <div className="hidden md:flex md:space-x-8">
           {navItems.map((item) => {
             const isActive = pathname === item.path;
+            const cls = `relative text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
+              isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'
+            }`;
+            if (item.name === 'Radar') {
+              return (
+                <a key={item.path} href="/personal_webpage/radar/" className={cls}>
+                  {item.name}
+                  {isActive && (
+                    <motion.div layoutId="underline" className="absolute -bottom-[21px] left-0 right-0 h-[2px] bg-blue-600 dark:bg-blue-400" />
+                  )}
+                </a>
+              );
+            }
             return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`relative text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
-                  isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'
-                }`}
-              >
+              <Link key={item.path} href={item.path} className={cls}>
                 {item.name}
                 {isActive && (
-                  <motion.div
-                    layoutId="underline"
-                    className="absolute -bottom-[21px] left-0 right-0 h-[2px] bg-blue-600 dark:bg-blue-400"
-                  />
+                  <motion.div layoutId="underline" className="absolute -bottom-[21px] left-0 right-0 h-[2px] bg-blue-600 dark:bg-blue-400" />
                 )}
               </Link>
             );
@@ -69,20 +74,25 @@ export function NavBar() {
           className="md:hidden"
         >
           <div className="space-y-1 border-t border-gray-200 bg-white px-2 pt-2 pb-3 shadow-lg dark:border-gray-800 dark:bg-black">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                onClick={() => setIsOpen(false)}
-                className={`block rounded-md px-3 py-2 text-base font-medium ${
-                  pathname === item.path
-                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const cls = `block rounded-md px-3 py-2 text-base font-medium ${
+                pathname === item.path
+                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+              }`;
+              if (item.name === 'Radar') {
+                return (
+                  <a key={item.path} href="/personal_webpage/radar/" onClick={() => setIsOpen(false)} className={cls}>
+                    {item.name}
+                  </a>
+                );
+              }
+              return (
+                <Link key={item.path} href={item.path} onClick={() => setIsOpen(false)} className={cls}>
+                  {item.name}
+                </Link>
+              );
+            })}
           </div>
         </motion.div>
       )}
