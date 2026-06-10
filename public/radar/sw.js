@@ -1,7 +1,7 @@
 // MRMS Radar — Service Worker
 // Caches the app shell for offline/PWA use.
 
-const CACHE = 'mrms-v1';
+const CACHE = 'mrms-v2';
 const SHELL = [
   '/personal_webpage/radar/',
   '/personal_webpage/radar/manifest.json',
