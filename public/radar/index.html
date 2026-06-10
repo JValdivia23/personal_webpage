@@ -545,11 +545,11 @@ const CATALOG = [{"code":"level","name":"3D Reflectivity","default_product":"M3D
 
 function loadCategories(){
   categories = CATALOG;
-  S.categoryIdx = categories.findIndex(c=>c.code==='level');
-  if(S.categoryIdx<0) S.categoryIdx=0;
+  S.categoryIdx = categories.findIndex(c=>c.code==='crefls');
+if(S.categoryIdx<0) S.categoryIdx=0;
   const cat = categories[S.categoryIdx];
   S.levelIdx = cat.products.findIndex(p=>p.code===cat.default_product);
-  if(S.levelIdx<0) S.levelIdx=0;
+if(S.levelIdx<0) S.levelIdx=0;
   renderCategorySelect();
   renderLevelSelector();
   updateProductBadge();
@@ -567,6 +567,7 @@ function renderCategorySelect(){
     if(S.levelIdx<0) S.levelIdx=0;
     renderLevelSelector();
     updateProductBadge();
+    saveSettings();
     fetchImage();
   };
 }
@@ -589,6 +590,7 @@ function renderLevelSelector(){
     };
     slider.onchange = ()=>{
       updateProductBadge();
+      saveSettings();
       fetchImage();
     };
 
@@ -606,6 +608,7 @@ function renderLevelSelector(){
     sel.onchange = ()=>{
       S.levelIdx = parseInt(sel.value);
       updateProductBadge();
+      saveSettings();
       fetchImage();
     };
   }
@@ -757,6 +760,7 @@ $('timeSlider').onchange = ()=> fetchImage();
 $('zoomSlider').onchange = ()=>{
   stopAnimation();
   S.zoom = parseInt($('zoomSlider').value);
+  saveSettings();
   fetchImage();
 };
 
@@ -782,6 +786,7 @@ function changeZoom(delta){
     S.zoom = Math.max(3, Math.min(12, S.zoom + zoomPending));
     zoomPending = 0;
     $('zoomSlider').value = S.zoom;
+    saveSettings();
     syncMap();
     fetchImage();
   }, 300);
@@ -861,6 +866,7 @@ function onDragEnd(){
   dragX = dragY = 0;
   stopAnimation();
   if(S.mode === 'live') startAutoRefresh();
+  saveSettings();
   syncMap();
   fetchImage();
 }
@@ -887,12 +893,35 @@ function getUserLocation(){
 function formatLocalTime(ts){
   return new Intl.DateTimeFormat('en',{hour:'2-digit',minute:'2-digit',timeZoneName:'short',hour12:false}).format(new Date(ts+'Z'));
 }
+function saveSettings(){
+  try {
+    localStorage.setItem('mrms_radar', JSON.stringify({
+      categoryIdx: S.categoryIdx, levelIdx: S.levelIdx,
+      zoom: S.zoom, lat: S.lat, lon: S.lon, baseMap: S.baseMap,
+    }));
+  }catch(e){}
+}
+function loadSettings(){
+  try {
+    const s = JSON.parse(localStorage.getItem('mrms_radar'));
+    if(s){
+      S.categoryIdx = s.categoryIdx ?? S.categoryIdx;
+      S.levelIdx = s.levelIdx ?? S.levelIdx;
+      S.zoom = s.zoom ?? S.zoom;
+      S.lat = s.lat ?? S.lat;
+      S.lon = s.lon ?? S.lon;
+      S.baseMap = s.baseMap ?? S.baseMap;
+      return;
+    }
+  }catch(e){}
+}
 function resetView(){
   getUserLocation().then(loc => {
     if(loc){ S.lat = loc.lat; S.lon = loc.lon; }
     S.zoom = 7;
     $('zoomSlider').value = 7;
     dragX = dragY = 0;
+    saveSettings();
     syncMap();
     stopAnimation(); fetchImage();
     if(S.mode === 'live') startAutoRefresh();
@@ -938,6 +967,7 @@ function switchBaseMap(key){
   leafletMap.removeLayer(BASEMAPS[S.baseMap]);
   BASEMAPS[key].addTo(leafletMap);
   S.baseMap = key;
+  saveSettings();
 }
 function scaleLeafletMap(){
   const c = $('mapContainer');
@@ -984,6 +1014,12 @@ async function init(){
   const loc = await getUserLocation();
   if(loc){ S.lat = loc.lat; S.lon = loc.lon; }
   loadCategories();
+  loadSettings();
+  $('zoomSlider').value = S.zoom;
+  $('baseMapSelect').value = S.baseMap;
+  renderCategorySelect();
+  renderLevelSelector();
+  updateProductBadge();
   updateTimeLabels(); updateLivePauseBtn();
   fetchImage(); fetchLegend(); startAutoRefresh();
 }
