@@ -894,7 +894,10 @@ function getUserLocation(){
 }
 function detectTimezone(){
   const offMin = new Date().getTimezoneOffset();
-  const abbr = new Intl.DateTimeFormat('en',{timeZoneName:'short'}).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';
+  let abbr = '';
+  try {
+    abbr = new Intl.DateTimeFormat('en',{timeZoneName:'short'}).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';
+  }catch(e){}
   S.tz = {tz:Intl.DateTimeFormat().resolvedOptions().timeZone, offset_hours:-offMin/60, abbr};
 }
 function resetView(){
