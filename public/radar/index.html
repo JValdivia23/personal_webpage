@@ -420,7 +420,6 @@ const S = {
   refreshTimer: null, animTimer: null, animFrame: 0,
   animCache: [], animRefreshTimer: null,
   baseMap: 'dark',
-  tz: null,          // {tz, abbr, offset_hours} from browser
 };
 const SLOTS = 48;
 const ANIM_FRAMES = 18;     // frames per animation loop
@@ -533,16 +532,8 @@ function updateTimeDisplay(ts){
   if(parts.length<2) return;
   const t = parts[1].slice(0,5);
   $('timeDisplay').textContent = t + ' UTC';
-  if(S.tz){
-    const [h,m] = t.split(':').map(Number);
-    const totalMins = h * 60 + m + S.tz.offset_hours * 60;
-    const localMins = ((totalMins % 1440) + 1440) % 1440;
-    const lh = Math.floor(localMins / 60), lm = localMins % 60;
-    $('localTimeDisplay').textContent = `(${String(lh).padStart(2,'0')}:${String(lm).padStart(2,'0')} ${S.tz.abbr})`;
-    $('localTimeDisplay').style.display = '';
-  } else {
-    $('localTimeDisplay').style.display = 'none';
-  }
+  $('localTimeDisplay').textContent = '(' + formatLocalTime(ts) + ')';
+  $('localTimeDisplay').style.display = '';
   $('liveDot').style.display = S.mode === 'live' ? 'inline-block' : 'none';
 }
 
@@ -892,13 +883,8 @@ function getUserLocation(){
     );
   });
 }
-function detectTimezone(){
-  const offMin = new Date().getTimezoneOffset();
-  let abbr = '';
-  try {
-    abbr = new Intl.DateTimeFormat('en',{timeZoneName:'short'}).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';
-  }catch(e){}
-  S.tz = {tz:Intl.DateTimeFormat().resolvedOptions().timeZone, offset_hours:-offMin/60, abbr};
+function formatLocalTime(ts){
+  return new Intl.DateTimeFormat('en',{hour:'2-digit',minute:'2-digit',timeZoneName:'short',hour12:false}).format(new Date(ts+'Z'));
 }
 function resetView(){
   getUserLocation().then(loc => {
@@ -997,7 +983,6 @@ async function init(){
   const loc = await getUserLocation();
   if(loc){ S.lat = loc.lat; S.lon = loc.lon; }
   loadCategories();
-  detectTimezone();
   updateTimeLabels(); updateLivePauseBtn();
   fetchImage(); fetchLegend(); startAutoRefresh();
 }
