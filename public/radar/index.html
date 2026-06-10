@@ -420,8 +420,7 @@ const S = {
   refreshTimer: null, animTimer: null, animFrame: 0,
   animCache: [], animRefreshTimer: null,
   baseMap: 'dark',
-  tz: null,          // {tz, abbr, offset_hours} from /api/timezone
-  tzLat: 0, tzLon: 0, // last lat/lon used to fetch timezone
+  tz: null,          // {tz, abbr, offset_hours} from browser
 };
 const SLOTS = 48;
 const ANIM_FRAMES = 18;     // frames per animation loop
@@ -872,7 +871,6 @@ function onDragEnd(){
   if(S.mode === 'live') startAutoRefresh();
   syncMap();
   fetchImage();
-  updateTimezoneIfMoved();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -894,21 +892,10 @@ function getUserLocation(){
     );
   });
 }
-async function fetchTimezone(lat, lon){
-  try{
-    const r = await fetch(`/api/timezone?lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}`);
-    if(r.ok){
-      const data = await r.json();
-      S.tz = data;
-      S.tzLat = lat; S.tzLon = lon;
-      return;
-    }
-  }catch(e){ /* ignore */ }
-  S.tz = null;
-}
-async function updateTimezoneIfMoved(){
-  const moved = Math.abs(S.lat - S.tzLat) > 0.15 || Math.abs(S.lon - S.tzLon) > 0.15;
-  if(moved || !S.tz) await fetchTimezone(S.lat, S.lon);
+function detectTimezone(){
+  const offMin = new Date().getTimezoneOffset();
+  const abbr = new Intl.DateTimeFormat('en',{timeZoneName:'short'}).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';
+  S.tz = {tz:Intl.DateTimeFormat().resolvedOptions().timeZone, offset_hours:-offMin/60, abbr};
 }
 function resetView(){
   getUserLocation().then(loc => {
@@ -919,7 +906,6 @@ function resetView(){
     syncMap();
     stopAnimation(); fetchImage();
     if(S.mode === 'live') startAutoRefresh();
-    updateTimezoneIfMoved();
   });
 }
 
@@ -1008,8 +994,8 @@ async function init(){
   const loc = await getUserLocation();
   if(loc){ S.lat = loc.lat; S.lon = loc.lon; }
   loadCategories();
+  detectTimezone();
   updateTimeLabels(); updateLivePauseBtn();
-  updateTimezoneIfMoved();
   fetchImage(); fetchLegend(); startAutoRefresh();
 }
 init();
