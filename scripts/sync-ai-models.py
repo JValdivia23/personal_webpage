@@ -43,7 +43,7 @@ TARGET_URL = (
     "nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,"
     "kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,"
     "glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
-    "minimax-m2-5,kimi-k2-5"
+    "minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,claude-fable-5"
     "&intelligence=coding-index"
     "&intelligence-index-cost=intelligence-vs-cost"
 )
@@ -68,78 +68,154 @@ def get_filtered_slugs(url: str) -> set[str]:
     return set(models_param.split(",")) if models_param else set()
 
 
-def extract_models_from_page(page) -> list[dict]:
+def extract_models_from_page(page, target_slugs: set[str] | None = None) -> list[dict]:
     """
     Extract model data from window.__next_f via browser evaluation.
     The data is embedded in Next.js streaming chunks.
     """
     log("Extracting model data from window.__next_f...")
 
+    # Get the full concatenated text from the browser (no timeout — just returns a string)
     result = page.evaluate(
         """
         () => {
             const next_f = window.__next_f;
-            if (!next_f) return {error: 'no __next_f'};
-
-            // Concatenate all entries — model data spans across entry boundaries
+            if (!next_f) return null;
             let text = '';
             for (const entry of next_f) {
                 if (Array.isArray(entry) && entry.length > 1) {
                     text += String(entry[1]);
                 }
             }
-
-            const models = [];
-            let pos = 0;
-
-            while (true) {
-                const idx = text.indexOf('"intelligence_index":', pos);
-                if (idx === -1) break;
-
-                const objStart = text.lastIndexOf('{', idx);
-                if (objStart === -1) { pos = idx + 1; continue; }
-
-                let depth = 0;
-                let inStr = false;
-                let escape = false;
-                let objEnd = objStart;
-                for (let i = objStart; i < text.length; i++) {
-                    const c = text[i];
-                    if (escape) { escape = false; continue; }
-                    if (c === '\\\\') { escape = true; continue; }
-                    if (c === '"') { inStr = !inStr; continue; }
-                    if (!inStr) {
-                        if (c === '{') depth++;
-                        else if (c === '}') {
-                            depth--;
-                            if (depth === 0) { objEnd = i + 1; break; }
-                        }
-                    }
-                }
-
-                const objStr = text.slice(objStart, objEnd);
-                if (objStr.includes('"name"')) {
-                    try {
-                        const obj = JSON.parse(objStr);
-                        models.push(obj);
-                    } catch (e) {}
-                }
-                pos = idx + 1;
-            }
-
-            return {
-                totalFound: models.length,
-                models: models
-            };
+            return text;
         }
     """
     )
 
-    if "error" in result:
-        raise RuntimeError(f"Browser extraction failed: {result['error']}")
+    if not result:
+        raise RuntimeError("Browser extraction failed: no __next_f data")
 
-    log(f"Browser extracted {result['totalFound']} raw models")
-    return result["models"]
+    log(f"Got {len(result)} chars of text, parsing in Python...")
+    return _parse_models_from_text(result, target_slugs)
+
+
+def _parse_models_from_text(text: str, target_slugs: set[str] | None) -> list[dict]:
+    """Parse model objects from the concatenated __next_f text. Done in Python to avoid browser timeout."""
+    import re
+    import json as _json
+
+    models = []
+    seen = set()
+
+    if target_slugs:
+        for slug in target_slugs:
+            if slug in seen:
+                continue
+            # Find all occurrences of this slug
+            for m in re.finditer(r'"slug":"' + re.escape(slug) + r'"', text):
+                slug_pos = m.start()
+                # Look for intelligence_index within 50KB after the slug
+                intel_idx = text.find('"intelligence_index"', slug_pos)
+                if intel_idx < 0 or intel_idx > slug_pos + 50000:
+                    continue
+                # Find enclosing { (search backwards, up to 2KB)
+                obj_start = -1
+                for i in range(slug_pos, max(0, slug_pos - 2000), -1):
+                    if text[i] == '{':
+                        obj_start = i
+                        break
+                if obj_start < 0:
+                    continue
+                # Find matching } (search forwards, up to 30KB)
+                depth = 0
+                in_str = False
+                escape = False
+                obj_end = -1
+                search_end = min(len(text), obj_start + 30000)
+                for i in range(obj_start, search_end):
+                    c = text[i]
+                    if escape:
+                        escape = False
+                        continue
+                    if c == '\\':
+                        escape = True
+                        continue
+                    if c == '"':
+                        in_str = not in_str
+                        continue
+                    if not in_str:
+                        if c == '{':
+                            depth += 1
+                        elif c == '}':
+                            depth -= 1
+                            if depth == 0:
+                                obj_end = i + 1
+                                break
+                if obj_end < 0:
+                    continue
+                obj_str = text[obj_start:obj_end]
+                if '"intelligence_index"' not in obj_str:
+                    continue
+                try:
+                    obj = _json.loads(obj_str)
+                    models.append(obj)
+                    seen.add(slug)
+                    break
+                except Exception:
+                    pass
+    else:
+        # Fallback: scan all intelligence_index
+        for m in re.finditer(r'"intelligence_index":', text):
+            idx = m.start()
+            search_start = max(0, idx - 5000)
+            obj_start = text.rfind('{', search_start, idx)
+            if obj_start < search_start:
+                obj_start = -1
+            if obj_start < 0:
+                continue
+            search_end = min(len(text), idx + 5000)
+            depth = 0
+            in_str = False
+            escape = False
+            obj_end = -1
+            for i in range(obj_start, search_end):
+                c = text[i]
+                if escape:
+                    escape = False
+                    continue
+                if c == '\\':
+                    escape = True
+                    continue
+                if c == '"':
+                    in_str = not in_str
+                    continue
+                if not in_str:
+                    if c == '{':
+                        depth += 1
+                    elif c == '}':
+                        depth -= 1
+                        if depth == 0:
+                            obj_end = i + 1
+                            break
+            if obj_end < 0:
+                continue
+            obj_str = text[obj_start:obj_end]
+            if '"name"' not in obj_str:
+                continue
+            slug_match = re.search(r'"slug":"([^"]+)"', obj_str)
+            if not slug_match:
+                continue
+            slug = slug_match.group(1)
+            if slug in seen:
+                continue
+            seen.add(slug)
+            try:
+                obj = _json.loads(obj_str)
+                models.append(obj)
+            except Exception:
+                pass
+
+    return models
 
 
 def clean_model(raw: dict) -> dict | None:
@@ -227,9 +303,79 @@ def fetch_and_clean(url: str) -> list[dict]:
 
         log(f"Navigating to Artificial Analysis...")
         page.goto(url, wait_until="networkidle", timeout=60000)
+        page.wait_for_timeout(15000)
+        # Scroll to bottom to trigger lazy-loaded chart data
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(10000)
+        page.evaluate("window.scrollTo(0, 0)")
         page.wait_for_timeout(5000)
 
-        raw_models = extract_models_from_page(page)
+        # Fetch each model's RSC data directly via the browser context
+        # The RSC response contains the full model JSON
+        raw_models = []
+        for slug in target_slugs:
+            rsc_url = f"https://artificialanalysis.ai/models/{slug}?_rsc=1"
+            try:
+                resp = page.context.request.get(rsc_url, headers={"RSC": "1"})
+                if resp.status != 200:
+                    continue
+                text = resp.text()
+                # Strategy: find intelligence_index, then search backwards for the {
+                # that starts the full model object. We verify by checking if the
+                # object contains our slug (skipping nested objects).
+                intel_pos = text.find('"intelligence_index"')
+                if intel_pos < 0:
+                    continue
+                # Search backwards from intelligence_index, up to 10KB
+                best_obj = None
+                for candidate_start in range(intel_pos, max(0, intel_pos - 10000), -1):
+                    if text[candidate_start] != '{':
+                        continue
+                    # Find matching }
+                    depth = 0
+                    in_str = False
+                    escape = False
+                    obj_end = -1
+                    search_end = min(len(text), candidate_start + 50000)
+                    for i in range(candidate_start, search_end):
+                        c = text[i]
+                        if escape:
+                            escape = False
+                            continue
+                        if c == '\\':
+                            escape = True
+                            continue
+                        if c == '"':
+                            in_str = not in_str
+                            continue
+                        if not in_str:
+                            if c == '{':
+                                depth += 1
+                            elif c == '}':
+                                depth -= 1
+                                if depth == 0:
+                                    obj_end = i + 1
+                                    break
+                    if obj_end < 0:
+                        continue
+                    obj_str = text[candidate_start:obj_end]
+                    # Verify this object contains our slug
+                    if f'"slug":"{slug}"' not in obj_str:
+                        continue
+                    # Found it!
+                    try:
+                        import json as _json
+                        best_obj = _json.loads(obj_str)
+                        break
+                    except Exception:
+                        continue
+                if best_obj is not None:
+                    raw_models.append(best_obj)
+            except Exception as e:
+                log(f"  Failed to fetch {slug}: {e}")
+                continue
+
+        log(f"Fetched {len(raw_models)} models via RSC")
         browser.close()
 
     # Clean all models
