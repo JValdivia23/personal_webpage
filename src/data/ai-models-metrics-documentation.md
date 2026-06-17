@@ -256,3 +256,15 @@ Artificial Analysis independently evaluates models by:
 - Updating benchmarks regularly as new, harder tests are developed
 
 For the most current methodology, visit: https://artificialanalysis.ai
+
+---
+
+## How to Add New Models
+
+1. Go to [artificialanalysis.ai/models](https://artificialanalysis.ai/models) and find the model you want to add.
+2. Copy the model's slug from the URL (e.g., `gemini-3-5-flash` from `https://artificialanalysis.ai/models/gemini-3-5-flash`).
+3. Open `scripts/sync-ai-models.py` and add the slug to the `TARGET_URL` query parameter (comma-separated).
+4. **(Optional)** If the slug looks ugly (e.g., `mimo-v2-5-0424`), add a custom display name to the `DISPLAY_NAMES` dict.
+5. Run the sync script: `python scripts/sync-ai-models.py`
+6. The script fetches all benchmark data for the new model and regenerates `src/data/ai-models.json`. No component changes are needed — the chart auto-adapts.
+7. Verify the new model appears in the output, then commit and push.

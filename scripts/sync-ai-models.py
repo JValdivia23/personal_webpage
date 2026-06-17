@@ -7,9 +7,11 @@ Usage:
 
 What it does:
     1. Launches a headless browser
-    2. Navigates to the Artificial Analysis model comparison page
-    3. Extracts embedded model data from window.__next_f (Next.js streaming)
-    4. Writes cleaned data to src/data/ai-models.json
+    2. Navigates to the Artificial Analysis model comparison page (triggers prefetch)
+    3. For each target model slug, fetches its RSC data via /models/{slug}?_rsc=1
+    4. Extracts the full model object (anchored on `intelligence_index` to skip the
+       lightweight summary object that appears before the full model data)
+    5. Cleans the raw data and writes it to src/data/ai-models.json
 
 Requirements:
     - Python 3.x with `playwright` installed
