@@ -1,5 +1,13 @@
 [
   {
+    "paperId": "eCZJkKcAAAAJ:9ZlFYXVOiuMC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:9ZlFYXVOiuMC",
+    "title": "Spectral-Domain Local Statistics with Missing-Data Support for Cartesian and Polar Grids",
+    "venue": "",
+    "year": 2026,
+    "citationCount": 0
+  },
+  {
     "paperId": "eCZJkKcAAAAJ:mVmsd5A6BfQC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:mVmsd5A6BfQC",
     "title": "Radar Data Smoothing using the Discrete Cosine Transform: A Fast Spectral Domain Algorithm",
@@ -20,6 +28,14 @@
     "paperId": "eCZJkKcAAAAJ:4DMP91E08xMC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:4DMP91E08xMC",
     "title": "Surface energy exchanges and stability conditions associated with convective intense rainfall events on the central Andes of Peru",
+    "venue": "",
+    "year": 2025,
+    "citationCount": 0
+  },
+  {
+    "paperId": "eCZJkKcAAAAJ:dhFuZR0502QC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:dhFuZR0502QC",
+    "title": "Characterization and Microphysical Impacts of Cloud Top Generating Cells During WINTRE-MIX",
     "venue": "",
     "year": 2025,
     "citationCount": 0
@@ -110,7 +126,7 @@
     "title": "Evaluation of GPM dual-frequency precipitation radar algorithms to estimate drop size distribution parameters, using ground-based measurement over the central Andes of Peru",
     "venue": "",
     "year": 2021,
-    "citationCount": 33
+    "citationCount": 32
   },
   {
     "paperId": "eCZJkKcAAAAJ:YsMSGLbcyi4C",
@@ -142,7 +158,7 @@
     "title": "Rainfall characteristics in the mantaro basin over tropical andes from a vertically pointed profile rain radar and in-situ field campaign",
     "venue": "",
     "year": 2020,
-    "citationCount": 39
+    "citationCount": 40
   },
   {
     "paperId": "eCZJkKcAAAAJ:UeHWp8X0CEIC",
@@ -246,6 +262,14 @@
     "title": "Precipitation Evaluation in the Central Peruvian Andes Using Radar Data and WRF Simulations.",
     "venue": "",
     "year": 2016,
+    "citationCount": 0
+  },
+  {
+    "paperId": "eCZJkKcAAAAJ:QIV2ME_5wuYC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:QIV2ME_5wuYC",
+    "title": "Rainfall Characteristics in the Mantaro Basin over Tropical Andes from a Vertically Pointed Profile Rain Radar and In-Situ Field Campaign",
+    "venue": "",
+    "year": null,
     "citationCount": 0
   }
 ]
