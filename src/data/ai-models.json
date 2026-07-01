@@ -1,6 +1,6 @@
 {
-  "lastUpdated": "2026-07-01T13:22:45.850442",
-  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,muse-spark,gemini-3-1-pro-preview,gemini-3-5-flash,claude-sonnet-4-6-adaptive,claude-sonnet-5-xhigh,claude-opus-4-7,claude-opus-4-8,deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,deepseek-v3-2-reasoning,grok-4-20,grok-4-3,minimax-m2-7,minimax-m3,nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,claude-fable-5&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
+  "lastUpdated": "2026-07-01T13:37:01.045980",
+  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,muse-spark,gemini-3-1-pro-preview,gemini-3-5-flash,claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-opus-4-7,claude-opus-4-8,deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,deepseek-v3-2-reasoning,grok-4-20,grok-4-3,minimax-m2-7,minimax-m3,nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,claude-fable-5&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
   "modelCount": 37,
   "models": [
     {
@@ -156,6 +156,44 @@
       "intelligenceRank": 4
     },
     {
+      "id": "claude-sonnet-5",
+      "name": "Claude Sonnet 5 (Adaptive Reasoning, Max Effort)",
+      "shortName": "Claude Sonnet 5 (max)",
+      "provider": "Anthropic",
+      "intelligenceIndex": 53.3500026989169,
+      "codingIndex": 71.5455507005132,
+      "agenticIndex": 46.6941408934708,
+      "mathIndex": null,
+      "inputPrice": 3.0,
+      "outputPrice": 15.0,
+      "cacheInputPrice": 0.3,
+      "blendedPrice": 2.31,
+      "costToRunIndex": 6015.1843347370395,
+      "isOpenWeights": false,
+      "releaseDate": "2026-06-30",
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/claude-sonnet-5",
+      "gpqa": 0.911111111111111,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": 0.53587962962963,
+      "mmluPro": null,
+      "math500": null,
+      "hle": 0.395736793327155,
+      "gdpval": 1602.65,
+      "ifbench": null,
+      "tau2": null,
+      "terminalbenchHard": null,
+      "critpt": 0.168571428571429,
+      "mmmuPro": 0.772832369942197,
+      "multilingualAA": null,
+      "omniscience": 15.3166666666667,
+      "lcr": 0.706666666666667,
+      "intelligenceRank": 5
+    },
+    {
       "id": "gpt-5-4",
       "name": "GPT-5.4 (xhigh)",
       "shortName": "GPT-5.4 (xhigh)",
@@ -191,7 +229,7 @@
       "multilingualAA": null,
       "omniscience": 5.65,
       "lcr": 0.74,
-      "intelligenceRank": 5
+      "intelligenceRank": 6
     },
     {
       "id": "glm-5-2",
@@ -229,7 +267,7 @@
       "multilingualAA": null,
       "omniscience": 3.96666666666667,
       "lcr": 0.713333333333333,
-      "intelligenceRank": 6
+      "intelligenceRank": 7
     },
     {
       "id": "gemini-3-5-flash",
@@ -267,7 +305,7 @@
       "multilingualAA": null,
       "omniscience": 22.6833333333333,
       "lcr": 0.693333333333333,
-      "intelligenceRank": 7
+      "intelligenceRank": 8
     },
     {
       "id": "claude-sonnet-4-6-adaptive",
@@ -476,7 +514,7 @@
       },
       "omniscience": 12.3666666666667,
       "lcr": 0.706666666666667,
-      "intelligenceRank": 8
+      "intelligenceRank": 9
     },
     {
       "id": "gemini-3-1-pro-preview",
@@ -685,7 +723,7 @@
       },
       "omniscience": 32.9333333333333,
       "lcr": 0.726666666666667,
-      "intelligenceRank": 9
+      "intelligenceRank": 10
     },
     {
       "id": "qwen3-7-max",
@@ -723,7 +761,7 @@
       "multilingualAA": null,
       "omniscience": 14.0833333333333,
       "lcr": 0.69,
-      "intelligenceRank": 10
+      "intelligenceRank": 11
     },
     {
       "id": "minimax-m3",
@@ -761,7 +799,7 @@
       "multilingualAA": null,
       "omniscience": 1.36666666666667,
       "lcr": 0.74,
-      "intelligenceRank": 11
+      "intelligenceRank": 12
     },
     {
       "id": "deepseek-v4-pro",
@@ -799,7 +837,7 @@
       "multilingualAA": null,
       "omniscience": -10.0166666666667,
       "lcr": 0.663333333333333,
-      "intelligenceRank": 12
+      "intelligenceRank": 13
     },
     {
       "id": "claude-opus-4-6-adaptive",
@@ -1008,7 +1046,7 @@
       },
       "omniscience": 13.5,
       "lcr": 0.706666666666667,
-      "intelligenceRank": 13
+      "intelligenceRank": 14
     },
     {
       "id": "muse-spark",
@@ -1046,7 +1084,7 @@
       "multilingualAA": null,
       "omniscience": 4.08333333333333,
       "lcr": 0.696666666666667,
-      "intelligenceRank": 14
+      "intelligenceRank": 15
     },
     {
       "id": "kimi-k2-6",
@@ -1084,7 +1122,7 @@
       "multilingualAA": null,
       "omniscience": 6.41666666666667,
       "lcr": 0.696666666666667,
-      "intelligenceRank": 15
+      "intelligenceRank": 16
     },
     {
       "id": "mimo-v2-5-pro",
@@ -1122,7 +1160,7 @@
       "multilingualAA": null,
       "omniscience": 3.6,
       "lcr": 0.733333333333333,
-      "intelligenceRank": 16
+      "intelligenceRank": 17
     },
     {
       "id": "kimi-k2-7-code",
@@ -1160,7 +1198,7 @@
       "multilingualAA": null,
       "omniscience": -10.7,
       "lcr": 0.663333333333333,
-      "intelligenceRank": 17
+      "intelligenceRank": 18
     },
     {
       "id": "mimo-v2-pro",
@@ -1198,7 +1236,7 @@
       "multilingualAA": null,
       "omniscience": 4.91666666666667,
       "lcr": 0.606666666666667,
-      "intelligenceRank": 18
+      "intelligenceRank": 19
     },
     {
       "id": "deepseek-v4-flash",
@@ -1236,7 +1274,7 @@
       "multilingualAA": null,
       "omniscience": -22.9,
       "lcr": 0.63,
-      "intelligenceRank": 19
+      "intelligenceRank": 20
     },
     {
       "id": "glm-5-1",
@@ -1274,7 +1312,7 @@
       "multilingualAA": null,
       "omniscience": 1.93333333333333,
       "lcr": 0.623333333333333,
-      "intelligenceRank": 20
+      "intelligenceRank": 21
     },
     {
       "id": "mimo-v2-5-0424",
@@ -1312,7 +1350,7 @@
       "multilingualAA": null,
       "omniscience": -9.33333333333333,
       "lcr": 0.626666666666667,
-      "intelligenceRank": 21
+      "intelligenceRank": 22
     },
     {
       "id": "gpt-5-4-mini",
@@ -1521,7 +1559,7 @@
       },
       "omniscience": -18.6833333333333,
       "lcr": 0.693333333333333,
-      "intelligenceRank": 22
+      "intelligenceRank": 23
     },
     {
       "id": "qwen3-6-plus",
@@ -1559,7 +1597,7 @@
       "multilingualAA": null,
       "omniscience": 2.65,
       "lcr": 0.696666666666667,
-      "intelligenceRank": 23
+      "intelligenceRank": 24
     },
     {
       "id": "qwen3-7-plus",
@@ -1597,7 +1635,7 @@
       "multilingualAA": null,
       "omniscience": 2.36666666666667,
       "lcr": 0.65,
-      "intelligenceRank": 24
+      "intelligenceRank": 25
     },
     {
       "id": "minimax-m2-7",
@@ -1635,7 +1673,7 @@
       "multilingualAA": null,
       "omniscience": 0.683333333333333,
       "lcr": 0.686666666666667,
-      "intelligenceRank": 25
+      "intelligenceRank": 26
     },
     {
       "id": "kimi-k2-5",
@@ -1673,7 +1711,7 @@
       "multilingualAA": null,
       "omniscience": -8.11666666666667,
       "lcr": 0.653333333333333,
-      "intelligenceRank": 26
+      "intelligenceRank": 27
     },
     {
       "id": "nvidia-nemotron-3-ultra-550b-a55b",
@@ -1711,7 +1749,7 @@
       "multilingualAA": null,
       "omniscience": -0.833333333333333,
       "lcr": 0.67,
-      "intelligenceRank": 27
+      "intelligenceRank": 28
     },
     {
       "id": "grok-4-3",
@@ -1749,7 +1787,7 @@
       "multilingualAA": null,
       "omniscience": 18.3166666666667,
       "lcr": 0.643333333333333,
-      "intelligenceRank": 28
+      "intelligenceRank": 29
     },
     {
       "id": "deepseek-v4-flash-high",
@@ -1787,7 +1825,7 @@
       "multilingualAA": null,
       "omniscience": -22.2833333333333,
       "lcr": 0.626666666666667,
-      "intelligenceRank": 29
+      "intelligenceRank": 30
     },
     {
       "id": "grok-4-20",
@@ -1825,7 +1863,7 @@
       "multilingualAA": null,
       "omniscience": 15.35,
       "lcr": 0.58,
-      "intelligenceRank": 30
+      "intelligenceRank": 31
     },
     {
       "id": "mimo-v2-omni",
@@ -1863,7 +1901,7 @@
       "multilingualAA": null,
       "omniscience": -17.4333333333333,
       "lcr": 0.666666666666667,
-      "intelligenceRank": 31
+      "intelligenceRank": 32
     },
     {
       "id": "claude-4-5-sonnet-thinking",
@@ -2072,7 +2110,7 @@
       },
       "omniscience": 0.333333333333333,
       "lcr": 0.656666666666667,
-      "intelligenceRank": 32
+      "intelligenceRank": 33
     },
     {
       "id": "minimax-m2-5",
@@ -2281,7 +2319,7 @@
       },
       "omniscience": -39.7,
       "lcr": 0.66,
-      "intelligenceRank": 33
+      "intelligenceRank": 34
     },
     {
       "id": "deepseek-v3-2-reasoning",
@@ -2490,7 +2528,7 @@
       },
       "omniscience": -20.8833333333333,
       "lcr": 0.65,
-      "intelligenceRank": 34
+      "intelligenceRank": 35
     },
     {
       "id": "nvidia-nemotron-3-super-120b-a12b",
@@ -2528,7 +2566,7 @@
       "multilingualAA": null,
       "omniscience": -42.0666666666667,
       "lcr": 0.6,
-      "intelligenceRank": 35
+      "intelligenceRank": 36
     },
     {
       "id": "gpt-oss-120b",
@@ -2737,44 +2775,7 @@
       },
       "omniscience": -50.05,
       "lcr": 0.506666666,
-      "intelligenceRank": 36
-    },
-    {
-      "id": "claude-sonnet-5-xhigh",
-      "name": "Claude Sonnet 5 (Adaptive Reasoning, Xhigh Effort)",
-      "shortName": "Claude Sonnet 5 (xhigh)",
-      "provider": "Anthropic",
-      "intelligenceIndex": null,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "mathIndex": null,
-      "inputPrice": 3.0,
-      "outputPrice": 15.0,
-      "cacheInputPrice": 0.3,
-      "blendedPrice": 2.31,
-      "costToRunIndex": null,
-      "isOpenWeights": false,
-      "releaseDate": "2026-06-30",
-      "contextWindow": 1000000,
-      "url": "https://artificialanalysis.ai/models/claude-sonnet-5-xhigh",
-      "gpqa": null,
-      "aime": null,
-      "aime25": null,
-      "humaneval": null,
-      "livecodebench": null,
-      "scicode": null,
-      "mmluPro": null,
-      "math500": null,
-      "hle": null,
-      "gdpval": 1498.94,
-      "ifbench": null,
-      "tau2": null,
-      "terminalbenchHard": null,
-      "critpt": null,
-      "mmmuPro": null,
-      "multilingualAA": null,
-      "omniscience": null,
-      "lcr": null
+      "intelligenceRank": 37
     }
   ]
 }
