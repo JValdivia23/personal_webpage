@@ -39,7 +39,7 @@ TARGET_URL = (
     "https://artificialanalysis.ai/models/deepseek-v4-pro"
     "?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,muse-spark,"
     "gemini-3-1-pro-preview,gemini-3-5-flash,"
-    "claude-sonnet-4-6-adaptive,claude-opus-4-7,claude-opus-4-8,"
+    "claude-sonnet-4-6-adaptive,claude-sonnet-5-xhigh,claude-opus-4-7,claude-opus-4-8,"
     "deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,"
     "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,minimax-m2-7,minimax-m3,"
     "nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,"
@@ -53,6 +53,7 @@ TARGET_URL = (
 # Custom display names for models with ugly slugs
 DISPLAY_NAMES = {
     "mimo-v2-5-0424": "MiMo-V2.5",
+    "claude-sonnet-5-xhigh": "Claude Sonnet 5 (xhigh)",
 }
 
 MIN_MODELS = 5
@@ -226,8 +227,11 @@ def clean_model(raw: dict) -> dict | None:
     slug = raw.get("slug")
     intelligence = raw.get("intelligence_index")
 
-    if not name or not slug or intelligence is None:
+    if not name or not slug:
         return None
+    # Allow null intelligence_index for brand-new models that AA hasn't
+    # benchmarked yet (e.g., claude-sonnet-5-xhigh at launch). The chart
+    # skips points with null intelligence.
 
     # Extract creator name
     creators = raw.get("model_creators", [])
@@ -259,7 +263,7 @@ def clean_model(raw: dict) -> dict | None:
         "name": name,
         "shortName": DISPLAY_NAMES.get(slug, raw.get("short_name") or name),
         "provider": creator_name,
-        "intelligenceIndex": float(intelligence),
+        "intelligenceIndex": float(intelligence) if intelligence is not None else None,
         "codingIndex": raw.get("coding_index"),
         "agenticIndex": raw.get("agentic_index"),
         "mathIndex": raw.get("math_index"),
@@ -315,11 +319,13 @@ def fetch_and_clean(url: str) -> list[dict]:
         # Fetch each model's RSC data directly via the browser context
         # The RSC response contains the full model JSON
         raw_models = []
+        fetch_failures = {}
         for slug in target_slugs:
             rsc_url = f"https://artificialanalysis.ai/models/{slug}?_rsc=1"
             try:
                 resp = page.context.request.get(rsc_url, headers={"RSC": "1"})
                 if resp.status != 200:
+                    fetch_failures[slug] = f"HTTP {resp.status}"
                     continue
                 text = resp.text()
                 # Strategy: find intelligence_index, then search backwards for the {
@@ -327,18 +333,21 @@ def fetch_and_clean(url: str) -> list[dict]:
                 # object contains our slug (skipping nested objects).
                 intel_pos = text.find('"intelligence_index"')
                 if intel_pos < 0:
+                    fetch_failures[slug] = "no intelligence_index in response"
                     continue
-                # Search backwards from intelligence_index, up to 10KB
+                # Search backwards from intelligence_index, up to 50KB
+                # (must be large enough to find the { that opens the model object
+                # — for some models it's 10-15KB before the intelligence_index field)
                 best_obj = None
-                for candidate_start in range(intel_pos, max(0, intel_pos - 10000), -1):
+                for candidate_start in range(intel_pos, max(0, intel_pos - 50000), -1):
                     if text[candidate_start] != '{':
                         continue
-                    # Find matching }
+                    # Find matching } — no forward limit; model objects can be 20KB+
                     depth = 0
                     in_str = False
                     escape = False
                     obj_end = -1
-                    search_end = min(len(text), candidate_start + 50000)
+                    search_end = min(len(text), candidate_start + 200000)
                     for i in range(candidate_start, search_end):
                         c = text[i]
                         if escape:
@@ -373,9 +382,16 @@ def fetch_and_clean(url: str) -> list[dict]:
                         continue
                 if best_obj is not None:
                     raw_models.append(best_obj)
+                else:
+                    fetch_failures[slug] = "no enclosing object found containing slug"
             except Exception as e:
-                log(f"  Failed to fetch {slug}: {e}")
+                fetch_failures[slug] = f"exception: {e}"
                 continue
+
+        if fetch_failures:
+            log(f"  Fetch failures ({len(fetch_failures)}):")
+            for slug, reason in fetch_failures.items():
+                log(f"    {slug}: {reason}")
 
         log(f"Fetched {len(raw_models)} models via RSC")
         browser.close()
@@ -401,15 +417,18 @@ def fetch_and_clean(url: str) -> list[dict]:
 
 
 def compute_ranks(models: list[dict]) -> list[dict]:
-    """Sort by intelligence and assign ranks."""
-    # Only rank models with valid intelligence
-    valid = [m for m in models if m.get("intelligenceIndex") is not None]
-    valid.sort(key=lambda m: m["intelligenceIndex"], reverse=True)
+    """Sort by intelligence and assign ranks. Models with null intelligence
+    are kept in the data but not ranked (they appear at the end)."""
+    ranked = [m for m in models if m.get("intelligenceIndex") is not None]
+    ranked.sort(key=lambda m: m["intelligenceIndex"], reverse=True)
 
-    for i, model in enumerate(valid, 1):
+    for i, model in enumerate(ranked, 1):
         model["intelligenceRank"] = i
 
-    return valid
+    # Append unranked models (e.g., brand-new launches without AA benchmarks yet)
+    unranked = [m for m in models if m.get("intelligenceIndex") is None]
+
+    return ranked + unranked
 
 
 def write_output(models: list[dict]) -> None:

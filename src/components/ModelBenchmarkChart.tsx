@@ -22,7 +22,7 @@ interface AIModel {
   name: string;
   shortName: string;
   provider: string;
-  intelligenceIndex: number;
+  intelligenceIndex: number | null;
   codingIndex: number | null;
   agenticIndex: number | null;
   mathIndex: number | null;
