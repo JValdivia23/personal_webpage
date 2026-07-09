@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, type Dispatch, type SetStateAction } from "react";
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
 import {
@@ -9,6 +9,9 @@ import {
   BarChart3,
   BookOpen,
   Info,
+  ChevronDown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -580,6 +583,159 @@ function DocumentationPanel({
 }
 
 // ---------------------------------------------------------------------------
+// Model filter panel (collapsible, provider-grouped toggle chips)
+// ---------------------------------------------------------------------------
+function ModelFilterPanel({
+  models,
+  hiddenModelIds,
+  setHiddenModelIds,
+  showModelPanel,
+  setShowModelPanel,
+}: {
+  models: any[];
+  hiddenModelIds: Set<string>;
+  setHiddenModelIds: Dispatch<SetStateAction<Set<string>>>;
+  showModelPanel: boolean;
+  setShowModelPanel: Dispatch<SetStateAction<boolean>>;
+}) {
+  // Group models by provider, sorted by model count desc then name
+  const byProvider = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    for (const m of models) {
+      (groups[m.provider] ??= []).push(m);
+    }
+    return Object.entries(groups).sort((a, b) => {
+      if (b[1].length !== a[1].length) return b[1].length - a[1].length;
+      return a[0].localeCompare(b[0]);
+    });
+  }, [models]);
+
+  const activeCount = models.length - hiddenModelIds.size;
+
+  const toggleModel = (id: string) => {
+    setHiddenModelIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleProvider = (providerModels: any[]) => {
+    const allHidden = providerModels.every((m) => hiddenModelIds.has(m.id));
+    setHiddenModelIds((prev) => {
+      const next = new Set(prev);
+      if (allHidden) {
+        providerModels.forEach((m) => next.delete(m.id));
+      } else {
+        providerModels.forEach((m) => next.add(m.id));
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => setHiddenModelIds(new Set());
+  const clearAll = () => setHiddenModelIds(new Set(models.map((m) => m.id)));
+
+  return (
+    <div className="mb-12 mt-8">
+      {/* Collapsible header */}
+      <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50">
+        <button
+          onClick={() => setShowModelPanel(!showModelPanel)}
+          className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200"
+        >
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${showModelPanel ? "" : "-rotate-90"}`}
+          />
+          Models
+        </button>
+        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+          {activeCount} of {models.length} active
+        </span>
+        <div className="ml-auto flex items-center gap-3 text-xs">
+          <button
+            onClick={selectAll}
+            className="font-medium text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+          >
+            Select All
+          </button>
+          <span className="text-gray-300 dark:text-gray-700">·</span>
+          <button
+            onClick={clearAll}
+            className="font-medium text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+          >
+            Clear All
+          </button>
+        </div>
+      </div>
+
+      {/* Expandable content */}
+      {showModelPanel && (
+        <div className="mt-3 space-y-3">
+          {byProvider.map(([provider, providerModels]) => {
+            const providerActive = providerModels.filter(
+              (m) => !hiddenModelIds.has(m.id)
+            ).length;
+            const allHidden = providerActive === 0;
+            return (
+              <div
+                key={provider}
+                className="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900/30"
+              >
+                {/* Provider header */}
+                <div className="mb-2 flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ background: getProviderColor(provider) }}
+                  />
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {provider}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {providerActive}/{providerModels.length}
+                  </span>
+                  <button
+                    onClick={() => toggleProvider(providerModels)}
+                    className="ml-auto text-xs font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                  >
+                    {allHidden ? "Show all" : "Hide all"}
+                  </button>
+                </div>
+                {/* Model chips grid */}
+                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
+                  {providerModels.map((m) => {
+                    const active = !hiddenModelIds.has(m.id);
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => toggleModel(m.id)}
+                        className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors ${
+                          active
+                            ? "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                            : "border border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-600 dark:hover:bg-gray-800/50"
+                        }`}
+                      >
+                        {active ? (
+                          <Eye className="h-3 w-3 shrink-0" />
+                        ) : (
+                          <EyeOff className="h-3 w-3 shrink-0 opacity-60" />
+                        )}
+                        <span className="truncate">{m.shortName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
 export default function AgenticAIPage() {
@@ -587,6 +743,29 @@ export default function AgenticAIPage() {
   const [selectedMetric, setSelectedMetric] = useState("intelligenceIndex");
   const [priceMode, setPriceMode] = useState<"price" | "cost">("price");
   const [sidebarTab, setSidebarTab] = useState<"metrics" | "docs">("metrics");
+  const [hiddenModelIds, setHiddenModelIds] = useState<Set<string>>(new Set());
+  const [showModelPanel, setShowModelPanel] = useState(false);
+
+  // Load hidden-model selection from localStorage on mount.
+  // Done in useEffect (not lazy initializer) to avoid SSR/CSR hydration
+  // mismatch — the server renders with all models visible.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("hiddenModelIds");
+      if (saved) setHiddenModelIds(new Set(JSON.parse(saved)));
+    } catch {
+      // invalid JSON or localStorage unavailable — start fresh
+    }
+  }, []);
+
+  // Persist hidden-model selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("hiddenModelIds", JSON.stringify([...hiddenModelIds]));
+    } catch {
+      // localStorage unavailable — selection still works in-session
+    }
+  }, [hiddenModelIds]);
 
   const lastUpdated = new Date(aiModels.lastUpdated).toLocaleDateString(
     "en-US",
@@ -600,16 +779,25 @@ export default function AgenticAIPage() {
   const currentMetric =
     METRICS.find((m) => m.key === selectedMetric) || METRICS[0];
 
+  // Models currently visible (not hidden by the user). Charts, availability
+  // counts, and the documentation panel all use this filtered set.
+  // Recent Releases intentionally uses the full `models` set.
+  const activeModels = useMemo(
+    () => models.filter((m) => !hiddenModelIds.has(m.id)),
+    [models, hiddenModelIds]
+  );
+
   // Availability counts
   const availability = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const m of METRICS) {
-      counts[m.key] = countAvailable(models, m.key);
+      counts[m.key] = countAvailable(activeModels, m.key);
     }
     return counts;
-  }, [models]);
+  }, [activeModels]);
 
-  // Recent releases (last 90 days)
+  // Recent releases (last 90 days) — always uses the full model set,
+  // independent of the active/hidden toggle.
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
   const recentReleases = models
@@ -708,9 +896,9 @@ export default function AgenticAIPage() {
                       <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                         {metric.description}
                       </p>
-                      {avail < models.length && (
+                      {avail < activeModels.length && (
                         <p className="mt-0.5 text-[10px] text-amber-600 dark:text-amber-400">
-                          {avail} of {models.length} models
+                          {avail} of {activeModels.length} models
                         </p>
                       )}
                     </div>
@@ -763,7 +951,7 @@ export default function AgenticAIPage() {
           {sidebarTab === "metrics" ? (
             <>
               <ModelBenchmarkChart
-                models={models}
+                models={activeModels}
                 selectedMetric={selectedMetric}
                 priceMode={priceMode}
                 metricLabel={currentMetric.label}
@@ -773,10 +961,19 @@ export default function AgenticAIPage() {
               </p>
             </>
           ) : (
-            <DocumentationPanel metric={currentMetric} models={models} />
+            <DocumentationPanel metric={currentMetric} models={activeModels} />
           )}
         </main>
       </div>
+
+      {/* Model filter panel (collapsible) — toggles which models appear in the charts */}
+      <ModelFilterPanel
+        models={models}
+        hiddenModelIds={hiddenModelIds}
+        setHiddenModelIds={setHiddenModelIds}
+        showModelPanel={showModelPanel}
+        setShowModelPanel={setShowModelPanel}
+      />
 
       {/* Recent Releases */}
       {recentReleases.length > 0 && (

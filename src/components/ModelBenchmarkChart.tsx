@@ -547,7 +547,9 @@ export function ModelBenchmarkChart({
         </div>
         <div className="flex h-[400px] items-center justify-center rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            No models have data for this cost mode. Try switching to &quot;Cost to Run&quot;.
+            {models.length === 0
+              ? "No models selected. Enable models in the filter panel below."
+              : "No models have data for this cost mode. Try switching to \u201CCost to Run\u201D."}
           </p>
         </div>
       </div>
