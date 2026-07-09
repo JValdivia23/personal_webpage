@@ -742,7 +742,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 2;
+const FILTER_VERSION = 3;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
   "gpt-5-6-sol",
@@ -762,6 +762,19 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "gpt-5-6-luna-medium",
   "gpt-5-6-luna-low",
   "gpt-5-6-luna-non-reasoning",
+  // Lower-performing / older models (hidden by default, enable to compare)
+  "deepseek-v3-2-reasoning",
+  "deepseek-v4-flash-high",
+  "mimo-v2-pro",
+  "mimo-v2-omni",
+  "qwen3-6-plus",
+  "kimi-k2-5",
+  "minimax-m2-5",
+  "minimax-m2-7",
+  "grok-4-20",
+  "grok-4-3",
+  "gemini-3-1-pro-preview",
+  "glm-5-1",
 ]);
 
 // ---------------------------------------------------------------------------
