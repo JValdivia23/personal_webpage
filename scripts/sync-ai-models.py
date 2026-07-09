@@ -9,9 +9,11 @@ What it does:
     1. Launches a headless browser
     2. Navigates to the Artificial Analysis model comparison page (triggers prefetch)
     3. For each target model slug, fetches its RSC data via /models/{slug}?_rsc=1
-    4. Extracts the full model object (anchored on `intelligence_index` to skip the
+    4. Extracts the full model object (anchored on `intelligenceIndex` to skip the
        lightweight summary object that appears before the full model data)
     5. Cleans the raw data and writes it to src/data/ai-models.json
+    6. Uses hybrid field reads (camelCase first, snake_case fallback) to handle
+       AA's RSC format change from snake_case to camelCase (July 2026)
 
 Requirements:
     - Python 3.x with `playwright` installed
@@ -41,7 +43,7 @@ TARGET_URL = (
     "gemini-3-1-pro-preview,gemini-3-5-flash,"
     "claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-opus-4-7,claude-opus-4-8,"
     "deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,"
-    "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,minimax-m2-7,minimax-m3,"
+    "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,minimax-m2-7,minimax-m3,"
     "nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,"
     "kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,"
     "glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
@@ -117,7 +119,9 @@ def _parse_models_from_text(text: str, target_slugs: set[str] | None) -> list[di
             for m in re.finditer(r'"slug":"' + re.escape(slug) + r'"', text):
                 slug_pos = m.start()
                 # Look for intelligence_index within 50KB after the slug
-                intel_idx = text.find('"intelligence_index"', slug_pos)
+                intel_idx = text.find('"intelligenceIndex"', slug_pos)
+                if intel_idx < 0:
+                    intel_idx = text.find('"intelligence_index"', slug_pos)
                 if intel_idx < 0 or intel_idx > slug_pos + 50000:
                     continue
                 # Find enclosing { (search backwards, up to 2KB)
@@ -156,7 +160,7 @@ def _parse_models_from_text(text: str, target_slugs: set[str] | None) -> list[di
                 if obj_end < 0:
                     continue
                 obj_str = text[obj_start:obj_end]
-                if '"intelligence_index"' not in obj_str:
+                if '"intelligenceIndex"' not in obj_str and '"intelligence_index"' not in obj_str:
                     continue
                 try:
                     obj = _json.loads(obj_str)
@@ -166,8 +170,8 @@ def _parse_models_from_text(text: str, target_slugs: set[str] | None) -> list[di
                 except Exception:
                     pass
     else:
-        # Fallback: scan all intelligence_index
-        for m in re.finditer(r'"intelligence_index":', text):
+        # Fallback: scan all intelligenceIndex
+        for m in re.finditer(r'"intelligenceIndex":', text):
             idx = m.start()
             search_start = max(0, idx - 5000)
             obj_start = text.rfind('{', search_start, idx)
@@ -221,59 +225,75 @@ def _parse_models_from_text(text: str, target_slugs: set[str] | None) -> list[di
 
 
 def clean_model(raw: dict) -> dict | None:
-    """Transform a raw model dict into our cleaned schema."""
+    """Transform a raw model dict into our cleaned schema.
+    Uses hybrid field reads (camelCase first, snake_case fallback) to handle
+    AA's RSC format change from snake_case to camelCase (July 2026).
+    """
     name = raw.get("name")
     slug = raw.get("slug")
-    intelligence = raw.get("intelligence_index")
+    intelligence = raw.get("intelligenceIndex", raw.get("intelligence_index"))
 
     if not name or not slug:
         return None
     # Allow null intelligence_index for brand-new models that AA hasn't
-    # benchmarked yet (e.g., claude-sonnet-5-xhigh at launch). The chart
-    # skips points with null intelligence.
+    # benchmarked yet. The chart skips points with null intelligence.
 
-    # Extract creator name
-    creators = raw.get("model_creators", [])
-    if isinstance(creators, list) and creators:
-        creator_name = creators[0].get("name") if isinstance(creators[0], dict) else str(creators[0])
-    elif isinstance(creators, dict):
-        creator_name = creators.get("name", "Unknown")
+    # Extract creator name (AA changed from model_creators list to single creator dict)
+    creator = raw.get("creator")
+    if isinstance(creator, dict):
+        creator_name = creator.get("name", "Unknown")
     else:
-        creator_name = "Unknown"
+        creators = raw.get("model_creators", [])
+        if isinstance(creators, list) and creators:
+            creator_name = creators[0].get("name") if isinstance(creators[0], dict) else str(creators[0])
+        elif isinstance(creators, dict):
+            creator_name = creators.get("name", "Unknown")
+        else:
+            creator_name = "Unknown"
 
     # Price fields
-    input_price = raw.get("price_1m_input_tokens")
-    output_price = raw.get("price_1m_output_tokens")
-    cache_hit_price = raw.get("cache_hit_price")
+    input_price = raw.get("price1mInputTokens", raw.get("price_1m_input_tokens"))
+    output_price = raw.get("price1mOutputTokens", raw.get("price_1m_output_tokens"))
+    cache_hit_price = raw.get("cacheHitPrice", raw.get("cache_hit_price"))
 
     # Blended price: prefer 7:2:1 (cache:input:output), fallback to 3:1, then compute
-    blended_price = raw.get("price_1m_blended_7_2_1")
+    blended_price = raw.get("price1mBlended7To2To1", raw.get("price_1m_blended_7_2_1"))
     if blended_price is None:
-        blended_price = raw.get("price_1m_blended_0_3_1")
+        blended_price = raw.get("price1mBlended0To3To1", raw.get("price_1m_blended_0_3_1"))
     if blended_price is None and input_price is not None and output_price is not None:
         blended_price = (float(input_price) * 3 + float(output_price)) / 4
 
-    # Cost to run intelligence index
-    cost_data = raw.get("intelligence_index_cost", {})
-    total_cost = cost_data.get("total_cost") if isinstance(cost_data, dict) else None
+    # Cost to run intelligence index (total -> total_cost fallback)
+    cost_data = raw.get("intelligenceIndexCost", raw.get("intelligence_index_cost", {}))
+    total_cost = None
+    if isinstance(cost_data, dict):
+        total_cost = cost_data.get("total", cost_data.get("total_cost"))
+
+    # Briefcase Elo (nested in briefcaseBreakdown.overall.elo)
+    briefcase = raw.get("briefcaseBreakdown")
+    briefcase_elo = None
+    if isinstance(briefcase, dict):
+        overall = briefcase.get("overall", {})
+        if isinstance(overall, dict):
+            briefcase_elo = overall.get("elo")
 
     return {
         "id": slug,
         "name": name,
-        "shortName": DISPLAY_NAMES.get(slug, raw.get("short_name") or name),
+        "shortName": DISPLAY_NAMES.get(slug, raw.get("shortName", raw.get("short_name")) or name),
         "provider": creator_name,
         "intelligenceIndex": float(intelligence) if intelligence is not None else None,
-        "codingIndex": raw.get("coding_index"),
-        "agenticIndex": raw.get("agentic_index"),
-        "mathIndex": raw.get("math_index"),
+        "codingIndex": raw.get("codingIndex", raw.get("coding_index")),
+        "agenticIndex": raw.get("agenticIndex", raw.get("agentic_index")),
+        "mathIndex": raw.get("mathIndex", raw.get("math_index")),
         "inputPrice": float(input_price) if input_price is not None else None,
         "outputPrice": float(output_price) if output_price is not None else None,
         "cacheInputPrice": float(cache_hit_price) if cache_hit_price is not None else None,
         "blendedPrice": float(blended_price) if blended_price is not None else None,
         "costToRunIndex": float(total_cost) if total_cost is not None else None,
-        "isOpenWeights": raw.get("is_open_weights"),
-        "releaseDate": raw.get("release_date"),
-        "contextWindow": raw.get("context_window_tokens"),
+        "isOpenWeights": raw.get("isOpenWeights", raw.get("is_open_weights")),
+        "releaseDate": raw.get("releaseDate", raw.get("release_date")),
+        "contextWindow": raw.get("contextWindowTokens", raw.get("context_window_tokens")),
         "url": f"https://artificialanalysis.ai/models/{slug}",
         # Benchmark scores
         "gpqa": raw.get("gpqa"),
@@ -282,18 +302,27 @@ def clean_model(raw: dict) -> dict | None:
         "humaneval": raw.get("humaneval"),
         "livecodebench": raw.get("livecodebench"),
         "scicode": raw.get("scicode"),
-        "mmluPro": raw.get("mmlu_pro"),
-        "math500": raw.get("math_500"),
+        "mmluPro": raw.get("mmluPro", raw.get("mmlu_pro")),
+        "math500": raw.get("math500", raw.get("math_500")),
         "hle": raw.get("hle"),
         "gdpval": raw.get("gdpval"),
         "ifbench": raw.get("ifbench"),
         "tau2": raw.get("tau2"),
-        "terminalbenchHard": raw.get("terminalbench_hard"),
+        "terminalbenchHard": raw.get("terminalbenchHard", raw.get("terminalbench_hard")),
         "critpt": raw.get("critpt"),
-        "mmmuPro": raw.get("mmmu_pro"),
-        "multilingualAA": raw.get("multilingual_aa"),
+        "mmmuPro": raw.get("mmmuPro", raw.get("mmmu_pro")),
+        "multilingualAA": raw.get("multilingualAA", raw.get("multilingual_aa")),
         "omniscience": raw.get("omniscience"),
         "lcr": raw.get("lcr"),
+        # New benchmarks (July 2026 — Intelligence Index v4.1 + standalone agentic benchmarks)
+        "tauBanking": raw.get("tauBanking"),
+        "terminalbenchV21": raw.get("terminalbenchV21"),
+        "automationBench": raw.get("automationBenchPartialScore"),
+        "enterpriseOpsGym": raw.get("enterpriseOpsGym"),
+        "harveyLabAllPass": raw.get("harveyLabAllPass"),
+        "apexAgents": raw.get("apexAgents"),
+        "itBenchSre": raw.get("itBenchSre"),
+        "briefcaseElo": briefcase_elo,
     }
 
 
@@ -330,9 +359,11 @@ def fetch_and_clean(url: str) -> list[dict]:
                 # Strategy: find intelligence_index, then search backwards for the {
                 # that starts the full model object. We verify by checking if the
                 # object contains our slug (skipping nested objects).
-                intel_pos = text.find('"intelligence_index"')
+                intel_pos = text.find('"intelligenceIndex"')
                 if intel_pos < 0:
-                    fetch_failures[slug] = "no intelligence_index in response"
+                    intel_pos = text.find('"intelligence_index"')
+                if intel_pos < 0:
+                    fetch_failures[slug] = "no intelligenceIndex in response"
                     continue
                 # Search backwards from intelligence_index, up to 50KB
                 # (must be large enough to find the { that opens the model object

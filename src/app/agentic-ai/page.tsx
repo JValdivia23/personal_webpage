@@ -213,6 +213,86 @@ const METRICS: MetricDef[] = [
       "A challenging benchmark measuring language models' ability to extract, reason about, and synthesize information from long-form documents ranging from 10k to 100k tokens (measured using the cl100k_base tokenizer). Long-form text comprehension represents an under-studied class of evaluations where humans dramatically outscore language models, despite expanding context windows in current AI systems. LCR features 100 questions across diverse document types including academic papers, company financials, government consultations, legal documents, industry reports, and marketing materials, requiring genuine reasoning rather than simple data extraction. Each question demands multi-step reasoning to synthesize information from dispersed sections, understand complex domain-specific content, and produce unambiguous answers that mid-2024 frontier models achieve less than 50% accuracy on. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning",
   },
+  {
+    key: "tauBanking",
+    label: "Banking Tool Use",
+    description: "Fintech customer-support agent navigating knowledge bases and tool calls",
+    testBadge: "τ³-Banking",
+    scale: "0.0 to 1.0 (accuracy)",
+    fullDescription:
+      "A fintech customer-support benchmark from the 𝜏-Knowledge framework that tests whether agents can navigate a large unstructured knowledge base and execute multi-step tool calls to resolve realistic banking workflows. Part of the Artificial Analysis Intelligence Index v4.1. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/tau3-banking",
+  },
+  {
+    key: "terminalbenchV21",
+    label: "Terminal / System Ops v2.1",
+    description: "Verified refresh of Terminal-Bench v2.0 — 89 curated agentic tasks",
+    testBadge: "TerminalBench v2.1",
+    scale: "0.0 to 1.0 (accuracy)",
+    fullDescription:
+      "A verified refresh of Terminal-Bench v2.0 — 89 curated tasks across software engineering, system administration, data processing, model training, and security, with environment and instruction fixes so scores reflect agent capability rather than environment gaps. Part of the Artificial Analysis Intelligence Index v4.1. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/terminalbench-v2-1",
+  },
+  {
+    key: "automationBench",
+    label: "SaaS Workflow Automation",
+    description: "Agentic task completion across simulated SaaS app environments (657 tasks)",
+    testBadge: "AutomationBench",
+    scale: "0.0 to 1.0 (share of objectives completed)",
+    fullDescription:
+      "A benchmark measuring agentic task completion across simulated SaaS application environments, scoring the share of each task's objectives completed without guardrail violations. The benchmark covers 657 tasks across six business domains (Finance, HR, Marketing, Operations, Sales, Support) using simulated environments for applications including Gmail, Google Sheets, Slack, Salesforce, Zendesk, Jira, and HubSpot. Developed by Zapier. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/automationbench-aa",
+  },
+  {
+    key: "enterpriseOpsGym",
+    label: "Enterprise Operations",
+    description: "Stateful, multi-step enterprise workflows across 8 business domains",
+    testBadge: "EnterpriseOps-Gym",
+    scale: "0.0 to 1.0 (task completion rate)",
+    fullDescription:
+      "Artificial Analysis' independent implementation of ServiceNow's EnterpriseOps-Gym, an agentic benchmark testing whether LLM agents can complete stateful, multi-step enterprise workflows across eight business domains via live tool use, graded on the final state of the underlying databases. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/enterprise-ops-gym-aa",
+  },
+  {
+    key: "harveyLabAllPass",
+    label: "Legal Agent Work",
+    description: "Real-world legal work across 24 practice areas (120 private tasks)",
+    testBadge: "Harvey LAB",
+    scale: "0.0 to 1.0 (task all-pass rate)",
+    fullDescription:
+      "Artificial Analysis' implementation of Harvey's Legal Agent Benchmark (LAB), testing AI agents on real-world legal work from Harvey's dataset of 120 private tasks spanning 24 legal practice areas. The agent reads case documents in a sandbox and produces legal deliverables (e.g., memos, disclosure schedules, deposition summaries), graded criterion-by-criterion by a single LLM rubric judge. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/harvey-lab-aa",
+  },
+  {
+    key: "apexAgents",
+    label: "Professional Services Agents",
+    description: "Long-horizon, cross-application tasks in professional-services environments",
+    testBadge: "APEX-Agents",
+    scale: "0.0 to 1.0 (task completion rate)",
+    fullDescription:
+      "Artificial Analysis' implementation of the APEX-Agents benchmark, testing AI agents on long-horizon, cross-application tasks in professional-services environments with realistic application tooling. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/apex-agents-aa",
+  },
+  {
+    key: "itBenchSre",
+    label: "Kubernetes Incident Analysis",
+    description: "Root-cause analysis of Kubernetes incidents from offline snapshots",
+    testBadge: "ITBench",
+    scale: "0.0 to 1.0 (accuracy)",
+    fullDescription:
+      "Artificial Analysis' implementation of IBM's ITBench benchmark, testing AI agents on Kubernetes incident root-cause analysis from offline incident snapshots. The agent inspects alerts, events, traces, and topology and identifies the contributing-factor entities (deployments, pods, namespaces, network policies, etc.) responsible for the failure. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/itbench-aa",
+  },
+  {
+    key: "briefcaseElo",
+    label: "Knowledge Work Deliverables",
+    description: "Agentic knowledge work producing spreadsheets, presentations, and memos",
+    testBadge: "AA-Briefcase",
+    scale: "Elo rating (higher is better)",
+    fullDescription:
+      "A private evaluation developed by Artificial Analysis for frontier agentic capability in long-horizon knowledge work, testing agents on realistic business workflows that require deliverables such as spreadsheets, presentations, and memos. AA-Briefcase Elo is a combined metric that aggregates rubric pass rate, analytical quality Elo and presentation Elo. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/aa-briefcase",
+  },
 ];
 
 // ---------------------------------------------------------------------------

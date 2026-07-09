@@ -44,6 +44,14 @@ interface AIModel {
   omniscience: number | null;
   lcr: number | null;
   contextWindow: number | null;
+  tauBanking: number | null;
+  terminalbenchV21: number | null;
+  automationBench: number | null;
+  enterpriseOpsGym: number | null;
+  harveyLabAllPass: number | null;
+  apexAgents: number | null;
+  itBenchSre: number | null;
+  briefcaseElo: number | null;
 }
 
 interface ModelBenchmarkChartProps {
