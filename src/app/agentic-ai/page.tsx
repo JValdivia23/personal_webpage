@@ -667,7 +667,7 @@ export default function AgenticAIPage() {
             </div>
 
             {/* Metric list (shown in both tabs, but more prominent in metrics tab) */}
-            <div className="space-y-1">
+            <div className="space-y-1 lg:max-h-[680px] lg:overflow-y-auto lg:pr-1">
               {METRICS.map((metric) => {
                 const isActive = selectedMetric === metric.key;
                 const avail = availability[metric.key];
