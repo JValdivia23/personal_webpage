@@ -736,6 +736,35 @@ function ModelFilterPanel({
 }
 
 // ---------------------------------------------------------------------------
+// Default-hidden models & filter versioning
+// ---------------------------------------------------------------------------
+// Bump FILTER_VERSION whenever new models should be hidden by default.
+// On version mismatch, the saved selection is merged with the new defaults
+// (preserving any user-customized toggles). On version match, the saved
+// selection is loaded as-is.
+const FILTER_VERSION = 2;
+const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
+  // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
+  "gpt-5-6-sol",
+  "gpt-5-6-sol-high",
+  "gpt-5-6-sol-medium",
+  "gpt-5-6-sol-low",
+  "gpt-5-6-sol-non-reasoning",
+  // GPT-5.6 Terra variants
+  "gpt-5-6-terra",
+  "gpt-5-6-terra-high",
+  "gpt-5-6-terra-medium",
+  "gpt-5-6-terra-low",
+  "gpt-5-6-terra-non-reasoning",
+  // GPT-5.6 Luna variants
+  "gpt-5-6-luna",
+  "gpt-5-6-luna-high",
+  "gpt-5-6-luna-medium",
+  "gpt-5-6-luna-low",
+  "gpt-5-6-luna-non-reasoning",
+]);
+
+// ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
 export default function AgenticAIPage() {
@@ -747,14 +776,34 @@ export default function AgenticAIPage() {
   const [showModelPanel, setShowModelPanel] = useState(false);
 
   // Load hidden-model selection from localStorage on mount.
-  // Done in useEffect (not lazy initializer) to avoid SSR/CSR hydration
-  // mismatch — the server renders with all models visible.
+  // Versioned: when FILTER_VERSION bumps, merge the new DEFAULT_HIDDEN_IDS
+  // into the user's saved selection (preserving their custom toggles).
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("hiddenModelIds");
-      if (saved) setHiddenModelIds(new Set(JSON.parse(saved)));
+      const savedVersion = localStorage.getItem("filterVersion");
+      const savedHidden = localStorage.getItem("hiddenModelIds");
+      if (savedVersion === String(FILTER_VERSION) && savedHidden) {
+        // Same version — respect the user's saved selection as-is
+        setHiddenModelIds(new Set(JSON.parse(savedHidden)));
+      } else {
+        // New version or first visit — apply defaults, preserving any
+        // existing user-hidden IDs so customizations aren't lost.
+        let preserved = new Set<string>();
+        if (savedHidden) {
+          try {
+            preserved = new Set(JSON.parse(savedHidden));
+          } catch {
+            // invalid JSON — start fresh
+          }
+        }
+        const merged = new Set([...preserved, ...DEFAULT_HIDDEN_IDS]);
+        setHiddenModelIds(merged);
+        localStorage.setItem("filterVersion", String(FILTER_VERSION));
+        localStorage.setItem("hiddenModelIds", JSON.stringify([...merged]));
+      }
     } catch {
-      // invalid JSON or localStorage unavailable — start fresh
+      // localStorage unavailable — fall back to defaults in-memory
+      setHiddenModelIds(new Set(DEFAULT_HIDDEN_IDS));
     }
   }, []);
 

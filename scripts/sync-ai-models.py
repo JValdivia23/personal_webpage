@@ -39,7 +39,12 @@ OUTPUT_FILE = DATA_DIR / "ai-models.json"
 # The comparison page with the model filter applied
 TARGET_URL = (
     "https://artificialanalysis.ai/models/deepseek-v4-pro"
-    "?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,gpt-5-6-terra-xhigh,gpt-5-6-sol-xhigh,gpt-5-6-luna-xhigh,muse-spark,"
+    "?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,"
+    "gpt-5-6-terra-xhigh,gpt-5-6-sol-xhigh,gpt-5-6-luna-xhigh,"
+    "gpt-5-6-terra,gpt-5-6-terra-high,gpt-5-6-terra-medium,gpt-5-6-terra-low,gpt-5-6-terra-non-reasoning,"
+    "gpt-5-6-sol,gpt-5-6-sol-high,gpt-5-6-sol-medium,gpt-5-6-sol-low,gpt-5-6-sol-non-reasoning,"
+    "gpt-5-6-luna,gpt-5-6-luna-high,gpt-5-6-luna-medium,gpt-5-6-luna-low,gpt-5-6-luna-non-reasoning,"
+    "muse-spark,"
     "gemini-3-1-pro-preview,gemini-3-5-flash,"
     "claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-opus-4-7,claude-opus-4-8,"
     "deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,"
