@@ -1,7 +1,7 @@
 {
-  "lastUpdated": "2026-07-09T11:31:56.587532",
-  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,muse-spark,gemini-3-1-pro-preview,gemini-3-5-flash,claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-opus-4-7,claude-opus-4-8,deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,minimax-m2-7,minimax-m3,nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,claude-fable-5&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
-  "modelCount": 38,
+  "lastUpdated": "2026-07-09T14:12:18.972817",
+  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,gpt-5-6-terra-xhigh,gpt-5-6-sol-xhigh,gpt-5-6-luna-xhigh,muse-spark,gemini-3-1-pro-preview,gemini-3-5-flash,claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-opus-4-7,claude-opus-4-8,deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,minimax-m2-7,minimax-m3,nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,claude-fable-5&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
+  "modelCount": 41,
   "models": [
     {
       "id": "claude-fable-5",
@@ -50,6 +50,52 @@
       "intelligenceRank": 1
     },
     {
+      "id": "gpt-5-6-sol-xhigh",
+      "name": "GPT-5.6 Sol (xhigh)",
+      "shortName": "GPT-5.6 Sol (xhigh)",
+      "provider": "OpenAI",
+      "intelligenceIndex": 57.653836996095,
+      "codingIndex": 78.3482452489943,
+      "agenticIndex": 51.7983493699885,
+      "mathIndex": null,
+      "inputPrice": 5.0,
+      "outputPrice": 30.0,
+      "cacheInputPrice": 0.5,
+      "blendedPrice": 4.35,
+      "costToRunIndex": 1542.5249316860813,
+      "isOpenWeights": false,
+      "releaseDate": null,
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/gpt-5-6-sol-xhigh",
+      "gpqa": 0.931313131313131,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": 0.560185185185185,
+      "mmluPro": null,
+      "math500": null,
+      "hle": 0.447173308619092,
+      "gdpval": 1702.21,
+      "ifbench": 0.710204081632653,
+      "tau2": 0.847953216374269,
+      "terminalbenchHard": 0.613636363636364,
+      "critpt": 0.285714285714286,
+      "mmmuPro": 0.826589595375723,
+      "multilingualAA": null,
+      "omniscience": 20.55,
+      "lcr": 0.71,
+      "tauBanking": 0.326460481099656,
+      "terminalbenchV21": 0.895131086142322,
+      "automationBench": null,
+      "enterpriseOpsGym": null,
+      "harveyLabAllPass": null,
+      "apexAgents": null,
+      "itBenchSre": null,
+      "briefcaseElo": null,
+      "intelligenceRank": 2
+    },
+    {
       "id": "claude-opus-4-8",
       "name": "Claude Opus 4.8 (Adaptive Reasoning, Max Effort)",
       "shortName": "Claude Opus 4.8 (max)",
@@ -93,7 +139,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": 1354.4,
-      "intelligenceRank": 2
+      "intelligenceRank": 3
     },
     {
       "id": "gpt-5-5",
@@ -139,7 +185,7 @@
       "apexAgents": 0.376843657817109,
       "itBenchSre": 0.458097928436911,
       "briefcaseElo": 1157.6,
-      "intelligenceRank": 3
+      "intelligenceRank": 4
     },
     {
       "id": "grok-4-5",
@@ -185,7 +231,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": 1328.1,
-      "intelligenceRank": 4
+      "intelligenceRank": 5
     },
     {
       "id": "claude-opus-4-7",
@@ -231,7 +277,7 @@
       "apexAgents": null,
       "itBenchSre": 0.466572504708098,
       "briefcaseElo": 1289.16,
-      "intelligenceRank": 5
+      "intelligenceRank": 6
     },
     {
       "id": "claude-sonnet-5",
@@ -277,7 +323,53 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": 1390.43,
-      "intelligenceRank": 6
+      "intelligenceRank": 7
+    },
+    {
+      "id": "gpt-5-6-terra-xhigh",
+      "name": "GPT-5.6 Terra (xhigh)",
+      "shortName": "GPT-5.6 Terra (xhigh)",
+      "provider": "OpenAI",
+      "intelligenceIndex": 51.6046369461818,
+      "codingIndex": 70.6399986128451,
+      "agenticIndex": 44.7046323024055,
+      "mathIndex": null,
+      "inputPrice": 2.5,
+      "outputPrice": 15.0,
+      "cacheInputPrice": 0.25,
+      "blendedPrice": 2.175,
+      "costToRunIndex": 740.2127921059758,
+      "isOpenWeights": false,
+      "releaseDate": null,
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/gpt-5-6-terra-xhigh",
+      "gpqa": 0.908080808080808,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": 0.516203703703704,
+      "mmluPro": null,
+      "math500": null,
+      "hle": 0.400370713623726,
+      "gdpval": 1571.97,
+      "ifbench": 0.662585034013605,
+      "tau2": 0.804093567251462,
+      "terminalbenchHard": 0.628787878787879,
+      "critpt": 0.271428571428571,
+      "mmmuPro": 0.794797687861272,
+      "multilingualAA": null,
+      "omniscience": -3.3,
+      "lcr": 0.713333333333333,
+      "tauBanking": 0.243298969072165,
+      "terminalbenchV21": 0.801498127340824,
+      "automationBench": null,
+      "enterpriseOpsGym": null,
+      "harveyLabAllPass": null,
+      "apexAgents": null,
+      "itBenchSre": null,
+      "briefcaseElo": null,
+      "intelligenceRank": 8
     },
     {
       "id": "gpt-5-4",
@@ -323,7 +415,7 @@
       "apexAgents": 0.33259587020649,
       "itBenchSre": 0.345,
       "briefcaseElo": null,
-      "intelligenceRank": 7
+      "intelligenceRank": 9
     },
     {
       "id": "glm-5-2",
@@ -369,7 +461,7 @@
       "apexAgents": 0.337020648967552,
       "itBenchSre": 0.426553672316384,
       "briefcaseElo": 1260.94,
-      "intelligenceRank": 8
+      "intelligenceRank": 10
     },
     {
       "id": "gemini-3-5-flash",
@@ -415,7 +507,53 @@
       "apexAgents": 0.470501474926254,
       "itBenchSre": 0.403483992467043,
       "briefcaseElo": 865.64,
-      "intelligenceRank": 9
+      "intelligenceRank": 11
+    },
+    {
+      "id": "gpt-5-6-luna-xhigh",
+      "name": "GPT-5.6 Luna (xhigh)",
+      "shortName": "GPT-5.6 Luna (xhigh)",
+      "provider": "OpenAI",
+      "intelligenceIndex": 49.0677386549324,
+      "codingIndex": 68.6017478152309,
+      "agenticIndex": 42.9209656357388,
+      "mathIndex": null,
+      "inputPrice": 1.0,
+      "outputPrice": 6.0,
+      "cacheInputPrice": 0.1,
+      "blendedPrice": 0.8699999999999999,
+      "costToRunIndex": 479.36828339340707,
+      "isOpenWeights": false,
+      "releaseDate": null,
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/gpt-5-6-luna-xhigh",
+      "gpqa": 0.894949494949495,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": 0.5,
+      "mmluPro": null,
+      "math500": null,
+      "hle": 0.355885078776645,
+      "gdpval": 1539.11,
+      "ifbench": null,
+      "tau2": null,
+      "terminalbenchHard": null,
+      "critpt": 0.205714285714286,
+      "mmmuPro": 0.785549132947977,
+      "multilingualAA": null,
+      "omniscience": -11.6,
+      "lcr": 0.696666666666667,
+      "tauBanking": 0.243298969072165,
+      "terminalbenchV21": 0.779026217228464,
+      "automationBench": null,
+      "enterpriseOpsGym": null,
+      "harveyLabAllPass": null,
+      "apexAgents": null,
+      "itBenchSre": null,
+      "briefcaseElo": null,
+      "intelligenceRank": 12
     },
     {
       "id": "claude-sonnet-4-6-adaptive",
@@ -461,7 +599,7 @@
       "apexAgents": 0.28023598820059,
       "itBenchSre": 0.398022598870057,
       "briefcaseElo": 1078.75,
-      "intelligenceRank": 10
+      "intelligenceRank": 13
     },
     {
       "id": "gemini-3-1-pro-preview",
@@ -507,7 +645,7 @@
       "apexAgents": 0.320058997050148,
       "itBenchSre": 0.303309120258273,
       "briefcaseElo": 445.19,
-      "intelligenceRank": 11
+      "intelligenceRank": 14
     },
     {
       "id": "qwen3-7-max",
@@ -553,7 +691,7 @@
       "apexAgents": null,
       "itBenchSre": 0.424670433145009,
       "briefcaseElo": 907.33,
-      "intelligenceRank": 12
+      "intelligenceRank": 15
     },
     {
       "id": "minimax-m3",
@@ -599,7 +737,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": 1111.27,
-      "intelligenceRank": 13
+      "intelligenceRank": 16
     },
     {
       "id": "deepseek-v4-pro",
@@ -645,7 +783,7 @@
       "apexAgents": 0.242625368731563,
       "itBenchSre": 0.383239171374765,
       "briefcaseElo": 931.73,
-      "intelligenceRank": 14
+      "intelligenceRank": 17
     },
     {
       "id": "kimi-k2-6",
@@ -691,7 +829,7 @@
       "apexAgents": 0.284660766961652,
       "itBenchSre": 0.311864406779661,
       "briefcaseElo": 809.37,
-      "intelligenceRank": 15
+      "intelligenceRank": 18
     },
     {
       "id": "claude-opus-4-6-adaptive",
@@ -737,7 +875,7 @@
       "apexAgents": 0.3303834808259587,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 16
+      "intelligenceRank": 19
     },
     {
       "id": "muse-spark",
@@ -783,7 +921,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": 630.19,
-      "intelligenceRank": 17
+      "intelligenceRank": 20
     },
     {
       "id": "mimo-v2-5-pro",
@@ -829,7 +967,7 @@
       "apexAgents": 0.0243362831858407,
       "itBenchSre": 0.382297551789077,
       "briefcaseElo": 872.38,
-      "intelligenceRank": 18
+      "intelligenceRank": 21
     },
     {
       "id": "kimi-k2-7-code",
@@ -875,7 +1013,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 19
+      "intelligenceRank": 22
     },
     {
       "id": "mimo-v2-pro",
@@ -921,7 +1059,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 20
+      "intelligenceRank": 23
     },
     {
       "id": "deepseek-v4-flash",
@@ -967,7 +1105,7 @@
       "apexAgents": null,
       "itBenchSre": 0.315160075329567,
       "briefcaseElo": 829.17,
-      "intelligenceRank": 21
+      "intelligenceRank": 24
     },
     {
       "id": "glm-5-1",
@@ -1013,7 +1151,7 @@
       "apexAgents": null,
       "itBenchSre": 0.402542372881356,
       "briefcaseElo": 974.16,
-      "intelligenceRank": 22
+      "intelligenceRank": 25
     },
     {
       "id": "mimo-v2-5-0424",
@@ -1059,7 +1197,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 23
+      "intelligenceRank": 26
     },
     {
       "id": "gpt-5-4-mini",
@@ -1105,7 +1243,7 @@
       "apexAgents": 0.281710914454277,
       "itBenchSre": 0.352165725047081,
       "briefcaseElo": 705.43,
-      "intelligenceRank": 24
+      "intelligenceRank": 27
     },
     {
       "id": "qwen3-6-plus",
@@ -1151,7 +1289,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 25
+      "intelligenceRank": 28
     },
     {
       "id": "qwen3-7-plus",
@@ -1197,7 +1335,7 @@
       "apexAgents": 0.224188790560472,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 26
+      "intelligenceRank": 29
     },
     {
       "id": "minimax-m2-7",
@@ -1243,7 +1381,7 @@
       "apexAgents": 0.106194690265487,
       "itBenchSre": 0.264595103578154,
       "briefcaseElo": null,
-      "intelligenceRank": 27
+      "intelligenceRank": 30
     },
     {
       "id": "kimi-k2-5",
@@ -1289,7 +1427,7 @@
       "apexAgents": 0.11504424778761062,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 28
+      "intelligenceRank": 31
     },
     {
       "id": "nvidia-nemotron-3-ultra-550b-a55b",
@@ -1335,7 +1473,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": 870.41,
-      "intelligenceRank": 29
+      "intelligenceRank": 32
     },
     {
       "id": "grok-4-3",
@@ -1381,7 +1519,7 @@
       "apexAgents": 0.170353982300885,
       "itBenchSre": 0.327212806026365,
       "briefcaseElo": 750.3,
-      "intelligenceRank": 30
+      "intelligenceRank": 33
     },
     {
       "id": "deepseek-v4-flash-high",
@@ -1427,7 +1565,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 31
+      "intelligenceRank": 34
     },
     {
       "id": "grok-4-20",
@@ -1473,7 +1611,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 32
+      "intelligenceRank": 35
     },
     {
       "id": "claude-4-5-sonnet-thinking",
@@ -1519,7 +1657,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 33
+      "intelligenceRank": 36
     },
     {
       "id": "mimo-v2-omni",
@@ -1565,7 +1703,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 34
+      "intelligenceRank": 37
     },
     {
       "id": "minimax-m2-5",
@@ -1611,7 +1749,7 @@
       "apexAgents": null,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 35
+      "intelligenceRank": 38
     },
     {
       "id": "deepseek-v3-2-reasoning",
@@ -1657,7 +1795,7 @@
       "apexAgents": 0.145280235988201,
       "itBenchSre": null,
       "briefcaseElo": null,
-      "intelligenceRank": 36
+      "intelligenceRank": 39
     },
     {
       "id": "nvidia-nemotron-3-super-120b-a12b",
@@ -1703,7 +1841,7 @@
       "apexAgents": 0.0184365781710914,
       "itBenchSre": 0.0112994350282486,
       "briefcaseElo": 0,
-      "intelligenceRank": 37
+      "intelligenceRank": 40
     },
     {
       "id": "gpt-oss-120b",
@@ -1749,7 +1887,7 @@
       "apexAgents": 0.0309734513274336,
       "itBenchSre": 0.0564971751412429,
       "briefcaseElo": 0,
-      "intelligenceRank": 38
+      "intelligenceRank": 41
     }
   ]
 }
