@@ -50,7 +50,7 @@ TARGET_URL = (
     "deepseek-v4-flash,deepseek-v4-flash-high,deepseek-v4-pro,"
     "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,minimax-m2-7,minimax-m3,"
     "nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,"
-    "kimi-k2-6,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,"
+    "kimi-k2-6,kimi-k3,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,"
     "glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
     "minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,claude-fable-5"
     "&intelligence=coding-index"
