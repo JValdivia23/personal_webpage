@@ -52,3 +52,5 @@ clipboard_screenshot.png
 # Python
 __pycache__/
 *.py[cod]
+.update-schedule.json
+
