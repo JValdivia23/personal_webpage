@@ -765,7 +765,6 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "gpt-5-6-luna-non-reasoning",
   // Lower-performing / older models (hidden by default, enable to compare)
   "deepseek-v3-2-reasoning",
-  "deepseek-v4-flash-high",
   "mimo-v2-pro",
   "mimo-v2-omni",
   "qwen3-6-plus",
