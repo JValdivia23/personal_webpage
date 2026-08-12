@@ -48,7 +48,7 @@ TARGET_URL = (
     "gemini-3-1-pro-preview,gemini-3-5-flash,gemini-3-6-flash,"
     "claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-opus-4-7,claude-opus-4-8,claude-opus-5,"
     "deepseek-v4-flash,deepseek-v4-pro,"
-    "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,minimax-m2-7,minimax-m3,"
+    "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,grok-4-6,minimax-m2-7,minimax-m3,"
     "nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,"
     "kimi-k2-6,kimi-k3,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,"
     "glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,qwen3-8-max,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,"
@@ -405,8 +405,12 @@ def fetch_and_clean(url: str) -> list[dict]:
                     if obj_end < 0:
                         continue
                     obj_str = text[candidate_start:obj_end]
-                    # Verify this object contains our slug
+                    # Verify this object contains our slug AND intelligenceIndex
+                    # (the RSC may have smaller nested objects with just the slug,
+                    # e.g. {"slug":"...","name":"..."} release-info wrappers)
                     if f'"slug":"{slug}"' not in obj_str:
+                        continue
+                    if '"intelligenceIndex"' not in obj_str and '"intelligence_index"' not in obj_str:
                         continue
                     # Found it!
                     try:

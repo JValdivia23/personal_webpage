@@ -56,6 +56,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   Xiaomi: "#ff6900",
   "Z AI": "#6366f1",
   Tencent: "#0052d9",
+  SpaceXAI: "#6b7280",
   Unknown: "#9ca3af",
 };
 
