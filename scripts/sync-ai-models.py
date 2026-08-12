@@ -282,13 +282,23 @@ def clean_model(raw: dict) -> dict | None:
         if isinstance(overall, dict):
             briefcase_elo = overall.get("elo")
 
+    # Coding Index: AA removed the standalone composite field from their RSC
+    # payload (Aug 2026, v4.1.1). Reconstruct the retired metric from its
+    # documented components: Terminal-Bench v2.1 (66.7%) + SciCode (33.3%),
+    # scaled to 0-100. Prefer AA's official value if they ever restore it.
+    tb21 = raw.get("terminalbenchV21", raw.get("terminalbench_v2_1"))
+    scicode = raw.get("scicode")
+    coding_index = raw.get("codingIndex", raw.get("coding_index"))
+    if coding_index is None and tb21 is not None and scicode is not None:
+        coding_index = (2 / 3 * tb21 + 1 / 3 * scicode) * 100
+
     return {
         "id": slug,
         "name": name,
         "shortName": DISPLAY_NAMES.get(slug, raw.get("shortName", raw.get("short_name")) or name),
         "provider": creator_name,
         "intelligenceIndex": float(intelligence) if intelligence is not None else None,
-        "codingIndex": raw.get("codingIndex", raw.get("coding_index")),
+        "codingIndex": coding_index,
         "agenticIndex": raw.get("agenticIndex", raw.get("agentic_index")),
         "mathIndex": raw.get("mathIndex", raw.get("math_index")),
         "inputPrice": float(input_price) if input_price is not None else None,
@@ -306,7 +316,7 @@ def clean_model(raw: dict) -> dict | None:
         "aime25": raw.get("aime25"),
         "humaneval": raw.get("humaneval"),
         "livecodebench": raw.get("livecodebench"),
-        "scicode": raw.get("scicode"),
+        "scicode": scicode,
         "mmluPro": raw.get("mmluPro", raw.get("mmlu_pro")),
         "math500": raw.get("math500", raw.get("math_500")),
         "hle": raw.get("hle"),

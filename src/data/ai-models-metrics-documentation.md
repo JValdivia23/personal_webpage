@@ -30,6 +30,7 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 - **What it measures:** Programming and software development capabilities.
 - **Scale:** Higher is better
 - **How it's calculated:** Weighted average of coding benchmarks in the Artificial Analysis Intelligence Index: Terminal-Bench v2.1 (66.7%) and SciCode (33.3%).
+- **⚠️ Derived field (Aug 2026):** AA silently removed the standalone `codingIndex` composite from their page payloads with the v4.1.1 launch (no official announcement; the "Coding Index" tab was replaced by "Agentic Index"). This field is now **recomputed locally** as `(2/3 × terminalbenchV21 + 1/3 × scicode) × 100` — verified to reproduce AA's published values exactly (e.g., Claude Opus 5 = 77.98). It preserves the retired metric for continuity; AA's current coding measurement is the agent-level **Coding Agent Index** (`/agents/coding-agents`), which is not model-level and not tracked here.
 - **Included benchmarks:** Terminal-Bench v2.1 (verified refresh of v2.0 — 89 curated agentic tasks), SciCode (scientific code generation across 16 disciplines).
 - **Why it matters:** Critical for developers choosing models for code generation, debugging, and software engineering tasks.
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
