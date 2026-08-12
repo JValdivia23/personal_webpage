@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Check } from 'lucide-react';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -451,7 +452,8 @@ export function ModelBenchmarkChart({
   priceMode,
   metricLabel,
 }: ModelBenchmarkChartProps) {
-  const [highlightedProvider, setHighlightedProvider] = useState<string | null>(null);
+  const [selectedProviders, setSelectedProviders] = useState<Set<string>>(new Set());
+  const [hoveredProvider, setHoveredProvider] = useState<string | null>(null);
 
   // All valid points (used for stable axes / thresholds)
   const allChartData = useMemo<ChartPoint[]>(() => {
@@ -530,8 +532,31 @@ export function ModelBenchmarkChart({
     [allChartData]
   );
 
-  const handleProviderHover = (provider: string) => setHighlightedProvider(provider);
-  const handleProviderLeave = () => setHighlightedProvider(null);
+  const handleProviderHover = (provider: string) => {
+    // Touch devices synthesize mouseenter on tap; ignore it there so hover
+    // never sticks and click toggling stays the only interaction.
+    if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover)').matches) return;
+    setHoveredProvider(provider);
+  };
+  const handleProviderLeave = () => setHoveredProvider(null);
+  const handleProviderClick = (provider: string) => {
+    setSelectedProviders((prev) => {
+      const next = new Set(prev);
+      if (next.has(provider)) {
+        next.delete(provider);
+      } else {
+        next.add(provider);
+      }
+      return next;
+    });
+  };
+  // A provider's points are dimmed when a click selection is active and they
+  // aren't part of it, or (with nothing selected) when hovering another one.
+  const isProviderDimmed = (provider: string): boolean => {
+    if (selectedProviders.size > 0) return !selectedProviders.has(provider);
+    if (hoveredProvider) return provider !== hoveredProvider;
+    return false;
+  };
 
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
@@ -679,12 +704,8 @@ export function ModelBenchmarkChart({
                   key={entry.id}
                   fill={entry.color}
                   stroke="#ffffff"
-                  fillOpacity={
-                    highlightedProvider && highlightedProvider !== entry.provider ? 0.2 : 1
-                  }
-                  strokeOpacity={
-                    highlightedProvider && highlightedProvider !== entry.provider ? 0.3 : 1
-                  }
+                  fillOpacity={isProviderDimmed(entry.provider) ? 0.2 : 1}
+                  strokeOpacity={isProviderDimmed(entry.provider) ? 0.3 : 1}
                   cursor="pointer"
                   onClick={() => {
                     window.open(entry.url, '_blank');
@@ -697,26 +718,31 @@ export function ModelBenchmarkChart({
 
       </div>
 
-      {/* Provider legend — hover to highlight */}
+      {/* Provider legend — hover to peek, click to toggle */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
         {providers.map((provider) => {
-          const isHighlighted = highlightedProvider === provider;
-          const isDimmed = highlightedProvider !== null && !isHighlighted;
+          const isSelected = selectedProviders.has(provider);
+          const isDimmed = isProviderDimmed(provider);
           const color = getProviderColor(provider);
           return (
             <button
               key={provider}
               onMouseEnter={() => handleProviderHover(provider)}
               onMouseLeave={handleProviderLeave}
+              onClick={() => handleProviderClick(provider)}
+              aria-pressed={isSelected}
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
                 isDimmed
                   ? "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-500"
-                  : isHighlighted
+                  : isSelected
                     ? "border-transparent bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white shadow-sm"
                     : "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
-              title={`Highlight ${provider}`}
+              title={isSelected ? `Hide ${provider}` : `Show ${provider}`}
             >
+              {isSelected && (
+                <Check className="h-3 w-3" strokeWidth={3} />
+              )}
               <span
                 className="inline-block h-2 w-2 rounded-full"
                 style={{
