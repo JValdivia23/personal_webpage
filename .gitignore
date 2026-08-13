@@ -53,4 +53,5 @@ clipboard_screenshot.png
 __pycache__/
 *.py[cod]
 .update-schedule.json
+.update-schedule.lock
 
