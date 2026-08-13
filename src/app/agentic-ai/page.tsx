@@ -744,7 +744,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 3;
+const FILTER_VERSION = 4;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
   "gpt-5-6-sol",
@@ -776,6 +776,9 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "grok-4-3",
   "gemini-3-1-pro-preview",
   "glm-5-1",
+  // Gemini 3.7 Flash variants (only the high effort stays visible)
+  "gemini-3-7-flash-medium",
+  "gemini-3-7-flash-low",
 ]);
 
 // ---------------------------------------------------------------------------
