@@ -1,5 +1,14 @@
 [
   {
+    "paperId": "eCZJkKcAAAAJ:mVmsd5A6BfQC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:mVmsd5A6BfQC",
+    "title": "Radar data smoothing using the Discrete Cosine Transform: a fast spectral domain algorithm",
+    "venue": "",
+    "year": 2026,
+    "citationCount": 0,
+    "highlighted": true
+  },
+  {
     "paperId": "eCZJkKcAAAAJ:L8Ckcad2t8MC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:L8Ckcad2t8MC",
     "title": "Temporal Evolution of Cloud-Top Generating Cells: A Case Study",
@@ -32,15 +41,6 @@
     "citationCount": 0
   },
   {
-    "paperId": "eCZJkKcAAAAJ:mVmsd5A6BfQC",
-    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:mVmsd5A6BfQC",
-    "title": "Radar Data Smoothing using the Discrete Cosine Transform: A Fast Spectral Domain Algorithm",
-    "venue": "",
-    "year": 2026,
-    "citationCount": 0,
-    "highlighted": true
-  },
-  {
     "paperId": "eCZJkKcAAAAJ:Wp0gIr-vW9MC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:Wp0gIr-vW9MC",
     "title": "Extreme Precipitation Events Associated with Summer Rains in the Western Slope of the Peruvian Andes Using a Numerical Modeling and Weather Radar Data: Case Studies: AS Moya …",
@@ -70,12 +70,12 @@
     "title": "Future changes of precipitation types in the Peruvian Andes",
     "venue": "",
     "year": 2024,
-    "citationCount": 11
+    "citationCount": 13
   },
   {
     "paperId": "eCZJkKcAAAAJ:MXK_kJrjxJIC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:MXK_kJrjxJIC",
-    "title": "Dynamic atmospheric mechanisms associated with the diurnal cycle of hydrometeors and precipitation in the Andes–Amazon transition zone of central Peru during the summer season",
+    "title": "Dynamic atmospheric mechanisms associated with the diurnal cycle of hydrometeors and precipitation in the Andes–Amazon transition zone of central Peru during the summer season …",
     "venue": "",
     "year": 2024,
     "citationCount": 4
@@ -110,7 +110,7 @@
     "title": "The GPM-DPR blind zone effect on satellite-based radar estimation of precipitation over the Andes from a ground-based ka-band profiler perspective",
     "venue": "",
     "year": 2022,
-    "citationCount": 23
+    "citationCount": 22
   },
   {
     "paperId": "eCZJkKcAAAAJ:Se3iqnhoufwC",
@@ -118,7 +118,7 @@
     "title": "Field campaign evaluation of sensors Lufft GMX500 and MaxiMet WS100 in Peruvian Central Andes",
     "venue": "",
     "year": 2022,
-    "citationCount": 7
+    "citationCount": 6
   },
   {
     "paperId": "eCZJkKcAAAAJ:_FxGoFyzp5QC",
@@ -142,7 +142,7 @@
     "title": "On the dynamic mechanisms of intense rainfall events in the central Andes of Peru, Mantaro valley",
     "venue": "",
     "year": 2021,
-    "citationCount": 35
+    "citationCount": 36
   },
   {
     "paperId": "eCZJkKcAAAAJ:WF5omc3nYNoC",
@@ -150,7 +150,7 @@
     "title": "Evaluation of GPM dual-frequency precipitation radar algorithms to estimate drop size distribution parameters, using ground-based measurement over the central Andes of Peru",
     "venue": "",
     "year": 2021,
-    "citationCount": 33
+    "citationCount": 32
   },
   {
     "paperId": "eCZJkKcAAAAJ:YsMSGLbcyi4C",
@@ -158,7 +158,7 @@
     "title": "Analysis of extreme meteorological events in the central Andes of Peru using a set of specialized instruments",
     "venue": "",
     "year": 2021,
-    "citationCount": 21
+    "citationCount": 18
   },
   {
     "paperId": "eCZJkKcAAAAJ:W7OEmFMy1HYC",
@@ -171,18 +171,18 @@
   {
     "paperId": "eCZJkKcAAAAJ:eQOLeE2rZwMC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:eQOLeE2rZwMC",
-    "title": "Dataset on the first weather radar campaign over Lima, Perú",
+    "title": "Dataset on the first weather radar campaign over Lima, Peru",
     "venue": "",
     "year": 2021,
     "citationCount": 0
   },
   {
-    "paperId": "eCZJkKcAAAAJ:9yKSN-GCB0IC",
-    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:9yKSN-GCB0IC",
+    "paperId": "eCZJkKcAAAAJ:QIV2ME_5wuYC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:QIV2ME_5wuYC",
     "title": "Rainfall characteristics in the mantaro basin over tropical andes from a vertically pointed profile rain radar and in-situ field campaign",
     "venue": "",
     "year": 2020,
-    "citationCount": 40
+    "citationCount": 37
   },
   {
     "paperId": "eCZJkKcAAAAJ:UeHWp8X0CEIC",
@@ -190,7 +190,7 @@
     "title": "Multi-instrument rainfall-rate estimation in the Peruvian central Andes",
     "venue": "",
     "year": 2020,
-    "citationCount": 14
+    "citationCount": 15
   },
   {
     "paperId": "eCZJkKcAAAAJ:qjMakFHDy7sC",
@@ -199,6 +199,14 @@
     "venue": "",
     "year": 2020,
     "citationCount": 13
+  },
+  {
+    "paperId": "eCZJkKcAAAAJ:2osOgNQ5qMEC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:2osOgNQ5qMEC",
+    "title": "Multi-instrument rainfall-rate estimation in the Peruvian Central Andes",
+    "venue": "",
+    "year": 2020,
+    "citationCount": 0
   },
   {
     "paperId": "eCZJkKcAAAAJ:IjCSPb-OGe4C",
@@ -225,20 +233,12 @@
     "citationCount": 0
   },
   {
-    "paperId": "eCZJkKcAAAAJ:2osOgNQ5qMEC",
-    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:2osOgNQ5qMEC",
-    "title": "Multi-instrument rainfall-rate estimation in the Peruvian Central Andes",
-    "venue": "",
-    "year": 2020,
-    "citationCount": 0
-  },
-  {
     "paperId": "eCZJkKcAAAAJ:u5HHmVD_uO8C",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:u5HHmVD_uO8C",
     "title": "The impact of microphysics parameterization in the simulation of two convective rainfall events over the central Andes of Peru using WRF-ARW",
     "venue": "",
     "year": 2019,
-    "citationCount": 56
+    "citationCount": 60
   },
   {
     "paperId": "eCZJkKcAAAAJ:roLk4NBRz8UC",
@@ -254,14 +254,6 @@
     "title": "Cuantificación de lluvias usando el radar perfilador de banda Ka MIRA 35C",
     "venue": "",
     "year": 2018,
-    "citationCount": 0
-  },
-  {
-    "paperId": "eCZJkKcAAAAJ:LkGwnXOMwfcC",
-    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:LkGwnXOMwfcC",
-    "title": "Radares para estudios atmosféricos en el Perú",
-    "venue": "",
-    "year": 2017,
     "citationCount": 0
   },
   {
@@ -281,19 +273,19 @@
     "citationCount": 0
   },
   {
+    "paperId": "eCZJkKcAAAAJ:LkGwnXOMwfcC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:LkGwnXOMwfcC",
+    "title": "Radares para estudios atmosféricos en el Perú",
+    "venue": "",
+    "year": 2017,
+    "citationCount": 0
+  },
+  {
     "paperId": "eCZJkKcAAAAJ:Tyk-4Ss8FVUC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:Tyk-4Ss8FVUC",
     "title": "Precipitation Evaluation in the Central Peruvian Andes Using Radar Data and WRF Simulations.",
     "venue": "",
     "year": 2016,
-    "citationCount": 0
-  },
-  {
-    "paperId": "eCZJkKcAAAAJ:QIV2ME_5wuYC",
-    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:QIV2ME_5wuYC",
-    "title": "Rainfall Characteristics in the Mantaro Basin over Tropical Andes from a Vertically Pointed Profile Rain Radar and In-Situ Field Campaign",
-    "venue": "",
-    "year": null,
     "citationCount": 0
   }
 ]

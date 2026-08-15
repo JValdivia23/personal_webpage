@@ -1,5 +1,21 @@
 [
   {
+    "name": "personal_webpage",
+    "description": "My personal web page. Contains automated Google Scholar stats and description of my personal projects.",
+    "url": "https://github.com/JValdivia23/personal_webpage",
+    "stars": 0,
+    "language": "TypeScript",
+    "languageColor": "#3178c6"
+  },
+  {
+    "name": "dct-toolkit",
+    "description": "DCT/FFT-based convolutional statistics for Cartesian and polar data with NaN support",
+    "url": "https://github.com/JValdivia23/dct-toolkit",
+    "stars": 0,
+    "language": "Jupyter Notebook",
+    "languageColor": "#DA5B0B"
+  },
+  {
     "name": "radar-dct-smoothing",
     "description": "Radar smoothing algorithm using Discrete Cosine Transform",
     "url": "https://github.com/JValdivia23/radar-dct-smoothing",
@@ -14,21 +30,5 @@
     "stars": 2,
     "language": "MATLAB",
     "languageColor": "#e16737"
-  },
-  {
-    "name": "opencode-sshfs",
-    "description": "Remote development workflow for OpenCode using SSHFS",
-    "url": "https://github.com/JValdivia23/opencode-sshfs",
-    "stars": 0,
-    "language": "Shell",
-    "languageColor": "#89e051"
-  },
-  {
-    "name": "personal_webpage",
-    "description": "My personal web page. Contains automated Google Scholar stats and description of my personal projects.",
-    "url": "https://github.com/JValdivia23/personal_webpage",
-    "stars": 0,
-    "language": "TypeScript",
-    "languageColor": "#3178c6"
   }
 ]
