@@ -744,7 +744,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 4;
+const FILTER_VERSION = 5;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
   "gpt-5-6-sol",
@@ -779,6 +779,8 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // Gemini 3.7 Flash variants (only the high effort stays visible)
   "gemini-3-7-flash-medium",
   "gemini-3-7-flash-low",
+  // Qwen3.8 2.4T A95B overlaps Qwen3.8 Max (same base model, similar scores)
+  "qwen3-8-2-4t-a95b",
 ]);
 
 // ---------------------------------------------------------------------------
