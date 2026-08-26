@@ -274,6 +274,15 @@ def clean_model(raw: dict) -> dict | None:
     if isinstance(cost_data, dict):
         total_cost = cost_data.get("total", cost_data.get("total_cost"))
 
+    # Cost per task (median API cost per Intelligence Index task, nested in
+    # intelligenceIndexCostPerTask.cost.total)
+    cpt_data = raw.get("intelligenceIndexCostPerTask", raw.get("intelligence_index_cost_per_task", {}))
+    cost_per_task = None
+    if isinstance(cpt_data, dict):
+        cpt_cost = cpt_data.get("cost", {})
+        if isinstance(cpt_cost, dict):
+            cost_per_task = cpt_cost.get("total")
+
     # Briefcase Elo (nested in briefcaseBreakdown.overall.elo)
     briefcase = raw.get("briefcaseBreakdown")
     briefcase_elo = None
@@ -306,6 +315,7 @@ def clean_model(raw: dict) -> dict | None:
         "cacheInputPrice": float(cache_hit_price) if cache_hit_price is not None else None,
         "blendedPrice": float(blended_price) if blended_price is not None else None,
         "costToRunIndex": float(total_cost) if total_cost is not None else None,
+        "costPerTask": float(cost_per_task) if cost_per_task is not None else None,
         "isOpenWeights": raw.get("isOpenWeights", raw.get("is_open_weights")),
         "releaseDate": raw.get("releaseDate", raw.get("release_date")),
         "contextWindow": raw.get("contextWindowTokens", raw.get("context_window_tokens")),

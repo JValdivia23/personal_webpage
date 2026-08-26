@@ -276,6 +276,13 @@ Artificial Analysis introduced several new agentic benchmarks alongside Intellig
 - **What it measures:** Total cost to evaluate the model on the full Intelligence Index benchmark suite.
 - **Why it matters:** Indicates how expensive the model is to run comprehensive evaluations. Higher values often correlate with more verbose models.
 
+### Cost per Task (`costPerTask`)
+- **Unit:** USD per benchmark task
+- **What it measures:** Median API cost for a single Intelligence Index task (total evaluation cost divided across tasks). Sourced from AA's `intelligenceIndexCostPerTask.cost.total` field in the RSC payload (Aug 2026).
+- **Why it matters:** The most intuitive "bang for the buck" measure — what it costs, on average, to get one task done. Averaging ~$0.01–3 across current models, it spans roughly three orders of magnitude, so it is plotted on a **logarithmic x-axis** in cost-per-task mode.
+- **Coverage:** 63/70 models (Aug 2026).
+- **Related fields (not tracked here):** `intelligenceIndexTimePerTask` (median seconds per task) and `intelligenceIndexOutputTokensPerTask` (verbosity breakdown).
+
 ### Output Speed
 - **Unit:** Tokens per second
 - **Why it matters:** Determines user experience latency for streaming responses.

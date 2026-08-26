@@ -792,7 +792,7 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
 export default function AgenticAIPage() {
   const models = aiModels.models;
   const [selectedMetric, setSelectedMetric] = useState("intelligenceIndex");
-  const [priceMode, setPriceMode] = useState<"price" | "cost">("price");
+  const [priceMode, setPriceMode] = useState<"price" | "cost" | "task">("price");
   const [sidebarTab, setSidebarTab] = useState<"metrics" | "docs">("metrics");
   const [hiddenModelIds, setHiddenModelIds] = useState<Set<string>>(new Set());
   const [showModelPanel, setShowModelPanel] = useState(false);
@@ -1007,11 +1007,23 @@ export default function AgenticAIPage() {
                 >
                   Total cost to run
                 </button>
+                <button
+                  onClick={() => setPriceMode("task")}
+                  className={`relative flex-1 rounded-md px-3 py-2 text-xs font-medium transition-all ${
+                    priceMode === "task"
+                      ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
+                      : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  }`}
+                >
+                  Cost per task
+                </button>
               </div>
               <p className="mt-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
                 {priceMode === "price"
                   ? "Blended price assuming 7:2:1 ratio of cache hits, input, and output tokens."
-                  : "Total API cost to evaluate the model on the full benchmark suite."}
+                  : priceMode === "task"
+                    ? "Median API cost per Intelligence Index task (plotted on a log scale — efficient models span three orders of magnitude)."
+                    : "Total API cost to evaluate the model on the full benchmark suite."}
               </p>
             </div>
           </div>

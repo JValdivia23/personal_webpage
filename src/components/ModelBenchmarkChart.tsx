@@ -31,6 +31,7 @@ interface AIModel {
   outputPrice: number | null;
   blendedPrice: number | null;
   costToRunIndex: number | null;
+  costPerTask: number | null;
   isOpenWeights: boolean | null;
   url: string;
   gpqa: number | null;
@@ -55,15 +56,19 @@ interface AIModel {
   briefcaseElo: number | null;
 }
 
+type PriceMode = 'price' | 'cost' | 'task';
+
 interface ModelBenchmarkChartProps {
   models: AIModel[];
   selectedMetric: string;
-  priceMode: 'price' | 'cost';
+  priceMode: PriceMode;
   metricLabel: string;
 }
 
 interface ChartPoint extends AIModel {
   x: number;
+  /** Untransformed x value (used by the tooltip for log-scale modes). */
+  rawX?: number;
   y: number;
   color: string;
   dx: number;
@@ -383,13 +388,13 @@ function CustomTooltip({
 }: {
   active?: boolean;
   payload?: Array<{ payload: ChartPoint }>;
-  priceMode: 'price' | 'cost';
+  priceMode: PriceMode;
   metricLabel: string;
 }) {
   if (!active || !payload || !payload.length) return null;
 
   const model = payload[0].payload;
-  const xValue = model.x;
+  const xValue = model.rawX ?? model.x;
 
   return (
     <div className="rounded-lg border border-gray-700 bg-gray-900/95 px-4 py-3 shadow-xl backdrop-blur-sm">
@@ -417,6 +422,19 @@ function CustomTooltip({
             <div className="flex justify-between gap-4">
               <span className="text-gray-400">Output:</span>
               <span className="text-gray-300">${model.outputPrice?.toFixed(2) ?? 'N/A'}/1M</span>
+            </div>
+          </>
+        ) : priceMode === 'task' ? (
+          <>
+            <div className="flex justify-between gap-4">
+              <span className="text-gray-400">Cost per Task:</span>
+              <span className="font-medium text-emerald-400">
+                ${xValue < 0.01 ? xValue.toFixed(4) : xValue.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-gray-400">Cost to Run Index:</span>
+              <span className="text-gray-300">${model.costToRunIndex?.toFixed(0) ?? 'N/A'}</span>
             </div>
           </>
         ) : (
@@ -467,16 +485,33 @@ export function ModelBenchmarkChart({
         if (priceMode === 'cost') {
           if (m.costToRunIndex == null || m.costToRunIndex === 0) return false;
         }
+        if (priceMode === 'task') {
+          if (m.costPerTask == null || m.costPerTask === 0) return false;
+        }
         return true;
       })
-      .map((m) => ({
-        ...m,
-        x: priceMode === 'price' ? (m.blendedPrice ?? 0) : (m.costToRunIndex ?? 0),
-        y: (m as any)[selectedMetric] as number,
-        color: getProviderColor(m.provider),
-        dx: 10,
-        dy: 0,
-      }));
+      .map((m) => {
+        // "Cost per task" spans ~3 orders of magnitude across models, so it is
+        // plotted on a log axis. Recharts' native log scale would break the
+        // linear collision-aware label placement and quadrant math below, so
+        // instead we pre-transform x to log10 and let every downstream step
+        // treat it as linear.
+        const rawX =
+          priceMode === 'price'
+            ? (m.blendedPrice ?? 0)
+            : priceMode === 'task'
+              ? (m.costPerTask ?? 0)
+              : (m.costToRunIndex ?? 0);
+        return {
+          ...m,
+          x: priceMode === 'task' ? Math.log10(rawX) : rawX,
+          rawX,
+          y: (m as any)[selectedMetric] as number,
+          color: getProviderColor(m.provider),
+          dx: 10,
+          dy: 0,
+        };
+      });
     raw.sort((a, b) => b.y - a.y);
     return raw;
   }, [models, selectedMetric, priceMode]);
@@ -488,8 +523,12 @@ export function ModelBenchmarkChart({
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const pad = (max - min) * 0.15;
-    return [Math.max(0, min - pad), max + pad];
-  }, [allChartData]);
+    // Task mode plots log10(cost); those values can be negative, so don't
+    // clamp the lower bound at zero like the linear modes do.
+    return priceMode === 'task'
+      ? [min - pad, max + pad]
+      : [Math.max(0, min - pad), max + pad];
+  }, [allChartData, priceMode]);
 
   const yDomain = useMemo<[number, number]>(() => {
     const vals = allChartData.map((d) => d.y);
@@ -560,7 +599,9 @@ export function ModelBenchmarkChart({
 
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
-    : 'Cost to Run Index ($) →';
+    : priceMode === 'task'
+      ? 'Cost per Task ($, log scale) →'
+      : 'Cost to Run Index ($) →';
 
   const chartTitle = `Cost vs. ${metricLabel}`;
 
@@ -591,7 +632,9 @@ export function ModelBenchmarkChart({
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {priceMode === 'price'
             ? `Blended price per 1M tokens vs. ${metricLabel}`
-            : `Total cost to run benchmark vs. ${metricLabel}`}
+            : priceMode === 'task'
+              ? `Median API cost per benchmark task (log scale) vs. ${metricLabel}`
+              : `Total cost to run benchmark vs. ${metricLabel}`}
         </p>
       </div>
 
@@ -648,9 +691,18 @@ export function ModelBenchmarkChart({
               domain={xDomain}
               tick={{ fill: 'currentColor', fontSize: 11 }}
               className="text-gray-500 dark:text-gray-400"
-              tickFormatter={(v: number) =>
-                priceMode === 'price' ? `$${v.toFixed(1)}` : `$${v.toFixed(0)}`
-              }
+              tickFormatter={(v: number) => {
+                if (priceMode === 'price') return `$${v.toFixed(1)}`;
+                if (priceMode === 'task') {
+                  // Ticks are log10(cost); render the dollar value itself.
+                  const dollars = Math.pow(10, v);
+                  if (dollars >= 10) return `$${dollars.toFixed(0)}`;
+                  if (dollars >= 1) return `$${dollars.toFixed(1)}`;
+                  if (dollars >= 0.1) return `$${dollars.toFixed(2)}`;
+                  return `$${dollars.toFixed(3)}`;
+                }
+                return `$${v.toFixed(0)}`;
+              }}
               label={{
                 value: xAxisLabel,
                 position: 'insideBottomRight',
