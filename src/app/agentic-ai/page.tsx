@@ -744,7 +744,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 7;
+const FILTER_VERSION = 8;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
   "gpt-5-6-sol",
@@ -783,6 +783,9 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "qwen3-8-2-4t-a95b",
   // Claude Fable 5.1 medium — hidden, xhigh/max visible (max is #1 leader)
   "claude-fable-5-1-medium",
+  // Gemini 3.8 Flash variants — only high stays visible (matches 3.7 pattern)
+  "gemini-3-8-flash-medium",
+  "gemini-3-8-flash-low",
   // No longer relevant — superseded by newer releases
   "nvidia-nemotron-3-super-120b-a12b",
   "gpt-oss-120b",
