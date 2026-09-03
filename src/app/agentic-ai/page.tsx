@@ -744,7 +744,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 8;
+const FILTER_VERSION = 9;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
   "gpt-5-6-sol",
@@ -764,6 +764,11 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "gpt-5-6-luna-medium",
   "gpt-5-6-luna-low",
   "gpt-5-6-luna-non-reasoning",
+  // GPT-6 Astra variants (only max stays visible)
+  "gpt-6-astra-xhigh",
+  "gpt-6-astra-high",
+  "gpt-6-astra-medium",
+  "gpt-6-astra-low",
   // Lower-performing / older models (hidden by default, enable to compare)
   "deepseek-v3-2-reasoning",
   "mimo-v2-pro",
