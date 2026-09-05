@@ -1,5 +1,13 @@
 [
   {
+    "paperId": "eCZJkKcAAAAJ:9ZlFYXVOiuMC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:9ZlFYXVOiuMC",
+    "title": "Spectral-Domain Local Statistics with Missing-Data Support for Cartesian and Polar Grids",
+    "venue": "",
+    "year": 2026,
+    "citationCount": 1
+  },
+  {
     "paperId": "eCZJkKcAAAAJ:mVmsd5A6BfQC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:mVmsd5A6BfQC",
     "title": "Radar data smoothing using the Discrete Cosine Transform: a fast spectral domain algorithm",
@@ -28,14 +36,6 @@
     "paperId": "eCZJkKcAAAAJ:ZeXyd9-uunAC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:ZeXyd9-uunAC",
     "title": "Towards Operational Use of the SOPHy X-Band Radar in Peru: A Bayesian Fuzzy Logic Approach for Ground Clutter Filtering in Complex Orography",
-    "venue": "",
-    "year": 2026,
-    "citationCount": 0
-  },
-  {
-    "paperId": "eCZJkKcAAAAJ:9ZlFYXVOiuMC",
-    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:9ZlFYXVOiuMC",
-    "title": "Spectral-Domain Local Statistics with Missing-Data Support for Cartesian and Polar Grids",
     "venue": "",
     "year": 2026,
     "citationCount": 0
@@ -110,7 +110,7 @@
     "title": "The GPM-DPR blind zone effect on satellite-based radar estimation of precipitation over the Andes from a ground-based ka-band profiler perspective",
     "venue": "",
     "year": 2022,
-    "citationCount": 22
+    "citationCount": 23
   },
   {
     "paperId": "eCZJkKcAAAAJ:Se3iqnhoufwC",
@@ -182,7 +182,7 @@
     "title": "Rainfall characteristics in the mantaro basin over tropical andes from a vertically pointed profile rain radar and in-situ field campaign",
     "venue": "",
     "year": 2020,
-    "citationCount": 37
+    "citationCount": 38
   },
   {
     "paperId": "eCZJkKcAAAAJ:UeHWp8X0CEIC",
@@ -198,7 +198,7 @@
     "title": "Dataset on raindrop size distribution, raindrop fall velocity and precipitation data measured by disdrometers and rain gauges over Peruvian central Andes (12.0 S)",
     "venue": "",
     "year": 2020,
-    "citationCount": 13
+    "citationCount": 14
   },
   {
     "paperId": "eCZJkKcAAAAJ:2osOgNQ5qMEC",
@@ -238,7 +238,7 @@
     "title": "The impact of microphysics parameterization in the simulation of two convective rainfall events over the central Andes of Peru using WRF-ARW",
     "venue": "",
     "year": 2019,
-    "citationCount": 60
+    "citationCount": 61
   },
   {
     "paperId": "eCZJkKcAAAAJ:roLk4NBRz8UC",
