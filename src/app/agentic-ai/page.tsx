@@ -83,9 +83,9 @@ const METRICS: MetricDef[] = [
     label: "Overall Intelligence",
     description: "Weighted composite across agents, coding, general reasoning, and scientific reasoning",
     testBadge: "AA Index",
-    scale: "Higher is better (current leader ~60)",
+    scale: "Higher is better (current leader ~53)",
     fullDescription:
-      "Artificial Analysis Intelligence Index v4.0 combines a comprehensive suite of 10 evaluation datasets to assess language model capabilities across reasoning, knowledge, maths and programming. It is calculated as a weighted average across four categories, each contributing 25% to the overall score: Agents (GDPval-AA 16.7%, 𝜏²-Bench Telecom 8.3%), Coding (Terminal-Bench Hard 16.7%, SciCode 8.3%), General (AA-LCR 6.25%, AA-Omniscience 12.5%, IFBench 6.25%), and Scientific Reasoning (HLE 12.5%, GPQA Diamond 6.25%, CritPt 6.25%). Artificial Analysis estimates a 95% confidence interval of less than ±1% based on experiments with >10 repeats on certain models. The Intelligence Index is a text-only, English language evaluation suite; multimodal and multilingual performance are benchmarked separately. All evaluations are conducted independently by Artificial Analysis.",
+      "Artificial Analysis Intelligence Index v4.3 combines 10 evaluation datasets to assess language model capabilities across reasoning, knowledge, maths and programming. It is a weighted average across four categories that emphasize agentic work: Agents 30% (AA-Briefcase 15%, GDPval-AA v2 10%, AutomationBench-AA 5%), Coding 20% (Terminal-Bench v4.0 10%, SciCode 10%), General 30% (AA-Omniscience 15%, GDP.pdf 10%, AA-LCR v1.1 5%), and Scientific Reasoning 20% (HLE 10%, CritPt 10%). v4.3 dropped τ³-Banking, Terminal-Bench v2.1, GPQA Diamond, and IFBench from the index (they remain as additional evaluations). Artificial Analysis estimates a 95% confidence interval of less than ±1%. The Intelligence Index is a primarily text-based, English-language evaluation suite; multimodal and multilingual performance are benchmarked separately. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
@@ -95,17 +95,17 @@ const METRICS: MetricDef[] = [
     testBadge: "AA Coding",
     scale: "Higher is better",
     fullDescription:
-      "Represents the weighted average of coding benchmarks in the Artificial Analysis Intelligence Index: Terminal-Bench Hard (66.7%) and SciCode (33.3%). Terminal-Bench Hard evaluates agentic capabilities in terminal environments through software engineering, system administration, and data processing tasks. SciCode tests scientific code generation with 288 test-set subproblems from 80 laboratory problems across 16 scientific disciplines. Critical for developers choosing models for code generation, debugging, and software engineering tasks. All evaluations are conducted independently by Artificial Analysis.",
+      "Derived locally from Intelligence Index v4.3's Coding category (20% of the index): equal-weight Terminal-Bench v4.0 (50%) and SciCode (50%), scaled to 0–100. AA removed the standalone codingIndex composite from RSC payloads in v4.1.1; this field reconstructs the category score. Terminal-Bench v4.0 is a 66-task agentic terminal suite (pass@1 over 3 repeats). SciCode tests scientific code generation with 288 test-set subproblems from 80 laboratory problems across 16 disciplines. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
     key: "agenticIndex",
     label: "Agentic Capability",
-    description: "Average of agentic capabilities benchmarks in the Intelligence Index",
+    description: "Weighted Agents-category composite from Intelligence Index v4.3",
     testBadge: "AA Agentic",
-    scale: "Higher is better",
+    scale: "Higher is better (0–100)",
     fullDescription:
-      "Represents the average of agentic capabilities benchmarks in the Artificial Analysis Intelligence Index: GDPval-AA and 𝜏²-Bench Telecom. GDPval-AA tests AI models on real-world tasks across 44 occupations and 9 major industries via an agentic loop with shell access and web browsing. 𝜏²-Bench Telecom is a dual-control conversational AI benchmark simulating technical support scenarios where both agent and user must coordinate actions. Measures the model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and task completion. Important for applications where the model needs to perform complex workflows or operate autonomously. All evaluations are conducted independently by Artificial Analysis.",
+      "Derived locally from Intelligence Index v4.3's Agents category (30% of the index). AA dropped the standalone agenticIndex composite in v4.3. Reconstructs as 50% AA-Briefcase + 33.3% GDPval-AA v2 + 16.7% AutomationBench-AA. Elo scores use AA's mapping clamp((Elo − 500) / 2000) before weighting; AutomationBench is already 0–1. Scaled to 0–100. Measures planning, tool use, multi-step reasoning, and real-world task completion. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
@@ -115,7 +115,7 @@ const METRICS: MetricDef[] = [
     testBadge: "GPQA",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "The most challenging 198 questions from GPQA, where PhD experts achieve 65% accuracy but skilled non-experts only reach 34% despite web access. These graduate-level physics, biology, and chemistry questions are designed to be 'Google-proof' and require genuine scientific expertise rather than search skills. They can only be consistently solved by domain experts with PhDs, making them ideal for testing true scientific reasoning capabilities. A score above 0.85 indicates strong scientific reasoning. All evaluations are conducted independently by Artificial Analysis.",
+      "The most challenging 198 questions from GPQA, where PhD experts achieve 65% accuracy but skilled non-experts only reach 34% despite web access. These graduate-level physics, biology, and chemistry questions are designed to be 'Google-proof' and require genuine scientific expertise rather than search skills. Included in Intelligence Index through v4.1; moved to legacy evaluations in v4.3. A score above 0.85 indicates strong scientific reasoning. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/gpqa-diamond",
   },
   {
@@ -125,7 +125,7 @@ const METRICS: MetricDef[] = [
     testBadge: "HLE",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A frontier-level benchmark with 2,500 expert-vetted questions across mathematics, sciences, and humanities, designed to be the final closed-ended academic evaluation. A collaborative effort by the Center for AI Safety involving over 1,000 contributors to create frontier-level academic questions that challenge current AI capabilities. The 2,500 expert-vetted questions are designed to be 'Google-proof' and require genuine understanding rather than information retrieval, serving as the intended final closed-ended academic benchmark. One of the hardest existing benchmarks — even top models score below 0.5, leaving significant headroom. All evaluations are conducted independently by Artificial Analysis.",
+      "A frontier-level benchmark with 2,158 expert-vetted questions across mathematics, sciences, and humanities, designed to be the final closed-ended academic evaluation. A collaborative effort by the Center for AI Safety involving over 1,000 contributors. Questions are 'Google-proof' and require genuine understanding rather than information retrieval. Part of Intelligence Index v4.3 Scientific Reasoning (10%). One of the hardest existing benchmarks — even top models score well below 0.6. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/humanitys-last-exam",
   },
   {
@@ -135,7 +135,7 @@ const METRICS: MetricDef[] = [
     testBadge: "SciCode",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A scientist-curated coding benchmark featuring 288 test set subproblems from 80 laboratory problems across 16 scientific disciplines. Unlike traditional coding benchmarks, SciCode requires integrating scientific knowledge with programming skills to solve real research problems rather than abstract puzzles. The benchmark was developed by domain experts across 16 diverse natural science sub-fields, including mathematics, physics, chemistry, biology, and materials science. Problems naturally factorize into multiple subproblems, each involving knowledge recall, reasoning, and code synthesis. It offers optional descriptions specifying useful scientific background information and scientist-annotated gold-standard solutions and test cases for evaluation. All evaluations are conducted independently by Artificial Analysis.",
+      "A scientist-curated coding benchmark featuring 288 test set subproblems from 80 laboratory problems across 16 scientific disciplines. Unlike traditional coding benchmarks, SciCode requires integrating scientific knowledge with programming skills to solve real research problems. Part of Intelligence Index v4.3 Coding (10%), equal-weight with Terminal-Bench v4.0. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/scicode",
   },
   {
@@ -145,7 +145,7 @@ const METRICS: MetricDef[] = [
     testBadge: "GDPval",
     scale: "ELO rating (higher is better)",
     fullDescription:
-      "Artificial Analysis' evaluation framework for OpenAI's GDPval dataset. Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing capabilities in an agentic loop via Stirrup to solve tasks, with ELO ratings derived from blind pairwise comparisons. The GDPval gold public dataset includes 220 tasks developed by OpenAI in collaboration with industry professionals, requiring models to produce diverse outputs including documents, slides, diagrams, and spreadsheets.",
+      "Artificial Analysis' evaluation framework for OpenAI's GDPval dataset (v2). Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing in an agentic loop via Stirrup, with Elo ratings from a three-judge pairwise panel anchored to human experts at 1000. Part of Intelligence Index v4.3 (Agents, 10%). The gold public dataset includes 220 tasks requiring documents, slides, diagrams, and spreadsheets.",
     officialUrl: "https://artificialanalysis.ai/evaluations/gdpval-aa",
   },
   {
@@ -155,7 +155,7 @@ const METRICS: MetricDef[] = [
     testBadge: "IFBench",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A benchmark evaluating precise instruction-following generalization on 58 diverse, verifiable out-of-domain constraints that test models' ability to follow specific output requirements. IFBench addresses the problem that current language models strongly overfit to a small set of verifiable constraints and cannot generalize well to unseen output constraints, a critical skill for practical AI applications. The benchmark introduces 58 new, diverse, and challenging verifiable constraints to test precise instruction-following generalization, going beyond existing benchmarks that focus on a limited set of constraint types. Developed by the Allen Institute for AI, IFBench uses reinforcement learning with verifiable rewards (RLVR) to improve instruction following and includes 29 additional hand-annotated training constraints with verification functions. All evaluations are conducted independently by Artificial Analysis.",
+      "A benchmark evaluating precise instruction-following generalization on 294 diverse, verifiable out-of-domain constraints. Included in Intelligence Index through v4.1; moved to additional evaluations in v4.3. Developed by the Allen Institute for AI. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/ifbench",
   },
   {
@@ -185,7 +185,7 @@ const METRICS: MetricDef[] = [
     testBadge: "CritPT",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A benchmark designed to test LLMs on research-level physics reasoning tasks, featuring 71 composite research challenges. CritPt evaluates language models on solving unpublished, frontier-level physics problems that require genuine research-scale reasoning. The benchmark comprises 71 challenges (70 test challenges and one example), created by over 50 active physics researchers across 30 institutions and spanning 11 physics subfields including condensed matter, quantum physics, astrophysics, high energy physics, and biophysics. Each problem underwent extensive review (averaging 40+ hours per challenge) and uses 'guess-resistant' answer formats including floating-point arrays, symbolic expressions, and Python functions. Leading models in 2025 achieve only single-digit accuracy, highlighting the substantial gap between current AI capabilities and research-level physics reasoning. All evaluations are conducted independently by Artificial Analysis.",
+      "A benchmark designed to test LLMs on research-level physics reasoning tasks, featuring 71 composite research challenges (70 test + 1 example) created by over 50 active physics researchers across 30 institutions and 11 subfields. Uses guess-resistant answer formats (floating-point arrays, symbolic expressions, Python functions). Part of Intelligence Index v4.3 Scientific Reasoning (10%). All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/critpt",
   },
   {
@@ -205,7 +205,7 @@ const METRICS: MetricDef[] = [
     testBadge: "Omniscience",
     scale: "-100 to 100 (higher is better, can be negative)",
     fullDescription:
-      "A benchmark measuring factual recall and hallucination across various economically relevant domains. AA-Omniscience is a knowledge and hallucination benchmark that rewards accuracy, punishes bad guesses, and provides a comprehensive view of which models produce factually reliable outputs across different domains. The benchmark contains 6,000 questions across 6 major domains, derived from authoritative academic and industry sources and generated automatically using an LLM-based question generation agent to ensure unambiguity, scalability, and factual precision. The evaluation measures a model's AA-Omniscience Index, a bounded metric (-100 to 100) measuring factual recall that jointly penalizes hallucinations and rewards abstention when uncertain, with 0 equating to a model that answers questions correctly as much as it does incorrectly. Performance varies by domain, with models from three different research labs leading across the six domains. This suggests models should be chosen according to the demands of the use case rather than general performance for tasks where knowledge is important. All evaluations are conducted independently by Artificial Analysis.",
+      "AA-Omniscience measures factual recall and hallucination across 6,000 questions in 6 economically relevant domains. The index (−100 to 100) jointly penalizes hallucinations and rewards abstention when uncertain. In Intelligence Index v4.3 it is 15% of the overall score (accuracy 10% + 1 − hallucination rate 5%). All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/omniscience",
   },
   {
@@ -215,7 +215,7 @@ const METRICS: MetricDef[] = [
     testBadge: "LCR",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A challenging benchmark measuring language models' ability to extract, reason about, and synthesize information from long-form documents ranging from 10k to 100k tokens (measured using the cl100k_base tokenizer). Long-form text comprehension represents an under-studied class of evaluations where humans dramatically outscore language models, despite expanding context windows in current AI systems. LCR features 100 questions across diverse document types including academic papers, company financials, government consultations, legal documents, industry reports, and marketing materials, requiring genuine reasoning rather than simple data extraction. Each question demands multi-step reasoning to synthesize information from dispersed sections, understand complex domain-specific content, and produce unambiguous answers that mid-2024 frontier models achieve less than 50% accuracy on. All evaluations are conducted independently by Artificial Analysis.",
+      "AA-LCR v1.1 measures the ability to extract, reason about, and synthesize information from long-form documents (10k–100k tokens). 100 questions across academic papers, financials, legal documents, and reports; equality-checker LLM, pass@1 over 3 repeats. Part of Intelligence Index v4.3 General (5%). All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning",
   },
   {
@@ -225,7 +225,7 @@ const METRICS: MetricDef[] = [
     testBadge: "τ³-Banking",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A fintech customer-support benchmark from the 𝜏-Knowledge framework that tests whether agents can navigate a large unstructured knowledge base and execute multi-step tool calls to resolve realistic banking workflows. Part of the Artificial Analysis Intelligence Index v4.1. All evaluations are conducted independently by Artificial Analysis.",
+      "A fintech customer-support benchmark from the 𝜏-Knowledge framework that tests whether agents can navigate a large unstructured knowledge base and execute multi-step tool calls to resolve realistic banking workflows. Included in Intelligence Index v4.1; moved to additional evaluations in v4.3. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/tau3-banking",
   },
   {
@@ -235,8 +235,48 @@ const METRICS: MetricDef[] = [
     testBadge: "TerminalBench v2.1",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A verified refresh of Terminal-Bench v2.0 — 89 curated tasks across software engineering, system administration, data processing, model training, and security, with environment and instruction fixes so scores reflect agent capability rather than environment gaps. Part of the Artificial Analysis Intelligence Index v4.1. All evaluations are conducted independently by Artificial Analysis.",
+      "A verified refresh of Terminal-Bench v2.0 — 89 curated tasks across software engineering, system administration, data processing, model training, and security, with environment and instruction fixes so scores reflect agent capability rather than environment gaps. Included in Intelligence Index v4.1; superseded in the index by Terminal-Bench v4.0 in v4.3. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/terminalbench-v2-1",
+  },
+  {
+    key: "terminalbenchV40",
+    label: "Terminal / System Ops v4.0",
+    description: "66-task agentic terminal suite — Intelligence Index v4.3 coding component",
+    testBadge: "TerminalBench v4.0",
+    scale: "0.0 to 1.0 (accuracy, pass@1)",
+    fullDescription:
+      "Terminal-Bench v4.0 is the coding-agent evaluation in Intelligence Index v4.3 (10% of the index). 66 terminal-based tasks scored by a test-suite pass/fail, pass@1 over 3 repeats. Replaces Terminal-Bench v2.1 in the index. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/terminal-bench-v4-0",
+  },
+  {
+    key: "gdpPdfAllPass",
+    label: "GDP.pdf Document Q&A",
+    description: "Free-form answers grounded in long PDFs across 10 domains",
+    testBadge: "GDP.pdf",
+    scale: "0.0 to 1.0 (all-pass rate)",
+    fullDescription:
+      "GDP.pdf tests free-form answers grounded in a long PDF — 100 tasks across 10 domains, 5 repeats. Headline metric is all-pass rate (also reports task-macro mean pass). Part of Intelligence Index v4.3 General category (10%). All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/gdp-pdf",
+  },
+  {
+    key: "mlcrOverall",
+    label: "Medical Long Context",
+    description: "Expert + compound medical questions over long context (MLCR-AA)",
+    testBadge: "MLCR-AA",
+    scale: "0.0 to 1.0 (accuracy)",
+    fullDescription:
+      "MLCR-AA (Medical Long Context Reasoning) is an additional evaluation (not in the Intelligence Index) with 60 questions across expert and compound tiers. Scoring uses a conciseness gate plus a 3-judge majority vote on completeness and accuracy, pass@1 over 3 repeats. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/mlcr-aa",
+  },
+  {
+    key: "analystAgent",
+    label: "Analyst Agent",
+    description: "Agentic Python analysis across 14 domains (AA-AnalystAgent)",
+    testBadge: "AnalystAgent",
+    scale: "0.0 to 1.0 (accuracy)",
+    fullDescription:
+      "AA-AnalystAgent is an additional agentic evaluation (not in the Intelligence Index): 80 tasks across 14 domains. The agent writes and executes Python and produces a free-form final answer, graded by an LLM judge with a numeric pre-check override (pass^5 over 5 repeats). All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/aa-analyst-agent",
   },
   {
     key: "automationBench",
@@ -245,7 +285,7 @@ const METRICS: MetricDef[] = [
     testBadge: "AutomationBench",
     scale: "0.0 to 1.0 (share of objectives completed)",
     fullDescription:
-      "A benchmark measuring agentic task completion across simulated SaaS application environments, scoring the share of each task's objectives completed without guardrail violations. The benchmark covers 657 tasks across six business domains (Finance, HR, Marketing, Operations, Sales, Support) using simulated environments for applications including Gmail, Google Sheets, Slack, Salesforce, Zendesk, Jira, and HubSpot. Developed by Zapier. All evaluations are conducted independently by Artificial Analysis.",
+      "A benchmark measuring agentic task completion across simulated SaaS application environments, scoring the share of each task's objectives completed without guardrail violations. Covers 657 tasks across six business domains (Finance, HR, Marketing, Operations, Sales, Support) using simulated Gmail, Google Sheets, Slack, Salesforce, Zendesk, Jira, and HubSpot. Part of Intelligence Index v4.3 (Agents, 5%). Developed by Zapier. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/automationbench-aa",
   },
   {
@@ -295,7 +335,7 @@ const METRICS: MetricDef[] = [
     testBadge: "AA-Briefcase",
     scale: "Elo rating (higher is better)",
     fullDescription:
-      "A private evaluation developed by Artificial Analysis for frontier agentic capability in long-horizon knowledge work, testing agents on realistic business workflows that require deliverables such as spreadsheets, presentations, and memos. AA-Briefcase Elo is a combined metric that aggregates rubric pass rate, analytical quality Elo and presentation Elo. All evaluations are conducted independently by Artificial Analysis.",
+      "AA-Briefcase tests models on realistic multi-week knowledge-work projects (91 tasks across 4 scenarios) with thousands of source files. Combined Elo aggregates rubric pass rate, analytical quality, and presentation quality from a three-judge panel. Part of Intelligence Index v4.3 (Agents, 15%) — the largest single component. Elo is frozen at addition and normalized as clamp((Elo − 500) / 2000) for the index. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/aa-briefcase",
   },
 ];

@@ -48,6 +48,10 @@ interface AIModel {
   contextWindow: number | null;
   tauBanking: number | null;
   terminalbenchV21: number | null;
+  terminalbenchV40: number | null;
+  gdpPdfAllPass: number | null;
+  mlcrOverall: number | null;
+  analystAgent: number | null;
   automationBench: number | null;
   enterpriseOpsGym: number | null;
   harveyLabAllPass: number | null;

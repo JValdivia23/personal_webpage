@@ -1,9 +1,9 @@
 # AI Model Benchmark Metrics Documentation
 
 **Source:** [Artificial Analysis](https://artificialanalysis.ai)  
-**Last Updated:** 2026-09-03  
+**Last Updated:** 2026-09-09  
 **Models Tracked:** 83 leading LLMs  
-**Intelligence Index Version:** v4.1 (updated July 2026 — see [format change notes](#rsc-data-format-change-july-2026) below)
+**Intelligence Index Version:** v4.3 (updated September 2026 — see [format change notes](#rsc-data-format-change-july-2026) and [v4.3 notes](#intelligence-index-v43-september-2026) below)
 
 ---
 
@@ -13,40 +13,59 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 
 ### Artificial Analysis Intelligence Index
 - **What it measures:** Overall model intelligence across reasoning, knowledge, maths and programming.
-- **Scale:** Higher is better (theoretical max varies, current leader ~60)
-- **How it's calculated:** Weighted average across four categories (Agents 25%, Coding 25%, General 25%, Scientific Reasoning 25%), each measured independently by Artificial Analysis.
-- **Included benchmarks (v4.1 — July 2026):** GDPval-AA v2, 𝜏³-Banking, Terminal-Bench v2.1, SciCode, AA-LCR, AA-Omniscience, HLE, GPQA Diamond, CritPt.
+- **Scale:** Higher is better (theoretical max varies; v4.3 leaders sit around ~53, down from ~65 on v4.1 because the suite got harder)
+- **How it's calculated:** Weighted average across four categories that emphasize agentic work.
+- **Included benchmarks (v4.3 — September 2026):** AA-Briefcase, GDPval-AA v2, AutomationBench-AA, Terminal-Bench v4.0, SciCode, AA-Omniscience, GDP.pdf, AA-LCR v1.1, HLE, CritPt.
 - **Category breakdown:**
-  - **Agents (25%):** GDPval-AA v2, 𝜏³-Banking
-  - **Coding (25%):** Terminal-Bench v2.1, SciCode
-  - **General (25%):** AA-LCR, AA-Omniscience
-  - **Scientific Reasoning (25%):** HLE, GPQA Diamond, CritPt
-- **Changes from v4.0:** IFBench, 𝜏²-Bench Telecom, and Terminal-Bench Hard were removed. GDPval-AA was upgraded to v2. 𝜏³-Banking replaced 𝜏²-Bench Telecom. Terminal-Bench v2.1 replaced Terminal-Bench Hard.
-- **Methodology:** Artificial Analysis estimates a 95% confidence interval of less than ±1% based on experiments with >10 repeats on certain models for all evaluation datasets. The Intelligence Index is a text-only, English language evaluation suite; multimodal and multilingual performance are benchmarked separately.
-- **Why it matters:** The single best metric for comparing overall model capability. A more useful synthesis comparison between language models than any other metric in existence today.
+  - **Agents (30%):** AA-Briefcase 15%, GDPval-AA v2 10%, AutomationBench-AA 5%
+  - **Coding (20%):** Terminal-Bench v4.0 10%, SciCode 10%
+  - **General (30%):** AA-Omniscience 15% (accuracy 10% + 1 − hallucination rate 5%), GDP.pdf 10%, AA-LCR v1.1 5%
+  - **Scientific Reasoning (20%):** HLE 10%, CritPt 10%
+- **Changes from v4.1:** Dropped τ³-Banking, Terminal-Bench v2.1, GPQA Diamond, and IFBench from the index (they remain as additional/legacy evaluations). Added AA-Briefcase, AutomationBench-AA, Terminal-Bench v4.0, GDP.pdf, and AA-LCR v1.1. Category weights shifted from equal 25% to Agents 30% / Coding 20% / General 30% / Sci Reasoning 20%.
+- **Methodology:** Artificial Analysis estimates a 95% confidence interval of less than ±1% based on experiments with >10 repeats on certain models. The Intelligence Index is a primarily text-based, English-language evaluation suite; multimodal and multilingual performance are benchmarked separately.
+- **Why it matters:** The single best metric for comparing overall model capability.
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
 ### Coding Index
 - **What it measures:** Programming and software development capabilities.
-- **Scale:** Higher is better
-- **How it's calculated:** Weighted average of coding benchmarks in the Artificial Analysis Intelligence Index: Terminal-Bench v2.1 (66.7%) and SciCode (33.3%).
-- **⚠️ Derived field (Aug 2026):** AA silently removed the standalone `codingIndex` composite from their page payloads with the v4.1.1 launch (no official announcement; the "Coding Index" tab was replaced by "Agentic Index"). This field is now **recomputed locally** as `(2/3 × terminalbenchV21 + 1/3 × scicode) × 100` — verified to reproduce AA's published values exactly (e.g., Claude Opus 5 = 77.98). It preserves the retired metric for continuity; AA's current coding measurement is the agent-level **Coding Agent Index** (`/agents/coding-agents`), which is not model-level and not tracked here.
-- **Included benchmarks:** Terminal-Bench v2.1 (verified refresh of v2.0 — 89 curated agentic tasks), SciCode (scientific code generation across 16 disciplines).
+- **Scale:** Higher is better (0–100)
+- **How it's calculated:** Equal-weight average of Intelligence Index v4.3 Coding components: Terminal-Bench v4.0 (50%) and SciCode (50%).
+- **⚠️ Derived field:** AA removed the standalone `codingIndex` composite from RSC payloads in v4.1.1. This field is **recomputed locally**. Through August 2026 it used the retired v4.1 formula `(2/3 × terminalbenchV21 + 1/3 × scicode) × 100`. As of the v4.3 rebase (September 2026) it uses `(1/2 × terminalbenchV40 + 1/2 × scicode) × 100`. Prefer AA's official value if they restore the field. AA's current coding-agent leaderboard (`/agents/coding-agents`) is not model-level and is not tracked here.
+- **Included benchmarks:** Terminal-Bench v4.0 (66 tasks, pass@1 over 3 repeats), SciCode (288 subproblems across 16 disciplines).
 - **Why it matters:** Critical for developers choosing models for code generation, debugging, and software engineering tasks.
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
 ### Agentic Index
-- **What it measures:** The model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and task completion.
-- **Scale:** Higher is better
-- **How it's calculated:** Average of agentic capabilities benchmarks in the Artificial Analysis Intelligence Index: GDPval-AA v2 and 𝜏³-Banking.
-- **Included benchmarks:** GDPval-AA v2 (real-world tasks across 44 occupations and 9 major industries via agentic loop), 𝜏³-Banking (fintech customer-support agent navigating knowledge bases and multi-step tool calls).
+- **What it measures:** The model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and real-world task completion.
+- **Scale:** Higher is better (0–100)
+- **How it's calculated:** Weighted reconstruction of Intelligence Index v4.3's Agents category.
+- **⚠️ Derived field (v4.3):** AA dropped the standalone `agenticIndex` composite from RSC payloads. This field is **recomputed locally** as `(0.5 × briefcaseNorm + 1/3 × gdpvalNorm + 1/6 × automationBench) × 100`, matching the 15/10/5 index weights. Elo scores use AA's documented mapping `clamp((Elo − 500) / 2000)` (`gdpvalNormalized` is used when present). Requires all three components; otherwise `null`.
+- **Included benchmarks:** AA-Briefcase, GDPval-AA v2, AutomationBench-AA.
 - **Why it matters:** Important for applications where the model needs to perform complex workflows, use tools, or operate autonomously.
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
 ### Math Index (Deprecated)
 - **What it measures:** Mathematical reasoning and problem-solving abilities.
 - **Scale:** Higher is better
-- **Status:** **Deprecated.** As of July 2026, AA's RSC data no longer populates this field (0/38 models). Retained in the schema for backward compatibility but always `null`. Use `aime25` or individual math benchmarks instead.
+- **Status:** **Deprecated.** As of July 2026, AA's RSC data no longer populates this field. Retained in the schema for backward compatibility but always `null`. Use `aime25` or individual math benchmarks instead.
+
+---
+
+## Intelligence Index v4.3 (September 2026)
+
+AA launched Intelligence Index v4.3 in early September 2026. Live RSC payloads confirm:
+
+| Change | Detail |
+|---|---|
+| Index composition | 10 evals; Agents 30% / Coding 20% / General 30% / Sci Reasoning 20% |
+| New in index | `terminalbenchV40`, `gdpPdfAllPass`, AA-Briefcase (already tracked as `briefcaseElo`), AutomationBench (already tracked) |
+| Dropped from index | τ³-Banking, Terminal-Bench v2.1, GPQA Diamond, IFBench (fields still populated) |
+| Removed composites | `agenticIndex` is 0 hits in RSC; reconstructed locally |
+| Renamed | `harveyLabAllPass` → `harveyLab` (sync script hybrid-reads both; JSON key stays `harveyLabAllPass`) |
+| New additional evals | `mlcrOverall` (MLCR-AA), `analystAgent` (AA-AnalystAgent) |
+| Score scale | Frontier scores compressed (~65 → ~53 for Claude Fable 5.1 max) because the suite got harder |
+
+Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time of a model's addition and normalized as `clamp((Elo − 500) / 2000)`.
 
 ---
 
@@ -59,7 +78,7 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 - **Background:** These graduate-level questions are designed to be "Google-proof" and require genuine scientific expertise rather than search skills. They can only be consistently solved by domain experts with PhDs, making them ideal for testing true scientific reasoning capabilities.
 - **Methodology:** All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests deep domain expertise and reasoning in hard sciences. A score above 0.85 indicates strong scientific reasoning.
-- **Current range (38 models):** 0.782 — 0.941
+- **Status:** Intelligence Index through v4.1; **legacy as of v4.3** (field still populated).
 - **Official page:** https://artificialanalysis.ai/evaluations/gpqa-diamond
 - **Publication:** [GPQA: A Graduate-Level Google-Proof Q&A Benchmark](https://arxiv.org/abs/2311.12022) (David Rein, Betty Li Hou, Asa Cooper Stickland, Jackson Petty, Richard Yuanzhe Pang, Julien Dirani, Julian Michael, Samuel R. Bowman)
 
@@ -77,8 +96,7 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 - **Scale:** 0.0 to 1.0 (accuracy score)
 - **Background:** Unlike traditional coding benchmarks, SciCode requires integrating scientific knowledge with programming skills to solve real research problems rather than abstract puzzles. The benchmark was developed by domain experts across 16 diverse natural science sub-fields, including mathematics, physics, chemistry, biology, and materials science.
 - **Methodology:** Problems naturally factorize into multiple subproblems, each involving knowledge recall, reasoning, and code synthesis. It offers optional descriptions specifying useful scientific background information and scientist-annotated gold-standard solutions and test cases for evaluation. All evaluations are conducted independently by Artificial Analysis.
-- **Why it matters:** Tests the intersection of coding ability and scientific understanding. Important for research automation.
-- **Current range (38 models):** 0.360 — 0.602
+- **Why it matters:** Tests the intersection of coding ability and scientific understanding. Important for research automation. Equal-weight Coding component of Intelligence Index v4.3 (10%).
 - **Official page:** https://artificialanalysis.ai/evaluations/scicode
 - **Publication:** [SciCode: A Research Coding Benchmark Curated by Scientists](https://arxiv.org/abs/2407.13168) (Minyang Tian, Luyu Gao, Shizhuo Dylan Zhang, Xinan Chen, Cunwei Fan, Xuefei Guo, Roland Haas, Pan Ji, Kittithat Krongchon, Yao Li, Shengyan Liu, Di Luo, Yutao Ma, Hao Tong, Kha Trinh, Chenyu Tian, Zihan Wang, Bohao Wu, Yanyu Xiong, Shengzhu Yin, and 10 others)
 
@@ -190,24 +208,42 @@ The following fields are retained in the JSON schema for backward compatibility 
 
 ---
 
-## New Agentic Benchmarks (July 2026)
+## Intelligence Index v4.3 Components & Additional Evals
 
-Artificial Analysis introduced several new agentic benchmarks alongside Intelligence Index v4.1. Two of these (`tauBanking` and `terminalbenchV21`) are components of the Intelligence Index v4.1 itself; the rest are standalone agentic evaluations tracked separately.
+### Terminal-Bench v4.0 (`terminalbenchV40`)
+- **What it measures:** 66 terminal-based agentic tasks scored by a test-suite pass/fail (pass@1, 3 repeats).
+- **Scale:** 0.0 to 1.0 (accuracy)
+- **Part of:** Intelligence Index v4.3 (Coding, 10%)
+- **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking#terminal-bench-v4-0
+
+### GDP.pdf (`gdpPdfAllPass`)
+- **What it measures:** Free-form answers grounded in a long PDF — 100 tasks across 10 domains, 5 repeats. Headline metric is all-pass rate.
+- **Scale:** 0.0 to 1.0 (all-pass)
+- **Part of:** Intelligence Index v4.3 (General, 10%)
+- **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking#gdp-pdf
+
+### MLCR-AA (`mlcrOverall`)
+- **What it measures:** Medical long-context reasoning — 60 questions (expert + compound tiers), conciseness gate + 3-judge majority vote, pass@1 over 3 repeats.
+- **Scale:** 0.0 to 1.0 (accuracy)
+- **Part of:** Additional evaluations (not in the Intelligence Index)
+- **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking#mlcr-aa
+
+### AA-AnalystAgent (`analystAgent`)
+- **What it measures:** Agentic Python analysis — 80 tasks across 14 domains, LLM-judge binary correctness with numeric pre-check, pass^5 over 5 repeats.
+- **Scale:** 0.0 to 1.0 (accuracy)
+- **Part of:** Additional evaluations (not in the Intelligence Index)
+- **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking#aa-analyst-agent
 
 ### 𝜏³-Banking (`tauBanking`)
 - **What it measures:** A fintech customer-support benchmark from the 𝜏-Knowledge framework that tests whether agents can navigate a large unstructured knowledge base and execute multi-step tool calls to resolve realistic banking workflows.
 - **Scale:** 0.0 to 1.0 (accuracy)
-- **Coverage:** 30/38 models
-- **Current range:** 0.087 — 0.326
-- **Part of:** Intelligence Index v4.1 (Agents category)
+- **Status:** Intelligence Index v4.1 Agents component; **legacy / additional as of v4.3** (field still populated).
 - **Official page:** https://artificialanalysis.ai/evaluations/tau3-banking
 
 ### Terminal-Bench v2.1 (`terminalbenchV21`)
-- **What it measures:** A verified refresh of Terminal-Bench v2.0 — 89 curated tasks across software engineering, system administration, data processing, model training, and security, with environment and instruction fixes so scores reflect agent capability rather than environment gaps.
+- **What it measures:** A verified refresh of Terminal-Bench v2.0 — 89 curated tasks across software engineering, system administration, data processing, model training, and security.
 - **Scale:** 0.0 to 1.0 (accuracy)
-- **Coverage:** 30/38 models
-- **Current range:** 0.262 — 0.846
-- **Part of:** Intelligence Index v4.1 (Coding category)
+- **Status:** Intelligence Index v4.1 Coding component; **superseded in the index by v4.0** as of v4.3 (field still populated).
 - **Official page:** https://artificialanalysis.ai/evaluations/terminalbench-v2-1
 
 ### AutomationBench-AA (`automationBench`)
@@ -216,6 +252,7 @@ Artificial Analysis introduced several new agentic benchmarks alongside Intellig
 - **Coverage:** 20/38 models
 - **Current range:** 0.057 — 0.514
 - **Developed by:** Zapier (arXiv: 2604.18934)
+- **Part of:** Intelligence Index v4.3 (Agents, 5%)
 - **Official page:** https://artificialanalysis.ai/evaluations/automationbench-aa
 
 ### EnterpriseOps-Gym-AA (`enterpriseOpsGym`)
@@ -228,8 +265,7 @@ Artificial Analysis introduced several new agentic benchmarks alongside Intellig
 ### Harvey LAB-AA (`harveyLabAllPass`)
 - **What it measures:** Artificial Analysis' implementation of Harvey's Legal Agent Benchmark (LAB), testing AI agents on real-world legal work from Harvey's dataset of 120 private tasks spanning 24 legal practice areas. The agent reads case documents in a sandbox and produces legal deliverables, graded criterion-by-criterion by a single LLM rubric judge.
 - **Scale:** 0.0 to 1.0 (task all-pass rate)
-- **Coverage:** 21/38 models
-- **Current range:** 0.000 — 0.142
+- **RSC field:** v4.3 renamed `harveyLabAllPass` → `harveyLab`. The sync script hybrid-reads both; the JSON key remains `harveyLabAllPass`.
 - **Official page:** https://artificialanalysis.ai/evaluations/harvey-lab-aa
 
 ### APEX-Agents-AA (`apexAgents`)
@@ -247,10 +283,9 @@ Artificial Analysis introduced several new agentic benchmarks alongside Intellig
 - **Official page:** https://artificialanalysis.ai/evaluations/itbench-aa
 
 ### AA-Briefcase (`briefcaseElo`)
-- **What it measures:** A private evaluation developed by Artificial Analysis for frontier agentic capability in long-horizon knowledge work, testing agents on realistic business workflows that require deliverables such as spreadsheets, presentations, and memos. AA-Briefcase Elo is a combined metric that aggregates rubric pass rate, analytical quality Elo and presentation Elo.
-- **Scale:** Elo rating (higher is better)
-- **Coverage:** 23/38 models
-- **Current range:** 0.0 — 1583.2
+- **What it measures:** Realistic multi-week knowledge-work projects (91 tasks across 4 scenarios) with thousands of source files. Combined Elo aggregates rubric pass rate, analytical quality, and presentation quality from a three-judge panel.
+- **Scale:** Elo rating (higher is better); index contribution uses `clamp((Elo − 500) / 2000)`
+- **Part of:** Intelligence Index v4.3 (Agents, 15%) — largest single component
 - **Official page:** https://artificialanalysis.ai/evaluations/aa-briefcase
 
 ---
@@ -339,7 +374,7 @@ Adding a new **benchmark metric** (e.g., when AA announces a new evaluation) req
 
 1. **`scripts/sync-ai-models.py`** — Add the field to the `clean_model()` output dict. Use hybrid reads: `raw.get("camelCaseName", raw.get("snake_case_name"))`.
 2. **`src/components/ModelBenchmarkChart.tsx`** — Add the field to the `AIModel` interface (e.g., `newField: number | null;`).
-3. **`src/app/agentic-ai/page.tsx`** — Add an entry to the `BENCHMARKS` array with `key`, `label`, `description`, `testBadge`, `scale`, `fullDescription`, and `officialUrl`.
+3. **`src/app/agentic-ai/page.tsx`** — Add an entry to the `METRICS` array with `key`, `label`, `description`, `testBadge`, `scale`, `fullDescription`, and `officialUrl`.
 4. Run `python scripts/sync-ai-models.py` to regenerate the data.
 5. Run `npm run build` to verify TypeScript compiles.
 6. Commit and push all changed files.

@@ -292,15 +292,39 @@ def clean_model(raw: dict) -> dict | None:
         if isinstance(overall, dict):
             briefcase_elo = overall.get("elo")
 
-    # Coding Index: AA removed the standalone composite field from their RSC
-    # payload (Aug 2026, v4.1.1). Reconstruct the retired metric from its
-    # documented components: Terminal-Bench v2.1 (66.7%) + SciCode (33.3%),
-    # scaled to 0-100. Prefer AA's official value if they ever restore it.
+    gdpval = raw.get("gdpval")
+    automation = raw.get("automationBenchPartialScore")
     tb21 = raw.get("terminalbenchV21", raw.get("terminalbench_v2_1"))
+    tb40 = raw.get("terminalbenchV40", raw.get("terminalbench_v4_0"))
     scicode = raw.get("scicode")
+
+    # Coding Index: AA removed the standalone composite from RSC payloads
+    # (Aug 2026, v4.1.1). Rebased to Intelligence Index v4.3 (Sep 2026):
+    # equal-weight Terminal-Bench v4.0 + SciCode, scaled to 0-100.
+    # Prefer AA's official value if they ever restore it.
     coding_index = raw.get("codingIndex", raw.get("coding_index"))
-    if coding_index is None and tb21 is not None and scicode is not None:
-        coding_index = (2 / 3 * tb21 + 1 / 3 * scicode) * 100
+    if coding_index is None and tb40 is not None and scicode is not None:
+        coding_index = (tb40 + scicode) / 2 * 100
+
+    # Agentic Index: AA dropped the standalone composite in v4.3.
+    # Reconstruct from the Agents category (30% of II): AA-Briefcase 15%,
+    # GDPval-AA v2 10%, AutomationBench-AA 5% → 50% / 33.3% / 16.7%.
+    # Elo scores use AA's documented mapping clamp((Elo - 500) / 2000).
+    def _elo_to_unit(elo):
+        if elo is None:
+            return None
+        return max(0.0, min(1.0, (float(elo) - 500.0) / 2000.0))
+
+    agentic_index = raw.get("agenticIndex", raw.get("agentic_index"))
+    if agentic_index is None:
+        briefcase_n = _elo_to_unit(briefcase_elo)
+        gdpval_n = raw.get("gdpvalNormalized")
+        if gdpval_n is None:
+            gdpval_n = _elo_to_unit(gdpval)
+        if briefcase_n is not None and gdpval_n is not None and automation is not None:
+            agentic_index = (
+                0.5 * briefcase_n + (1.0 / 3.0) * float(gdpval_n) + (1.0 / 6.0) * float(automation)
+            ) * 100
 
     return {
         "id": slug,
@@ -309,7 +333,7 @@ def clean_model(raw: dict) -> dict | None:
         "provider": creator_name,
         "intelligenceIndex": float(intelligence) if intelligence is not None else None,
         "codingIndex": coding_index,
-        "agenticIndex": raw.get("agenticIndex", raw.get("agentic_index")),
+        "agenticIndex": agentic_index,
         "mathIndex": raw.get("mathIndex", raw.get("math_index")),
         "inputPrice": float(input_price) if input_price is not None else None,
         "outputPrice": float(output_price) if output_price is not None else None,
@@ -331,7 +355,8 @@ def clean_model(raw: dict) -> dict | None:
         "mmluPro": raw.get("mmluPro", raw.get("mmlu_pro")),
         "math500": raw.get("math500", raw.get("math_500")),
         "hle": raw.get("hle"),
-        "gdpval": raw.get("gdpval"),
+        "gdpval": gdpval,
+        "gdpvalNormalized": raw.get("gdpvalNormalized"),
         "ifbench": raw.get("ifbench"),
         "tau2": raw.get("tau2"),
         "terminalbenchHard": raw.get("terminalbenchHard", raw.get("terminalbench_hard")),
@@ -340,15 +365,21 @@ def clean_model(raw: dict) -> dict | None:
         "multilingualAA": raw.get("multilingualAA", raw.get("multilingual_aa")),
         "omniscience": raw.get("omniscience"),
         "lcr": raw.get("lcr"),
-        # New benchmarks (July 2026 — Intelligence Index v4.1 + standalone agentic benchmarks)
+        # Intelligence Index v4.1 leftovers (still shipped; no longer in the index)
         "tauBanking": raw.get("tauBanking"),
-        "terminalbenchV21": raw.get("terminalbenchV21"),
-        "automationBench": raw.get("automationBenchPartialScore"),
+        "terminalbenchV21": tb21,
+        # Intelligence Index v4.3 + standalone agentic benchmarks
+        "terminalbenchV40": tb40,
+        "gdpPdfAllPass": raw.get("gdpPdfAllPass"),
+        "mlcrOverall": raw.get("mlcrOverall"),
+        "analystAgent": raw.get("analystAgent"),
+        "automationBench": automation,
         "enterpriseOpsGym": raw.get("enterpriseOpsGym"),
-        "harveyLabAllPass": raw.get("harveyLabAllPass"),
+        "harveyLabAllPass": raw.get("harveyLab", raw.get("harveyLabAllPass")),
         "apexAgents": raw.get("apexAgents"),
         "itBenchSre": raw.get("itBenchSre"),
         "briefcaseElo": briefcase_elo,
+        "intelligenceIndexIsEstimated": raw.get("intelligenceIndexIsEstimated"),
     }
 
 
