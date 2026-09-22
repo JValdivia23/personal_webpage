@@ -784,7 +784,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 9;
+const FILTER_VERSION = 10;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
   "gpt-5-6-sol",
@@ -831,6 +831,11 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // Gemini 3.8 Flash variants — only high stays visible (matches 3.7 pattern)
   "gemini-3-8-flash-medium",
   "gemini-3-8-flash-low",
+  // Grok 4.7 high — 0.12 below xhigh, hidden as near-duplicate
+  "grok-4-7-high",
+  // Claude Opus 5.5 medium/low — hidden, max/xhigh/high visible (new top-3 sweep)
+  "claude-opus-5-5-medium",
+  "claude-opus-5-5-low",
   // No longer relevant — superseded by newer releases
   "nvidia-nemotron-3-super-120b-a12b",
   "gpt-oss-120b",
