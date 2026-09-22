@@ -784,26 +784,37 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 11;
+const FILTER_VERSION = 12;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
-  // GPT-5.6 Sol variants (max/high/medium/low/non-reasoning)
-  "gpt-5-6-sol",
+  // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
   "gpt-5-6-sol-medium",
   "gpt-5-6-sol-low",
   "gpt-5-6-sol-non-reasoning",
+  "gpt-5-6-sol-xhigh",
   // GPT-5.6 Terra variants
-  "gpt-5-6-terra",
   "gpt-5-6-terra-high",
   "gpt-5-6-terra-medium",
   "gpt-5-6-terra-low",
   "gpt-5-6-terra-non-reasoning",
+  "gpt-5-6-terra-xhigh",
   // GPT-5.6 Luna variants
-  "gpt-5-6-luna",
   "gpt-5-6-luna-high",
   "gpt-5-6-luna-medium",
   "gpt-5-6-luna-low",
   "gpt-5-6-luna-non-reasoning",
+  "gpt-5-6-luna-xhigh",
+  // GPT-6 Sol/Luna variants (only max stays visible per branch)
+  "gpt-6-sol-xhigh",
+  "gpt-6-sol-high",
+  "gpt-6-sol-medium",
+  "gpt-6-sol-low",
+  "gpt-6-sol-non-reasoning",
+  "gpt-6-luna-xhigh",
+  "gpt-6-luna-high",
+  "gpt-6-luna-medium",
+  "gpt-6-luna-low",
+  "gpt-6-luna-non-reasoning",
   // GPT-6 Astra variants (only max stays visible)
   "gpt-6-astra-xhigh",
   "gpt-6-astra-high",
