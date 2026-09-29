@@ -45,6 +45,7 @@ TARGET_URL = (
     "gpt-5-6-sol,gpt-5-6-sol-high,gpt-5-6-sol-medium,gpt-5-6-sol-low,gpt-5-6-sol-non-reasoning,"
     "gpt-5-6-luna,gpt-5-6-luna-high,gpt-5-6-luna-medium,gpt-5-6-luna-low,gpt-5-6-luna-non-reasoning,"
     "gpt-6-sol,gpt-6-sol-xhigh,gpt-6-sol-high,gpt-6-sol-medium,gpt-6-sol-low,gpt-6-sol-non-reasoning,"
+    "gpt-6-1-sol,gpt-6-1-sol-xhigh,gpt-6-1-sol-high,gpt-6-1-sol-medium,gpt-6-1-sol-low,"
     "gpt-6-luna,gpt-6-luna-xhigh,gpt-6-luna-high,gpt-6-luna-medium,gpt-6-luna-low,gpt-6-luna-non-reasoning,"
     "gpt-6-astra,gpt-6-astra-xhigh,gpt-6-astra-high,gpt-6-astra-medium,gpt-6-astra-low,"
     "muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,"
