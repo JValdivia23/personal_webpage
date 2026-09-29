@@ -1,8 +1,8 @@
 # AI Model Benchmark Metrics Documentation
 
 **Source:** [Artificial Analysis](https://artificialanalysis.ai)  
-**Last Updated:** 2026-09-27  
-**Models Tracked:** 105 leading LLMs  
+**Last Updated:** 2026-09-28  
+**Models Tracked:** 110 leading LLMs  
 **Intelligence Index Version:** v4.3 (updated September 2026 — see [format change notes](#rsc-data-format-change-july-2026) and [v4.3 notes](#intelligence-index-v43-september-2026) below)
 
 ---

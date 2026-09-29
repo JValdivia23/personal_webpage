@@ -784,7 +784,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving any user-customized toggles). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 12;
+const FILTER_VERSION = 13;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
@@ -847,6 +847,11 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // Claude Opus 5.5 medium/low — hidden, max/xhigh/high visible (new top-3 sweep)
   "claude-opus-5-5-medium",
   "claude-opus-5-5-low",
+  // Claude Sonnet 5.5 lower efforts — hidden, max only visible
+  "claude-sonnet-5-5-xhigh",
+  "claude-sonnet-5-5-high",
+  "claude-sonnet-5-5-medium",
+  "claude-sonnet-5-5-low",
   // Superseded generations — hidden, enable to compare
   "deepseek-v4-flash",
   "deepseek-v4-flash-vision",
