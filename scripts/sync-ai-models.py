@@ -50,7 +50,7 @@ TARGET_URL = (
     "gpt-6-astra,gpt-6-astra-xhigh,gpt-6-astra-high,gpt-6-astra-medium,gpt-6-astra-low,"
     "muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,"
     "gemini-3-1-pro-preview,gemini-3-5-flash,gemini-3-6-flash,gemini-3-7-flash,gemini-3-7-flash-medium,gemini-3-7-flash-low,gemini-3-8-flash,gemini-3-8-flash-medium,gemini-3-8-flash-low,gemini-4-argon,"
-    "claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-sonnet-5-5,claude-sonnet-5-5-xhigh,claude-sonnet-5-5-high,claude-sonnet-5-5-medium,claude-sonnet-5-5-low,claude-opus-4-7,claude-opus-4-8,claude-opus-5,claude-opus-5-5,claude-opus-5-5-xhigh,claude-opus-5-5-high,claude-opus-5-5-medium,claude-opus-5-5-low,"
+    "claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-sonnet-5-5,claude-sonnet-5-5-xhigh,claude-sonnet-5-5-high,claude-sonnet-5-5-medium,claude-sonnet-5-5-low,claude-haiku-5-5,claude-haiku-5-5-xhigh,claude-haiku-5-5-high,claude-haiku-5-5-medium,claude-haiku-5-5-low,claude-opus-4-7,claude-opus-4-8,claude-opus-5,claude-opus-5-5,claude-opus-5-5-xhigh,claude-opus-5-5-high,claude-opus-5-5-medium,claude-opus-5-5-low,"
     "deepseek-v4-flash,deepseek-v4-flash-vision,deepseek-v4-pro,deepseek-v4-1-flash,"
     "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,grok-4-6,grok-4-7,grok-4-7-high,minimax-m2-7,minimax-m3,"
     "nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,"
@@ -297,8 +297,8 @@ def clean_model(raw: dict) -> dict | None:
 
     gdpval = raw.get("gdpval")
     automation = raw.get("automationBenchPartialScore")
-    tb21 = raw.get("terminalbenchV21", raw.get("terminalbench_v2_1"))
-    tb40 = raw.get("terminalbenchV40", raw.get("terminalbench_v4_0"))
+    tb21 = raw.get("terminalbenchV21", raw.get("terminalBench21", raw.get("terminalbench_v2_1")))
+    tb40 = raw.get("terminalbenchV40", raw.get("terminalBench40", raw.get("terminalbench_v4_0")))
     scicode = raw.get("scicode")
 
     # Coding Index: AA removed the standalone composite from RSC payloads
@@ -386,6 +386,153 @@ def clean_model(raw: dict) -> dict | None:
     }
 
 
+def _extract_from_initial_models(text: str, slug: str) -> dict | None:
+    """Extract the model object from AA's ``"initialModels":[{...}]`` array
+    (Oct 2026 payload; replaced the old ``"currentModel"`` object).
+    Returns the array element whose ``slug`` matches, preferring one with a
+    non-null intelligence index. Returns None if no match."""
+    import json as _json
+
+    arr_key = '"initialModels":['
+    arr_pos = text.find(arr_key)
+    if arr_pos < 0:
+        return None
+    # Bracket-match the array (response text uses literal quotes)
+    arr_start = arr_pos + len(arr_key) - 1  # at '['
+    depth = 0
+    in_str = False
+    escape = False
+    arr_end = -1
+    for i in range(arr_start, min(len(text), arr_start + 500000)):
+        c = text[i]
+        if escape:
+            escape = False
+            continue
+        if c == '\\':
+            escape = True
+            continue
+        if c == '"':
+            in_str = not in_str
+            continue
+        if not in_str:
+            if c == '[':
+                depth += 1
+            elif c == ']':
+                depth -= 1
+                if depth == 0:
+                    arr_end = i + 1
+                    break
+    if arr_end < 0:
+        return None
+    # Split top-level elements via brace matching
+    matches = []
+    k = arr_start + 1
+    while k < arr_end - 1:
+        while k < arr_end and text[k] in ' \t\r\n,':
+            k += 1
+        if k >= arr_end - 1 or text[k] != '{':
+            break
+        d2 = 0
+        ins2 = False
+        esc2 = False
+        el_end = -1
+        for j in range(k, min(len(text), k + 200000)):
+            cc = text[j]
+            if esc2:
+                esc2 = False
+                continue
+            if cc == '\\':
+                esc2 = True
+                continue
+            if cc == '"':
+                ins2 = not ins2
+                continue
+            if not ins2:
+                if cc == '{':
+                    d2 += 1
+                elif cc == '}':
+                    d2 -= 1
+                    if d2 == 0:
+                        el_end = j + 1
+                        break
+        if el_end < 0:
+            break
+        try:
+            el = _json.loads(text[k:el_end])
+            if isinstance(el, dict) and el.get("slug") == slug:
+                matches.append(el)
+        except Exception:
+            pass
+        k = el_end
+    if not matches:
+        return None
+    # Prefer an element that actually has benchmark data
+    for el in matches:
+        if el.get("intelligenceIndex") is not None or el.get("intelligence_index") is not None:
+            return el
+    return matches[0]
+
+
+def _extract_model_legacy(text: str, slug: str) -> dict | None:
+    """Legacy extractor: find intelligence_index, then search backwards for
+    the { that starts the full model object (pre-Oct-2026 ``currentModel``
+    payloads). Kept as a fallback."""
+    import json as _json
+
+    intel_pos = text.find('"intelligenceIndex"')
+    if intel_pos < 0:
+        intel_pos = text.find('"intelligence_index"')
+    if intel_pos < 0:
+        return None
+    # Search backwards from intelligence_index, up to 50KB
+    # (must be large enough to find the { that opens the model object
+    # — for some models it's 10-15KB before the intelligence_index field)
+    for candidate_start in range(intel_pos, max(0, intel_pos - 50000), -1):
+        if text[candidate_start] != '{':
+            continue
+        # Find matching } — no forward limit; model objects can be 20KB+
+        depth = 0
+        in_str = False
+        escape = False
+        obj_end = -1
+        search_end = min(len(text), candidate_start + 200000)
+        for i in range(candidate_start, search_end):
+            c = text[i]
+            if escape:
+                escape = False
+                continue
+            if c == '\\':
+                escape = True
+                continue
+            if c == '"':
+                in_str = not in_str
+                continue
+            if not in_str:
+                if c == '{':
+                    depth += 1
+                elif c == '}':
+                    depth -= 1
+                    if depth == 0:
+                        obj_end = i + 1
+                        break
+        if obj_end < 0:
+            continue
+        obj_str = text[candidate_start:obj_end]
+        # Verify this object contains our slug AND intelligenceIndex
+        # (the RSC may have smaller nested objects with just the slug,
+        # e.g. {"slug":"...","name":"..."} release-info wrappers)
+        if f'"slug":"{slug}"' not in obj_str:
+            continue
+        if '"intelligenceIndex"' not in obj_str and '"intelligence_index"' not in obj_str:
+            continue
+        # Found it!
+        try:
+            return _json.loads(obj_str)
+        except Exception:
+            continue
+    return None
+
+
 def fetch_and_clean(url: str) -> list[dict]:
     """Fetch models from the page and clean them."""
     target_slugs = get_filtered_slugs(url)
@@ -416,68 +563,15 @@ def fetch_and_clean(url: str) -> list[dict]:
                     fetch_failures[slug] = f"HTTP {resp.status}"
                     continue
                 text = resp.text()
-                # Strategy: find intelligence_index, then search backwards for the {
-                # that starts the full model object. We verify by checking if the
-                # object contains our slug (skipping nested objects).
-                intel_pos = text.find('"intelligenceIndex"')
-                if intel_pos < 0:
-                    intel_pos = text.find('"intelligence_index"')
-                if intel_pos < 0:
-                    fetch_failures[slug] = "no intelligenceIndex in response"
-                    continue
-                # Search backwards from intelligence_index, up to 50KB
-                # (must be large enough to find the { that opens the model object
-                # — for some models it's 10-15KB before the intelligence_index field)
-                best_obj = None
-                for candidate_start in range(intel_pos, max(0, intel_pos - 50000), -1):
-                    if text[candidate_start] != '{':
-                        continue
-                    # Find matching } — no forward limit; model objects can be 20KB+
-                    depth = 0
-                    in_str = False
-                    escape = False
-                    obj_end = -1
-                    search_end = min(len(text), candidate_start + 200000)
-                    for i in range(candidate_start, search_end):
-                        c = text[i]
-                        if escape:
-                            escape = False
-                            continue
-                        if c == '\\':
-                            escape = True
-                            continue
-                        if c == '"':
-                            in_str = not in_str
-                            continue
-                        if not in_str:
-                            if c == '{':
-                                depth += 1
-                            elif c == '}':
-                                depth -= 1
-                                if depth == 0:
-                                    obj_end = i + 1
-                                    break
-                    if obj_end < 0:
-                        continue
-                    obj_str = text[candidate_start:obj_end]
-                    # Verify this object contains our slug AND intelligenceIndex
-                    # (the RSC may have smaller nested objects with just the slug,
-                    # e.g. {"slug":"...","name":"..."} release-info wrappers)
-                    if f'"slug":"{slug}"' not in obj_str:
-                        continue
-                    if '"intelligenceIndex"' not in obj_str and '"intelligence_index"' not in obj_str:
-                        continue
-                    # Found it!
-                    try:
-                        import json as _json
-                        best_obj = _json.loads(obj_str)
-                        break
-                    except Exception:
-                        continue
+                # Primary: parse the "initialModels" array (Oct 2026 payload).
+                # Fallback: legacy backwards search (pre-Oct-2026 payloads).
+                best_obj = _extract_from_initial_models(text, slug)
+                if best_obj is None:
+                    best_obj = _extract_model_legacy(text, slug)
                 if best_obj is not None:
                     raw_models.append(best_obj)
                 else:
-                    fetch_failures[slug] = "no enclosing object found containing slug"
+                    fetch_failures[slug] = "no model object found (initialModels + legacy)"
             except Exception as e:
                 fetch_failures[slug] = f"exception: {e}"
                 continue
@@ -586,6 +680,14 @@ def main() -> int:
 
     if not models:
         log("ERROR: No models extracted")
+        return 1
+
+    # Completeness guard (Oct 2026): refuse to overwrite the data file with
+    # a partial fetch (e.g. after an AA payload format change). Tolerates a
+    # few legitimately missing slugs (retired models, transient 404s).
+    expected = len(get_filtered_slugs(TARGET_URL))
+    if expected and len(models) < 0.9 * expected:
+        log(f"ERROR: Only {len(models)}/{expected} models fetched (<90%) — refusing to write (stale file preserved)")
         return 1
 
     models = compute_ranks(models)
