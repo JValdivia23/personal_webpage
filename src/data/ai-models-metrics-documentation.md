@@ -3,7 +3,11 @@
 **Source:** [Artificial Analysis](https://artificialanalysis.ai)  
 **Last Updated:** 2026-10-23  
 **Models Tracked:** 127 leading LLMs  
-**Intelligence Index Version:** v4.3 (updated September 2026 — see [format change notes](#rsc-data-format-change-july-2026) and [v4.3 notes](#intelligence-index-v43-september-2026) below)
+**Intelligence Index Version:** v4.3 family (AA labels the live index v4.3.2 as of 2026-10-23; see [v4.3 notes](#intelligence-index-v43-september-2026) below)
+
+**Agent maintenance:** Start with the tracked [AI Models Maintenance guide](../../docs/AI_MODELS_MAINTENANCE.md) for setup, model additions, variants/defaults, parser troubleshooting, validation, and release instructions. This file is the metric reference, not the full operational checklist.
+
+**Historical samples:** The 38-model ranges and coverage figures retained below are historical samples, not live statistics for the current dataset. Compute current coverage from `ai-models.json`; the page's availability counts use only the currently active models.
 
 ---
 
@@ -13,7 +17,7 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 
 ### Artificial Analysis Intelligence Index
 - **What it measures:** Overall model intelligence across reasoning, knowledge, maths and programming.
-- **Scale:** Higher is better (theoretical max varies; v4.3 leaders sit around ~53, down from ~65 on v4.1 because the suite got harder)
+- **Scale:** Higher is better. The scale depends on the evaluation suite; scores from different index versions are not directly comparable. Read current leaders from the JSON rather than a fixed example.
 - **How it's calculated:** Weighted average across four categories that emphasize agentic work.
 - **Included benchmarks (v4.3 — September 2026):** AA-Briefcase, GDPval-AA v2, AutomationBench-AA, Terminal-Bench v4.0, SciCode, AA-Omniscience, GDP.pdf, AA-LCR v1.1, HLE, CritPt.
 - **Category breakdown:**
@@ -65,7 +69,7 @@ AA launched Intelligence Index v4.3 in early September 2026. Live RSC payloads c
 | New additional evals | `mlcrOverall` (MLCR-AA), `analystAgent` (AA-AnalystAgent) |
 | Score scale | Frontier scores compressed (~65 → ~53 for Claude Fable 5.1 max) because the suite got harder |
 
-Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time of a model's addition and normalized as `clamp((Elo − 500) / 2000)`.
+Consult AA's current methodology for index-level Elo freezing and normalization. The local Agentic Index reconstruction does not store frozen Elo snapshots: it uses the current payload's `briefcaseElo`, `gdpvalNormalized` when present (otherwise the Elo mapping), and `automationBench`. It should not be presented as an official published composite.
 
 ---
 
@@ -87,8 +91,8 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Scale:** 0.0 to 1.0 (accuracy score)
 - **Background:** A collaborative effort by the Center for AI Safety involving over 1,000 contributors to create frontier-level academic questions that challenge current AI capabilities. The questions are designed to be 'Google-proof' and require genuine understanding rather than information retrieval, serving as the intended final closed-ended academic benchmark.
 - **Methodology:** All evaluations are conducted independently by Artificial Analysis.
-- **Why it matters:** One of the hardest existing benchmarks. Even top models score below 0.5, leaving significant headroom.
-- **Current range (38 models):** 0.173 — 0.533
+- **Why it matters:** A difficult frontier benchmark with substantial remaining headroom. Leading scores change over time; do not assume they remain below 0.5.
+- **Historical range (38-model sample):** 0.173 — 0.533
 - **Official page:** https://artificialanalysis.ai/evaluations/humanitys-last-exam
 
 ### SciCode
@@ -106,7 +110,7 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **How it's calculated:** ELO ratings are derived from blind pairwise comparisons of model outputs.
 - **Background:** The GDPval gold public dataset includes 220 tasks developed by OpenAI in collaboration with industry professionals to reflect real-world complexity. The benchmark requires models to produce diverse outputs including documents, slides, diagrams, and spreadsheets, mirroring actual work products across finance, healthcare, legal, and other professional domains.
 - **Why it matters:** Tests practical, open-ended real-world agentic capabilities beyond traditional academic benchmarks.
-- **Current range (38 models):** 689.5 — 1759.6
+- **Historical range (38-model sample):** 689.5 — 1759.6
 - **Official page:** https://artificialanalysis.ai/evaluations/gdpval-aa
 
 ### Tau-2 (τ²-Bench Telecom)
@@ -115,7 +119,7 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Background:** 𝜏²-Bench (Tau-2 Bench) introduces a new paradigm for evaluating conversational AI by simulating both the agent and user to actively modify a shared world state. The telecom domain tests agents' abilities to guide users through technical troubleshooting to test problem-solving and effective communication skills. Developed by Sierra Research, this benchmark addresses gaps between other benchmarks and real-world customer service scenarios where users are active participants in problem resolution.
 - **Methodology:** All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests multi-turn agent coordination and task completion in realistic customer-service dialogues.
-- **Current range (38 models):** 0.658 — 0.991
+- **Historical range (38-model sample):** 0.658 — 0.991
 - **Official page:** https://artificialanalysis.ai/evaluations/tau2-bench
 - **Publication:** [𝜏²-Bench: Evaluating Conversational Agents in a Dual-Control Environment](https://arxiv.org/abs/2506.07982) (Victor Barres, Honghua Dong, Soham Ray, Xujie Si, Karthik Narasimhan)
 
@@ -125,7 +129,7 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Background:** IFBench addresses the problem that current language models strongly overfit to a small set of verifiable constraints and cannot generalize well to unseen output constraints, a critical skill for practical AI applications. The benchmark introduces 58 new, diverse, and challenging verifiable constraints to test precise instruction-following generalization, going beyond existing benchmarks that focus on a limited set of constraint types.
 - **Methodology:** Developed by the Allen Institute for AI, IFBench uses reinforcement learning with verifiable rewards (RLVR) to improve instruction following and includes 29 additional hand-annotated training constraints with verification functions. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Critical for real-world applications where precise adherence to instructions is required.
-- **Current range (38 models):** 0.531 — 0.829
+- **Historical range (38-model sample):** 0.531 — 0.829
 - **Official page:** https://artificialanalysis.ai/evaluations/ifbench
 - **Publication:** [Generalizing Verifiable Instruction Following](https://arxiv.org/abs/2507.02833) (Valentina Pyatkin, Saumya Malik, Victoria Graf, Hamish Ivison, Shengyi Huang, Pradeep Dasigi, Nathan Lambert, Hannaneh Hajishirzi)
 
@@ -135,7 +139,7 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Background:** Terminal-Bench is a comprehensive benchmark developed by Stanford University and the Laude Institute for evaluating AI agents in realistic terminal environments. The "hard" subset contains challenging tasks that test agents' abilities to compile code, train models, configure servers, play games, and debug systems in representative scenarios for real-world problems and terminal use patterns.
 - **Methodology:** Tasks cover a wide range of engineering, game playing, and system administration tasks that are unlikely to be pattern-matched on training data. Outcomes are evaluated programmatically with verification scripts executed in the agent's Docker environment, requiring agents to successfully meet a range of output conditions. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests practical system administration and command-line reasoning abilities.
-- **Current range (38 models):** 0.235 — 0.629
+- **Historical range (38-model sample):** 0.235 — 0.629
 - **Official page:** https://artificialanalysis.ai/evaluations/terminalbench-hard
 
 ### CritPT (Critical Physics Thinking)
@@ -144,7 +148,7 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Background:** CritPt evaluates language models on solving unpublished, frontier-level physics problems that require genuine research-scale reasoning. The benchmark comprises 71 challenges (70 test challenges and one example), created by over 50 active physics researchers across 30 institutions and spanning 11 physics subfields including condensed matter, quantum physics, astrophysics, high energy physics, and biophysics. Each problem underwent extensive review (averaging 40+ hours per challenge) and uses "guess-resistant" answer formats including floating-point arrays, symbolic expressions, and Python functions.
 - **Methodology:** All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests advanced scientific reasoning in physics, beyond standard textbook problems. Leading models in 2025 achieve only single-digit accuracy, highlighting the substantial gap between current AI capabilities and research-level physics reasoning.
-- **Current range (38 models):** 0.003 — 0.286
+- **Historical range (38-model sample):** 0.003 — 0.286
 - **Official page:** https://artificialanalysis.ai/evaluations/critpt
 - **Publication:** [Probing the Critical Point (CritPt) of AI Reasoning: a Frontier Physics Research Benchmark](https://arxiv.org/abs/2509.26574) (Minhui Zhu, Minyang Tian, Xiaocheng Yang, Tianci Zhou, Penghao Zhu, Eli Chertkov, Shengyan Liu, Yufeng Du, Lifan Yuan, Ziming Ji, Indranil Das, Junyi Cao, Jinchen He, Yifan Su, Jiabin Yu, Yikun Jiang, Yujie Zhang, Chang Liu, Ze-Min Huang, Weizhen Jia, and 44 others)
 
@@ -154,8 +158,8 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Background:** MMMU-Pro addresses limitations in the original MMMU through a three-step enhancement process: filtering out questions answerable by text-only models, expanding multiple-choice options from 4 to 10, and introducing a vision-only input format where questions are embedded within screenshots or photos. The benchmark contains 3,460 questions across six core disciplines (Art & Design, Business, Science, Health & Medicine, Humanities & Social Science, and Tech & Engineering).
 - **Methodology:** Requires models to simultaneously process visual and textual information in a more realistic setting. Performance results show substantial drops across all tested models compared to the original MMMU, demonstrating the benchmark's effectiveness in exposing current limitations in multimodal AI systems. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Tests vision-language capabilities at expert level. Only available for models with multimodal support.
-- **Coverage:** 21/38 models (multimodal models only)
-- **Current range:** 0.687 — 0.843
+- **Historical coverage (38-model sample):** 21/38 models (multimodal models only)
+- **Historical range (same sample):** 0.687 — 0.843
 - **Official page:** https://artificialanalysis.ai/evaluations/mmmu-pro
 - **Publication:** [MMMU-Pro: A More Robust Multi-discipline Multimodal Understanding Benchmark](https://arxiv.org/abs/2409.02813) (Xiang Yue, Tianyu Zheng, Yuansheng Ni, Yubo Wang, Kai Zhang, Shengbang Tong, Yuxuan Sun, Botao Yu, Ge Zhang, Huan Sun, Yu Su, Wenhu Chen, Graham Neubig)
 
@@ -165,7 +169,7 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Background:** Long-form text comprehension represents an under-studied class of evaluations where humans dramatically outscore language models, despite expanding context windows in current AI systems. LCR features 100 questions across diverse document types including academic papers, company financials, government consultations, legal documents, industry reports, and marketing materials, requiring genuine reasoning rather than simple data extraction.
 - **Methodology:** Each question demands multi-step reasoning to synthesize information from dispersed sections, understand complex domain-specific content, and produce unambiguous answers that mid-2024 frontier models achieve less than 50% accuracy on. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Critical for applications processing long documents, where the model must find relevant information in extensive text.
-- **Current range (38 models):** 0.507 — 0.743
+- **Historical range (38-model sample):** 0.507 — 0.743
 - **Official page:** https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning
 
 ### Omniscience
@@ -174,7 +178,7 @@ Elo components of the index (AA-Briefcase, GDPval-AA v2) are frozen at the time 
 - **Background:** The benchmark contains 6,000 questions across 6 major domains, derived from authoritative academic and industry sources and generated automatically using an LLM-based question generation agent to ensure unambiguity, scalability, and factual precision.
 - **Methodology:** The evaluation measures a model's AA-Omniscience Index, a bounded metric (-100 to 100) measuring factual recall that jointly penalizes hallucinations and rewards abstention when uncertain, with 0 equating to a model that answers questions correctly as much as it does incorrectly. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Indicates the breadth of the model's training knowledge and its tendency to hallucinate. Performance varies by domain, suggesting models should be chosen according to the demands of the use case rather than general performance for tasks where knowledge is important.
-- **Current range (38 models):** -50.1 — 40.2
+- **Historical range (38-model sample):** -50.1 — 40.2
 - **Official page:** https://artificialanalysis.ai/evaluations/omniscience
 - **Publication:** [AA-Omniscience: Evaluating Cross-Domain Knowledge Reliability in Large Language Models](https://arxiv.org/abs/2511.13029) (Declan Jackson, William Keating, George Cameron, Micah Hill-Smith)
 
@@ -187,22 +191,22 @@ The following benchmarks are only available for a small subset of models:
 ### AIME25
 - **What it measures:** American Invitational Mathematics Examination 2025 problems.
 - **Scale:** 0.0 to 1.0
-- **Coverage:** 3/38 models
-- **Current range:** 0.880 — 0.934
+- **Historical coverage (38-model sample):** 3/38 models
+- **Historical range (same sample):** 0.880 — 0.934
 - **Why it matters:** Competitive math benchmark; olympiad-level mathematical reasoning with integer answers from 000-999.
 
 ### LiveCodeBench
 - **What it measures:** Live coding competition problems. A contamination-free coding benchmark that continuously harvests fresh competitive programming problems from LeetCode, AtCoder, and CodeForces, evaluating code generation, self-repair, and execution.
 - **Scale:** 0.0 to 1.0
-- **Coverage:** 3/38 models
-- **Current range:** 0.714 — 0.878
+- **Historical coverage (38-model sample):** 3/38 models
+- **Historical range (same sample):** 0.714 — 0.878
 - **Why it matters:** Tests coding under time pressure with fresh, unseen problems.
 
 ### Removed / Dead Fields (July 2026)
-The following fields are retained in the JSON schema for backward compatibility but are no longer populated by AA's RSC data (0/38 models). They were removed when AA migrated to camelCase field naming:
+The following fields are retained in the JSON schema for backward compatibility and were unpopulated in the historical 38-model sample after the camelCase migration. Preserve their keys; inspect the live payload before assuming an evaluation is permanently unavailable:
 - **AIME** (`aime`) — replaced by `aime25`
 - **HumanEval** (`humaneval`) — no longer in RSC data
-- **MMLU Pro** (`mmluPro`) — superseded by `mmmuPro` (MMMU-Pro), which is now a primary benchmark
+- **MMLU Pro** (`mmluPro`) — no longer populated in that payload; `mmmuPro` (MMMU-Pro) is a separate multimodal benchmark, not the same evaluation
 - **Math-500** (`math500`) — no longer in RSC data
 - **Multilingual AA** (`multilingualAA`) — no longer in RSC data
 
@@ -249,8 +253,8 @@ The following fields are retained in the JSON schema for backward compatibility 
 ### AutomationBench-AA (`automationBench`)
 - **What it measures:** Agentic task completion across simulated SaaS application environments, scoring the share of each task's objectives completed without guardrail violations. Covers 657 tasks across six business domains (Finance, HR, Marketing, Operations, Sales, Support) using simulated environments for Gmail, Google Sheets, Slack, Salesforce, Zendesk, Jira, and HubSpot.
 - **Scale:** 0.0 to 1.0 (share of objectives completed)
-- **Coverage:** 20/38 models
-- **Current range:** 0.057 — 0.514
+- **Historical coverage (38-model sample):** 20/38 models
+- **Historical range (same sample):** 0.057 — 0.514
 - **Developed by:** Zapier (arXiv: 2604.18934)
 - **Part of:** Intelligence Index v4.3 (Agents, 5%)
 - **Official page:** https://artificialanalysis.ai/evaluations/automationbench-aa
@@ -258,8 +262,8 @@ The following fields are retained in the JSON schema for backward compatibility 
 ### EnterpriseOps-Gym-AA (`enterpriseOpsGym`)
 - **What it measures:** Artificial Analysis' independent implementation of ServiceNow's EnterpriseOps-Gym, an agentic benchmark testing whether LLM agents can complete stateful, multi-step enterprise workflows across eight business domains via live tool use, graded on the final state of the underlying databases.
 - **Scale:** 0.0 to 1.0 (task completion rate)
-- **Coverage:** 19/38 models
-- **Current range:** 0.252 — 0.511
+- **Historical coverage (38-model sample):** 19/38 models
+- **Historical range (same sample):** 0.252 — 0.511
 - **Official page:** https://artificialanalysis.ai/evaluations/enterprise-ops-gym-aa
 
 ### Harvey LAB-AA (`harveyLabAllPass`)
@@ -271,15 +275,15 @@ The following fields are retained in the JSON schema for backward compatibility 
 ### APEX-Agents-AA (`apexAgents`)
 - **What it measures:** Artificial Analysis' implementation of the APEX-Agents benchmark, testing AI agents on long-horizon, cross-application tasks in professional-services environments with realistic application tooling.
 - **Scale:** 0.0 to 1.0 (task completion rate)
-- **Coverage:** 18/38 models
-- **Current range:** 0.018 — 0.471
+- **Historical coverage (38-model sample):** 18/38 models
+- **Historical range (same sample):** 0.018 — 0.471
 - **Official page:** https://artificialanalysis.ai/evaluations/apex-agents-aa
 
 ### ITBench-AA (`itBenchSre`)
 - **What it measures:** Artificial Analysis' implementation of IBM's ITBench benchmark, testing AI agents on Kubernetes incident root-cause analysis from offline incident snapshots. The agent inspects alerts, events, traces, and topology and identifies the contributing-factor entities responsible for the failure.
 - **Scale:** 0.0 to 1.0 (accuracy)
-- **Coverage:** 18/38 models
-- **Current range:** 0.011 — 0.467
+- **Historical coverage (38-model sample):** 18/38 models
+- **Historical range (same sample):** 0.011 — 0.467
 - **Official page:** https://artificialanalysis.ai/evaluations/itbench-aa
 
 ### AA-Briefcase (`briefcaseElo`)
@@ -313,14 +317,16 @@ The following fields are retained in the JSON schema for backward compatibility 
 
 ### Cost per Task (`costPerTask`)
 - **Unit:** USD per benchmark task
-- **What it measures:** Median API cost for a single Intelligence Index task (total evaluation cost divided across tasks). Sourced from AA's `intelligenceIndexCostPerTask.cost.total` field in the RSC payload (Aug 2026).
-- **Why it matters:** The most intuitive "bang for the buck" measure — what it costs, on average, to get one task done. Averaging ~$0.01–3 across current models, it spans roughly three orders of magnitude, so it is plotted on a **logarithmic x-axis** in cost-per-task mode.
-- **Coverage:** 63/70 models (Aug 2026).
-- **Related fields (not tracked here):** `intelligenceIndexTimePerTask` (median seconds per task) and `intelligenceIndexOutputTokensPerTask` (verbosity breakdown).
+- **What it measures:** AA's evaluation-weighted average API cost per Intelligence Index task, sourced directly from `intelligenceIndexCostPerTask.cost.total`. Each evaluation's cost per task is weighted by its Intelligence Index weight. It is **not a median** and should not be reconstructed by dividing total evaluation cost by a single aggregate task count.
+- **Why it matters:** Estimates cost per benchmark task while accounting for the evaluation mix. Values span a wide range, so the chart uses a **logarithmic x-axis** in cost-per-task mode. It is not a guarantee of the cost of a user's workload.
+- **Coverage:** Varies; count non-null `costPerTask` values in the current JSON. The old 63/70 figure was an August 2026 snapshot, not live coverage.
+- **Application wording caveat:** Some existing code comments and UI labels still say "Median"; they refer to this same source field. That wording is stale and is not a separate statistic.
+- **Related fields (not tracked here):** `intelligenceIndexTimePerTask` (time per benchmark task) and `intelligenceIndexOutputTokensPerTask` (verbosity breakdown). Consult AA's current definitions for weighting and timing exclusions.
 
 ### Output Speed
 - **Unit:** Tokens per second
 - **Why it matters:** Determines user experience latency for streaming responses.
+- **Tracking:** Not currently persisted by this sync. Missing speed data does not prevent adding a model whose benchmark data is available.
 
 ### Context Window
 - **Unit:** Tokens
@@ -356,17 +362,17 @@ For the most current methodology, visit: https://artificialanalysis.ai
 
 ## How to Add New Models
 
-Adding a new **model** (e.g., a newly released LLM) is simple — no component changes needed:
+Follow the [maintenance guide](../../docs/AI_MODELS_MAINTENANCE.md) for the complete procedure and runnable read-only probe/pre-commit validator. In brief:
 
-1. Go to [artificialanalysis.ai/models](https://artificialanalysis.ai/models) and find the model you want to add.
-2. Copy the model's slug from the URL (e.g., `gemini-3-5-flash` from `https://artificialanalysis.ai/models/gemini-3-5-flash`).
-3. Open `scripts/sync-ai-models.py` and add the slug to the `TARGET_URL` query parameter (comma-separated).
-4. **(Optional)** If the slug looks ugly (e.g., `mimo-v2-5-0424`), add a custom display name to the `DISPLAY_NAMES` dict.
-5. Run the sync script: `python scripts/sync-ai-models.py`
-6. The script fetches all benchmark data for the new model and regenerates `src/data/ai-models.json`. No component changes are needed — the chart auto-adapts.
-7. Verify the new model appears in the output, then commit and push.
+1. Inspect the exact AA model/variant slugs and full model payload, not just the release summary.
+2. Add approved slugs to `TARGET_URL` in `scripts/sync-ai-models.py`. Use `DISPLAY_NAMES` only when needed. New providers may require both chart color palettes to be updated.
+3. For default-hidden variants, update `DEFAULT_HIDDEN_IDS` and increment the current `FILTER_VERSION` in `src/app/agentic-ai/page.tsx`. Read the guide's localStorage migration caveat before promising default-unhide behavior to returning users.
+4. Run `python3 scripts/sync-ai-models.py` using an environment with Playwright and Chromium.
+5. Validate the **entire** refresh: expected unique IDs, retained models, ranks, source metadata, requested visibility, and any coverage losses. Passing the 90% guard alone is insufficient.
+6. Update this header's actual model count/sync date and run `npm run build`.
+7. Review/stage only relevant files, then commit/publish when approved using `git pull --rebase` followed by `git push`. Never force-push.
 
-**Tip — effort variants:** Some models ship multiple effort levels (e.g., Claude Sonnet 5 ships `max`, `xhigh`, `high`, `medium`, `low` variants). Usually only the base slug (e.g., `claude-sonnet-5` = Max Effort) has full benchmark data; the lower-effort variants may have `null` intelligence scores. Check the AA page before choosing a slug.
+**Tip — effort variants:** Base slugs may represent max, high, xhigh, or no named effort. Lower efforts can also have full evaluations. Verify each actual model and do not infer unavailable benchmarks from an unfamiliar page layout or missing speed data. Missing source scores remain `null`; never manufacture zeros.
 
 ## How to Add New Benchmark Metrics
 
@@ -375,7 +381,7 @@ Adding a new **benchmark metric** (e.g., when AA announces a new evaluation) req
 1. **`scripts/sync-ai-models.py`** — Add the field to the `clean_model()` output dict. Use hybrid reads: `raw.get("camelCaseName", raw.get("snake_case_name"))`.
 2. **`src/components/ModelBenchmarkChart.tsx`** — Add the field to the `AIModel` interface (e.g., `newField: number | null;`).
 3. **`src/app/agentic-ai/page.tsx`** — Add an entry to the `METRICS` array with `key`, `label`, `description`, `testBadge`, `scale`, `fullDescription`, and `officialUrl`.
-4. Run `python scripts/sync-ai-models.py` to regenerate the data.
+4. Run `python3 scripts/sync-ai-models.py` to regenerate the data, then validate the full model set and metadata coverage.
 5. Run `npm run build` to verify TypeScript compiles.
 6. Commit and push all changed files.
 
@@ -394,3 +400,17 @@ Artificial Analysis changed their RSC (React Server Component) data format from 
 | `intelligence_index_cost.total_cost` | `intelligenceIndexCost.total` |
 
 The sync script uses **hybrid field reads** (camelCase first, snake_case fallback) to handle this change robustly. If AA reverts to snake_case, the script will continue to work. The extraction anchor also checks for both `"intelligenceIndex"` and `"intelligence_index"` when locating the full model object in the RSC payload.
+
+## RSC Data Format Changes (October 2026)
+
+AA pages can now carry full model rows in `initialModels[]`, while other pages still use the legacy `currentModel` structure. The sync tries `_extract_from_initial_models()` before `_extract_model_legacy()`. Both layouts must remain supported; a missing `currentModel` wrapper does not mean a page has no evaluations. Nested release/family summaries can also carry a slug and intelligence score without full model metadata.
+
+| Raw aliases accepted by the sync | Stable generated JSON key |
+| --- | --- |
+| `terminalbenchV21`, `terminalBench21`, `terminalbench_v2_1` | `terminalbenchV21` |
+| `terminalbenchV40`, `terminalBench40`, `terminalbench_v4_0` | `terminalbenchV40` |
+| `harveyLab`, `harveyLabAllPass` | `harveyLabAllPass` |
+
+New raw fields such as `terminalBenchScience` are not automatically tracked or substitutes for Terminal-Bench v4.0. Adding a benchmark requires the explicit schema/UI workflow above.
+
+The October sync also added a **90% target-count guard before writing**. It prevents a large partial fetch from overwriting the JSON, but smaller losses and metadata-only degradation can pass. Follow the maintenance guide's full validation and source checks; do not treat a successful command or unchanged row count as proof of data integrity.
