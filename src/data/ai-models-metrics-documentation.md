@@ -1,9 +1,9 @@
 # AI Model Benchmark Metrics Documentation
 
 **Source:** [Artificial Analysis](https://artificialanalysis.ai)  
-**Last Updated:** 2026-10-23  
-**Models Tracked:** 127 leading LLMs  
-**Intelligence Index Version:** v4.3 family (AA labels the live index v4.3.2 as of 2026-10-23; see [v4.3 notes](#intelligence-index-v43-september-2026) below)
+**Last Updated:** 2026-10-26  
+**Models Tracked:** 128 leading LLMs  
+**Intelligence Index Version:** v4.3 family (AA labels the live index v4.3.2 as of 2026-10-26; see [v4.3 notes](#intelligence-index-v43-september-2026) below)
 
 **Agent maintenance:** Start with the tracked [AI Models Maintenance guide](../../docs/AI_MODELS_MAINTENANCE.md) for setup, model additions, variants/defaults, parser troubleshooting, validation, and release instructions. This file is the metric reference, not the full operational checklist.
 
