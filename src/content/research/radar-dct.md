@@ -5,7 +5,7 @@ priority: 1
 tags: ["Signal Processing", "Radar", "Algorithms", "Python"]
 links:
   repo: "https://github.com/JValdivia23/radar-dct-smoothing"
-  paper: "https://doi.org/10.5194/egusphere-2026-415"
+  paper: "https://doi.org/10.5194/amt-19-5211-2026"
 ---
 
 This study introduces a computationally efficient and methodologically robust approach for smoothing radar data using the Discrete Cosine Transform (DCT). Traditional spatial convolution methods for noise reduction in polar coordinates suffer from geometric inconsistencies and prohibitive computational costs, particularly when implementing range-dependent dynamic kernels to maintain physical scale. 

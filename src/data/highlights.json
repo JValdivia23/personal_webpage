@@ -1,13 +1,13 @@
 {
   "recommended": {
     "title": "Radar Data Smoothing using the Discrete Cosine Transform: A Fast Spectral Domain Algorithm",
-    "paperId": "egusphere-2026-415",
-    "reason": "My pick - Latest preprint on DCT-based radar smoothing",
+    "paperId": "eCZJkKcAAAAJ:mVmsd5A6BfQC",
+    "reason": "My pick - Recently published in AMT",
     "fallback": {
-      "paperId": "egusphere-2026-415",
-      "url": "https://doi.org/10.5194/egusphere-2026-415",
+      "paperId": "eCZJkKcAAAAJ:mVmsd5A6BfQC",
+      "url": "https://doi.org/10.5194/amt-19-5211-2026",
       "title": "Radar Data Smoothing using the Discrete Cosine Transform: A Fast Spectral Domain Algorithm",
-      "venue": "EGUsphere",
+      "venue": "Atmos. Meas. Tech.",
       "year": 2026,
       "citationCount": 0
     }

@@ -28,7 +28,7 @@ export const Hero = () => {
 
                 <div className="space-y-4 text-neutral-700 dark:text-neutral-300 text-lg md:text-xl leading-relaxed">
                     <p>
-                        I am a Ph.D. candidate in the Department of Atmospheric and Oceanic Sciences at the University of Colorado Boulder.
+                        I recently completed my Ph.D. in the Department of Atmospheric and Oceanic Sciences at the University of Colorado Boulder.
                     </p>
                     <p>
                         My research is focused on Cloud Microphysics, Radar Meteorology, and Numerical Modeling to better understand precipitation processes in complex terrain. I am also interested in Machine Learning applications in Atmospheric Science, or just for fun!

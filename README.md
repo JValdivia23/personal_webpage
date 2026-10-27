@@ -1,6 +1,6 @@
 # Personal Webpage - Jairo M. Valdivia
 
-A living portfolio and research dashboard for Jairo M. Valdivia, Ph.D. Student in Atmospheric and Oceanic Sciences at CU Boulder.
+A living portfolio and research dashboard for Jairo M. Valdivia, Ph.D. in Atmospheric and Oceanic Sciences at CU Boulder.
 
 🔴 **Live Site:** [https://jvaldivia23.github.io/personal_webpage/](https://jvaldivia23.github.io/personal_webpage/)
 

@@ -1,5 +1,6 @@
 import { BentoGrid, BentoGridItem } from "@/components/ui/BentoGrid";
 import { Hero } from "@/components/Hero";
+import { DissertationSlides } from "@/components/DissertationSlides";
 import { FeaturedVisual } from "@/components/FeaturedVisual";
 import { ReadingList } from "@/components/ReadingList";
 import { Download, CloudRain, Cpu, BarChart3, ArrowRight, Cloud, FileText } from "lucide-react";
@@ -17,7 +18,15 @@ export default function Home() {
           className="md:col-span-3 bg-gradient-to-br from-blue-50 via-purple-50/30 to-transparent dark:from-blue-950/20 dark:via-purple-950/10 dark:to-transparent border-none justify-center min-h-fit"
         />
 
-        {/* Row 2: Featured Visual (CTGC) */}
+        {/* Row 2a: Dissertation Slides */}
+        <BentoGridItem
+          title={null}
+          description={null}
+          header={<DissertationSlides />}
+          className="md:col-span-3 p-0 border-none bg-transparent"
+        />
+
+        {/* Row 2b: Featured Visual (CTGC) */}
         <BentoGridItem
           title={null}
           description={null}

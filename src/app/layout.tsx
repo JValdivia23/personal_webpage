@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://JValdivia23.github.io/personal_webpage"), // Update with actual URL if different
   title: "Jairo M. Valdivia | Personal Webpage",
-  description: "Ph.D. Student at University of Colorado Boulder (ATOC). Radar Scientist specializing in cloud microphysics and precipitation studies.",
+  description: "Ph.D. at University of Colorado Boulder (ATOC). Radar Scientist specializing in cloud microphysics and precipitation studies.",
   keywords: ["Radar Meteorology", "Cloud Microphysics", "Atmospheric Science", "CU Boulder", "Jairo Valdivia"],
   authors: [{ name: "Jairo M. Valdivia" }],
   icons: {
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Jairo M. Valdivia | Personal Webpage",
-    description: "Radar Scientist and Ph.D. Student at CU Boulder.",
+    description: "Radar Scientist | Ph.D. at CU Boulder.",
     url: "https://JValdivia23.github.io/personal_webpage",
     siteName: "Jairo M. Valdivia",
     images: [
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Jairo M. Valdivia | Personal Webpage",
-    description: "Radar Scientist and Ph.D. Student at CU Boulder.",
+    description: "Radar Scientist | Ph.D. at CU Boulder.",
     images: ["/personal_webpage/photo.jpeg"],
   },
 };
