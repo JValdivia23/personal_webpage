@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, type Dispatch, type SetStateAction } from "react";
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
+import { getBenchmarkCost, getCostDescription, getCostScope } from "@/lib/ai-model-costs";
 import {
   ExternalLink,
   DollarSign,
@@ -81,32 +82,102 @@ const METRICS: MetricDef[] = [
   {
     key: "intelligenceIndex",
     label: "Overall Intelligence",
-    description: "Weighted composite across agents, coding, general reasoning, and scientific reasoning",
-    testBadge: "AA Index",
-    scale: "Higher is better (current leader ~53)",
+    description: "Official v5.0 composite across knowledge work, coding, science, and general capability",
+    testBadge: "AA v5.0",
+    scale: "Higher is better; compare only within the same index version",
     fullDescription:
-      "Artificial Analysis Intelligence Index v4.3 combines 10 evaluation datasets to assess language model capabilities across reasoning, knowledge, maths and programming. It is a weighted average across four categories that emphasize agentic work: Agents 30% (AA-Briefcase 15%, GDPval-AA v2 10%, AutomationBench-AA 5%), Coding 20% (Terminal-Bench v4.0 10%, SciCode 10%), General 30% (AA-Omniscience 15%, GDP.pdf 10%, AA-LCR v1.1 5%), and Scientific Reasoning 20% (HLE 10%, CritPt 10%). v4.3 dropped τ³-Banking, Terminal-Bench v2.1, GPQA Diamond, and IFBench from the index (they remain as additional evaluations). Artificial Analysis estimates a 95% confidence interval of less than ±1%. The Intelligence Index is a primarily text-based, English-language evaluation suite; multimodal and multilingual performance are benchmarked separately. All evaluations are conducted independently by Artificial Analysis.",
+      "Artificial Analysis Intelligence Index v5.0 incorporates nine evaluations in four equally weighted categories: Knowledge Work 25% (AA-Briefcase v1.1 15%, AutomationBench-AA 5%, GDP.pdf 5%); Coding 25% (FrontierCode 2.0 15%, Terminal-Bench 4.0 10%); Science 25% (Terminal-Bench-Science 0.1 15%, CritPt v2 hard subset 10%); General 25% (AA-Omniscience v1.1 accuracy 10% and non-hallucination 5%, HLE-Diamond 10%). 60% of the index uses private test sets or held-out answers. GDPval-AA, SciCode, and AA-LCR were removed from the index. We use AA's published overall score, not an average of our local category reconstructions. Scores and evaluation costs are not directly comparable with v4.3. Models without a v5 score remain tracked and unranked; missing is not zero.",
     officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
     key: "codingIndex",
     label: "Coding Ability",
-    description: "Weighted average of coding benchmarks in the Intelligence Index",
-    testBadge: "AA Coding",
-    scale: "Higher is better",
+    description: "Locally derived v5 category: 60% FrontierCode 2.0 + 40% Terminal-Bench 4.0",
+    testBadge: "Local v5",
+    scale: "Higher is better (0–100)",
     fullDescription:
-      "Derived locally from Intelligence Index v4.3's Coding category (20% of the index): equal-weight Terminal-Bench v4.0 (50%) and SciCode (50%), scaled to 0–100. AA removed the standalone codingIndex composite from RSC payloads in v4.1.1; this field reconstructs the category score. Terminal-Bench v4.0 is a 66-task agentic terminal suite (pass@1 over 3 repeats). SciCode tests scientific code generation with 288 test-set subproblems from 80 laboratory problems across 16 disciplines. All evaluations are conducted independently by Artificial Analysis.",
+      "Locally derived from Intelligence Index v5's Coding category: (60% FrontierCode 2.0 + 40% Terminal-Bench 4.0) × 100, reflecting their 15% and 10% overall weights. Both component scores are required. FrontierCode 2.0 uses 132 private repository-change tasks with three attempts in Stirrup; Terminal-Bench 4.0 uses 66 terminal tasks with pass@1 over three repeats. This is not an official published composite and is not AA's separate Coding Agent Index. It does not fall back to FrontierCode 1.1 or the retired SciCode-based v4.3 formula.",
     officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
-    key: "agenticIndex",
-    label: "Agentic Capability",
-    description: "Weighted Agents-category composite from Intelligence Index v4.3",
-    testBadge: "AA Agentic",
+    key: "knowledgeWorkIndex",
+    label: "Knowledge Work",
+    description: "Locally derived v5 category: deliverables, SaaS workflows, and document reasoning",
+    testBadge: "Local v5",
     scale: "Higher is better (0–100)",
     fullDescription:
-      "Derived locally from Intelligence Index v4.3's Agents category (30% of the index). AA dropped the standalone agenticIndex composite in v4.3. Reconstructs as 50% AA-Briefcase + 33.3% GDPval-AA v2 + 16.7% AutomationBench-AA. Elo scores use AA's mapping clamp((Elo − 500) / 2000) before weighting; AutomationBench is already 0–1. Scaled to 0–100. Measures planning, tool use, multi-step reasoning, and real-world task completion. All evaluations are conducted independently by Artificial Analysis.",
+      "Locally derived as (60% normalized AA-Briefcase v1.1 + 20% AutomationBench-AA + 20% GDP.pdf) × 100, matching the v5 Knowledge Work category's 15/5/5 overall weights. Briefcase Elo is normalized with clamp((Elo − 500) / 2000). All three components are required. This uses the current payload's Briefcase Elo, not AA's frozen-at-addition snapshot, so it is a local reconstruction rather than an official published category score. It replaces the old Agentic menu option; the legacy v4.3 Agentic field remains in the data for compatibility. GDPval-AA is now standalone and is not used here.",
     officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+  },
+  {
+    key: "scienceIndex",
+    label: "Scientific Capability",
+    description: "Locally derived v5 category: research workflows and tool-assisted physics",
+    testBadge: "Local v5",
+    scale: "Higher is better (0–100)",
+    fullDescription:
+      "Locally derived as (60% Terminal-Bench-Science 0.1 + 40% CritPt v2 hard subset) × 100, matching their 15% and 10% overall v5 weights. Both scores are required. Tests terminal-based scientific research workflows and difficult physics problems solved with a Python tool. This is not an official published composite and never substitutes legacy CritPt or Terminal-Bench 4.0 for these separate evaluations.",
+    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking#science",
+  },
+  {
+    key: "generalIndex",
+    label: "General Capability",
+    description: "Locally derived v5 category: knowledge reliability and HLE-Diamond",
+    testBadge: "Local v5",
+    scale: "Higher is better (0–100)",
+    fullDescription:
+      "Locally derived as (40% AA-Omniscience v1.1 accuracy + 20% non-hallucination rate + 40% HLE-Diamond) × 100, matching the v5 General category's 10/5/10 overall weights. Non-hallucination is one minus the source hallucination rate. All three inputs are required; the Omniscience headline Index is not a substitute for its accuracy and hallucination components. This is a local reconstruction, not an official published composite.",
+    officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking#general",
+  },
+  {
+    key: "frontierCode20",
+    label: "Repository Coding",
+    description: "Private open-source repository changes graded for merge readiness",
+    testBadge: "FrontierCode 2.0",
+    scale: "0.0 to 1.0 (task score)",
+    fullDescription:
+      "Cognition's FrontierCode 2.0 comprises 132 private tasks in real open-source repositories. AA runs three attempts per task in Stirrup. Held-out tests and a rubric grade merge readiness; failing a blocking check or being flagged for looking up a solution scores zero. Other attempts receive weighted rubric scores. Part of Intelligence Index v5 Coding (15%). This is separate from FrontierCode 1.1 and coding-agent/harness leaderboards.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/frontiercode-2-0",
+  },
+  {
+    key: "terminalbenchScience",
+    label: "Scientific Research Workflows",
+    description: "70 terminal-based research tasks across five scientific domains",
+    testBadge: "Terminal-Bench-Science",
+    scale: "0.0 to 1.0 (accuracy, pass@1)",
+    fullDescription:
+      "Terminal-Bench-Science 0.1.0 contains 70 expert-curated research workflow tasks: 19 life sciences, 17 physical sciences, 17 mathematical sciences, 9 engineering sciences, and 8 earth sciences. AA uses mini-swe-agent with up to 1,000 steps, averaging pass@1 across three repeats. A task passes only if every verification test passes. Part of Intelligence Index v5 Science (15%); distinct from Terminal-Bench 4.0.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/terminal-bench-science",
+  },
+  {
+    key: "hleDiamond",
+    label: "HLE-Diamond",
+    description: "Refined exam: 500 reasoning and 500 knowledge questions",
+    testBadge: "HLE-Diamond",
+    scale: "0.0 to 1.0 (accuracy)",
+    fullDescription:
+      "The refined 1,000-question Humanity's Last Exam from CAIS and Scale AI, split evenly between reasoning and knowledge. Includes 272 image questions, with images supplied to image-capable models. AA evaluates without tools, using pass@1 and an equality-checker judge. Part of Intelligence Index v5 General (10%). Scores are not directly comparable with the legacy 2,158-question text-only HLE evaluation, which remains a separate metric.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/hle-diamond",
+  },
+  {
+    key: "critptV2Hard",
+    label: "Tool-Assisted Physics Reasoning",
+    description: "Private 40-question hard subset of CritPt v2 with Python tools",
+    testBadge: "CritPt v2 Hard",
+    scale: "0.0 to 1.0 (accuracy, pass@1)",
+    fullDescription:
+      "The fixed hard subset contains 40 of CritPt v2's 70 research-level physics problems, excluding 30 solved in every attempt by seven frontier models at launch. AA runs models in Stirrup with an offline Python sandbox for up to 50 turns, with five repeats scored by the official grading server. Part of Intelligence Index v5 Science (10%). This is not the full 70-question CritPt v2 score or legacy tool-free CritPt.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/critpt-v2?critpt-subset=hard",
+  },
+  {
+    key: "code2videoElo",
+    label: "Video Creation in Code",
+    description: "Design short product and brand videos using HTML and animation code",
+    testBadge: "Code2Video-AA",
+    scale: "Elo rating (higher is better)",
+    fullDescription:
+      "AA's implementation of HeyGen's Code2Video Bench evaluates 114 design briefs (39 public, 75 private). Each model writes a HyperFrames HTML/GSAP composition in one call without tools; the rendered videos are compared by a Gemini 4 Argon judge on engagement, prompt intent, composition, temporal consistency, and craft. Overall Elo is the mean of five axis ratings, anchored to GPT-5.5 (xhigh) at 1000. Confidence intervals reflect comparison sampling, not repeated task runs. Tests designing videos in code, not native video generation. This is standalone: it is not included in Intelligence Index v5 or our category composites. Its cost modes use separate local estimates from AA's contestant token counts and API prices, excluding judging and rendering, never Intelligence Index costs.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/code2video-aa",
   },
   {
     key: "gpqa",
@@ -121,21 +192,21 @@ const METRICS: MetricDef[] = [
   {
     key: "hle",
     label: "Humanity's Last Exam",
-    description: "Frontier-level benchmark across mathematics, sciences, and humanities",
-    testBadge: "HLE",
+    description: "Legacy text-only exam; replaced in v5 by HLE-Diamond",
+    testBadge: "Legacy HLE",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A frontier-level benchmark with 2,158 expert-vetted questions across mathematics, sciences, and humanities, designed to be the final closed-ended academic evaluation. A collaborative effort by the Center for AI Safety involving over 1,000 contributors. Questions are 'Google-proof' and require genuine understanding rather than information retrieval. Part of Intelligence Index v4.3 Scientific Reasoning (10%). One of the hardest existing benchmarks — even top models score well below 0.6. All evaluations are conducted independently by Artificial Analysis.",
+      "Legacy Humanity's Last Exam: AA evaluates 2,158 text-only expert-vetted questions across mathematics, sciences, and humanities without tools. A collaborative effort by CAIS and Scale AI. Included through Intelligence Index v4.3.2, then replaced by HLE-Diamond in v5. Retained as a separate historical evaluation; scores must not be substituted for or directly compared with HLE-Diamond.",
     officialUrl: "https://artificialanalysis.ai/evaluations/humanitys-last-exam",
   },
   {
     key: "scicode",
     label: "Scientific Code Generation",
     description: "Scientist-curated coding benchmark with real laboratory problems",
-    testBadge: "SciCode",
+    testBadge: "Legacy SciCode",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A scientist-curated coding benchmark featuring 288 test set subproblems from 80 laboratory problems across 16 scientific disciplines. Unlike traditional coding benchmarks, SciCode requires integrating scientific knowledge with programming skills to solve real research problems. Part of Intelligence Index v4.3 Coding (10%), equal-weight with Terminal-Bench v4.0. All evaluations are conducted independently by Artificial Analysis.",
+      "A scientist-curated coding benchmark featuring 288 test-set subproblems from 80 laboratory problems across 16 disciplines. Requires integrating scientific knowledge with programming. Removed from the Intelligence Index in v5 and retained as a legacy evaluation; no longer used in our Coding category. AA currently marks SciCode as under review. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/scicode",
   },
   {
@@ -145,7 +216,7 @@ const METRICS: MetricDef[] = [
     testBadge: "GDPval",
     scale: "ELO rating (higher is better)",
     fullDescription:
-      "Artificial Analysis' evaluation framework for OpenAI's GDPval dataset (v2). Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing in an agentic loop via Stirrup, with Elo ratings from a three-judge pairwise panel anchored to human experts at 1000. Part of Intelligence Index v4.3 (Agents, 10%). The gold public dataset includes 220 tasks requiring documents, slides, diagrams, and spreadsheets.",
+      "GDPval-AA v2.1 tests real-world tasks across 44 occupations and 9 industries using Stirrup, with shell access and web browsing. The 220-task public dataset requires documents, slides, diagrams, and spreadsheets. Elo is fitted with Crowd-BT and anchored to DeepSeek V4.1 Flash (max) at 1600. Removed from the Intelligence Index in v5; retained as a standalone evaluation, not part of the Knowledge Work composite.",
     officialUrl: "https://artificialanalysis.ai/evaluations/gdpval-aa",
   },
   {
@@ -182,10 +253,10 @@ const METRICS: MetricDef[] = [
     key: "critpt",
     label: "Physics Reasoning",
     description: "Research-level physics reasoning across 11 subfields",
-    testBadge: "CritPT",
+    testBadge: "Legacy CritPt",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "A benchmark designed to test LLMs on research-level physics reasoning tasks, featuring 71 composite research challenges (70 test + 1 example) created by over 50 active physics researchers across 30 institutions and 11 subfields. Uses guess-resistant answer formats (floating-point arrays, symbolic expressions, Python functions). Part of Intelligence Index v4.3 Scientific Reasoning (10%). All evaluations are conducted independently by Artificial Analysis.",
+      "Legacy CritPt comprises 70 test challenges plus one example across 11 physics subfields, with guess-resistant numerical, symbolic, and Python-function answers. Included through Intelligence Index v4.3.2. Replaced in v5 by CritPt v2's private 40-question hard subset with code execution. Retained here as a separate evaluation; legacy scores never fill missing CritPt v2 hard results.",
     officialUrl: "https://artificialanalysis.ai/evaluations/critpt",
   },
   {
@@ -201,21 +272,21 @@ const METRICS: MetricDef[] = [
   {
     key: "omniscience",
     label: "Knowledge & Hallucination",
-    description: "Factual recall and hallucination across 6 economically relevant domains",
-    testBadge: "Omniscience",
+    description: "Updated knowledge reliability evaluation: 3,000 questions across 42 topics",
+    testBadge: "Omniscience v1.1",
     scale: "-100 to 100 (higher is better, can be negative)",
     fullDescription:
-      "AA-Omniscience measures factual recall and hallucination across 6,000 questions in 6 economically relevant domains. The index (−100 to 100) jointly penalizes hallucinations and rewards abstention when uncertain. In Intelligence Index v4.3 it is 15% of the overall score (accuracy 10% + 1 − hallucination rate 5%). All evaluations are conducted independently by Artificial Analysis.",
+      "AA-Omniscience v1.1 measures knowledge reliability over 3,000 questions across 42 topics. The update removes saturated and public v1 questions, adds new questions, and revises ambiguous or erroneous items. The headline Index ranges from −100 to 100, rewarding correct answers and penalizing hallucinations while leaving abstentions neutral. v5 uses accuracy (10%) and one minus hallucination rate (5%) as separate inputs, not the headline Index. Scores are not directly comparable with the previous 6,000-question v1 dataset.",
     officialUrl: "https://artificialanalysis.ai/evaluations/omniscience",
   },
   {
     key: "lcr",
     label: "Long Context Reasoning",
     description: "Extract, reason, and synthesize from long documents (10k–100k tokens)",
-    testBadge: "LCR",
+    testBadge: "Legacy LCR",
     scale: "0.0 to 1.0 (accuracy)",
     fullDescription:
-      "AA-LCR v1.1 measures the ability to extract, reason about, and synthesize information from long-form documents (10k–100k tokens). 100 questions across academic papers, financials, legal documents, and reports; equality-checker LLM, pass@1 over 3 repeats. Part of Intelligence Index v4.3 General (5%). All evaluations are conducted independently by Artificial Analysis.",
+      "AA-LCR v1.1 measures reasoning over long documents (10k–100k tokens): 100 questions across academic papers, financials, legal documents, and reports, scored by an equality-checker LLM with pass@1 over three repeats. Removed from the Intelligence Index in v5; retained as a legacy evaluation. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning",
   },
   {
@@ -241,12 +312,12 @@ const METRICS: MetricDef[] = [
   {
     key: "terminalbenchV40",
     label: "Terminal / System Ops v4.0",
-    description: "66-task agentic terminal suite — Intelligence Index v4.3 coding component",
+    description: "66-task terminal suite — Intelligence Index v5 coding component",
     testBadge: "TerminalBench v4.0",
     scale: "0.0 to 1.0 (accuracy, pass@1)",
     fullDescription:
-      "Terminal-Bench v4.0 is the coding-agent evaluation in Intelligence Index v4.3 (10% of the index). 66 terminal-based tasks scored by a test-suite pass/fail, pass@1 over 3 repeats. Replaces Terminal-Bench v2.1 in the index. All evaluations are conducted independently by Artificial Analysis.",
-    officialUrl: "https://artificialanalysis.ai/evaluations/terminal-bench-v4-0",
+      "Terminal-Bench 4.0 is a coding evaluation in Intelligence Index v5 (10% of the index). AA uses mini-swe-agent for 66 terminal-based tasks, scoring test-suite pass/fail with pass@1 across three repeats. Distinct from Terminal-Bench-Science and the retired Terminal-Bench 2.1. All evaluations are conducted independently by Artificial Analysis.",
+    officialUrl: "https://artificialanalysis.ai/evaluations/terminalbench-4-0",
   },
   {
     key: "gdpPdfAllPass",
@@ -255,7 +326,7 @@ const METRICS: MetricDef[] = [
     testBadge: "GDP.pdf",
     scale: "0.0 to 1.0 (all-pass rate)",
     fullDescription:
-      "GDP.pdf tests free-form answers grounded in a long PDF — 100 tasks across 10 domains, 5 repeats. Headline metric is all-pass rate (also reports task-macro mean pass). Part of Intelligence Index v4.3 General category (10%). All evaluations are conducted independently by Artificial Analysis.",
+      "GDP.pdf tests free-form answers grounded in long professional documents: 100 tasks across 10 domains, with five repeats. The headline metric is all-pass rate. Models receive extracted text and, when supported, page images; no browsing or tools. Part of Intelligence Index v5 Knowledge Work (5%), reduced from its 10% weight in v4.3. All evaluations are conducted independently by Artificial Analysis.",
     officialUrl: "https://artificialanalysis.ai/evaluations/gdp-pdf",
   },
   {
@@ -285,7 +356,7 @@ const METRICS: MetricDef[] = [
     testBadge: "AutomationBench",
     scale: "0.0 to 1.0 (share of objectives completed)",
     fullDescription:
-      "A benchmark measuring agentic task completion across simulated SaaS application environments, scoring the share of each task's objectives completed without guardrail violations. Covers 657 tasks across six business domains (Finance, HR, Marketing, Operations, Sales, Support) using simulated Gmail, Google Sheets, Slack, Salesforce, Zendesk, Jira, and HubSpot. Part of Intelligence Index v4.3 (Agents, 5%). Developed by Zapier. All evaluations are conducted independently by Artificial Analysis.",
+      "Measures completion of 657 private SaaS workflow tasks across six domains using simulated Gmail, Google Sheets, Slack, Salesforce, Zendesk, Jira, and HubSpot. One run per task, up to 50 turns. Scores the share of objectives completed, with zero credit if any guardrail is violated. Developed by Zapier; evaluated independently by AA. Part of Intelligence Index v5 Knowledge Work (5%).",
     officialUrl: "https://artificialanalysis.ai/evaluations/automationbench-aa",
   },
   {
@@ -335,7 +406,7 @@ const METRICS: MetricDef[] = [
     testBadge: "AA-Briefcase",
     scale: "Elo rating (higher is better)",
     fullDescription:
-      "AA-Briefcase tests models on realistic multi-week knowledge-work projects (91 tasks across 4 scenarios) with thousands of source files. Combined Elo aggregates rubric pass rate, analytical quality, and presentation quality from a three-judge panel. Part of Intelligence Index v4.3 (Agents, 15%) — the largest single component. Elo is frozen at addition and normalized as clamp((Elo − 500) / 2000) for the index. All evaluations are conducted independently by Artificial Analysis.",
+      "AA-Briefcase v1.1 tests realistic multi-week knowledge-work projects: 91 tasks across four scenarios with thousands of source files. Combined Elo aggregates rubric success, analytical quality, and presentation quality using Crowd-BT fitting and judge panels. Part of Intelligence Index v5 Knowledge Work (15%). For AA's overall index, Elo is frozen at addition and normalized with clamp((Elo − 500) / 2000). Our local Knowledge Work reconstruction uses the current source Elo, not the frozen snapshot.",
     officialUrl: "https://artificialanalysis.ai/evaluations/aa-briefcase",
   },
 ];
@@ -364,7 +435,6 @@ function BarTooltip({
 }) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
-  if (d.value === 0) return null; // hidden provider
 
   return (
     <div className="rounded-lg border border-gray-700 bg-gray-900/95 px-4 py-3 shadow-xl backdrop-blur-sm">
@@ -377,6 +447,11 @@ function BarTooltip({
             {typeof d.value === "number" ? d.value.toFixed(3) : d.value}
           </span>
         </div>
+        {d.code2videoEloInterval && (
+          <div className="text-gray-400">
+            95% CI: {d.code2videoEloInterval.lower.toFixed(1)}–{d.code2videoEloInterval.upper.toFixed(1)}
+          </div>
+        )}
         {d.blendedPrice != null && (
           <div className="flex justify-between gap-4">
             <span className="text-gray-400">Blended Price:</span>
@@ -397,11 +472,11 @@ function BarTooltip({
             <span className="text-gray-300">${d.outputPrice.toFixed(2)}/1M</span>
           </div>
         )}
-        {d.costToRunIndex != null && (
+        {d.benchmarkCostToRun != null && (
           <div className="flex justify-between gap-4">
-            <span className="text-gray-400">Cost to Run Index:</span>
+            <span className="text-gray-400">{d.costScope} total:</span>
             <span className="font-medium text-emerald-400">
-              ${d.costToRunIndex.toFixed(0)}
+              ${d.benchmarkCostToRun.toFixed(0)}
             </span>
           </div>
         )}
@@ -449,7 +524,9 @@ function MiniBarChart({
         inputPrice: m.inputPrice,
         outputPrice: m.outputPrice,
         blendedPrice: m.blendedPrice,
-        costToRunIndex: m.costToRunIndex,
+        benchmarkCostToRun: getBenchmarkCost(m, metricKey, "cost"),
+        costScope: getCostScope(metricKey),
+        code2videoEloInterval: metricKey === "code2videoElo" ? m.code2videoEloInterval : null,
         contextWindow: m.contextWindow,
         isOpenWeights: m.isOpenWeights,
       }))
@@ -782,7 +859,7 @@ function ModelFilterPanel({
 // ---------------------------------------------------------------------------
 // Bump FILTER_VERSION whenever new models should be hidden by default.
 // On version mismatch, the saved selection is merged with the new defaults
-// (preserving any user-customized toggles). On version match, the saved
+// (preserving saved hidden IDs, but reapplying default-hidden IDs). On version match, the saved
 // selection is loaded as-is.
 const FILTER_VERSION = 15;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
@@ -884,11 +961,13 @@ export default function AgenticAIPage() {
   const [priceMode, setPriceMode] = useState<"price" | "cost" | "task">("price");
   const [sidebarTab, setSidebarTab] = useState<"metrics" | "docs">("metrics");
   const [hiddenModelIds, setHiddenModelIds] = useState<Set<string>>(new Set());
+  const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [showModelPanel, setShowModelPanel] = useState(false);
 
   // Load hidden-model selection from localStorage on mount.
   // Versioned: when FILTER_VERSION bumps, merge the new DEFAULT_HIDDEN_IDS
-  // into the user's saved selection (preserving their custom toggles).
+  // into the user's saved hidden IDs. This does not preserve enabled overrides
+  // for models that remain default-hidden across a version change.
   useEffect(() => {
     try {
       const savedVersion = localStorage.getItem("filterVersion");
@@ -916,16 +995,19 @@ export default function AgenticAIPage() {
       // localStorage unavailable — fall back to defaults in-memory
       setHiddenModelIds(new Set(DEFAULT_HIDDEN_IDS));
     }
+    setFiltersLoaded(true);
   }, []);
 
   // Persist hidden-model selection to localStorage
   useEffect(() => {
+    // Do not overwrite saved choices with the initial empty set before loading.
+    if (!filtersLoaded) return;
     try {
       localStorage.setItem("hiddenModelIds", JSON.stringify([...hiddenModelIds]));
     } catch {
       // localStorage unavailable — selection still works in-session
     }
-  }, [hiddenModelIds]);
+  }, [hiddenModelIds, filtersLoaded]);
 
   const lastUpdated = new Date(aiModels.lastUpdated).toLocaleDateString(
     "en-US",
@@ -938,6 +1020,7 @@ export default function AgenticAIPage() {
 
   const currentMetric =
     METRICS.find((m) => m.key === selectedMetric) || METRICS[0];
+  const v5EvaluatedCount = countAvailable(models, "intelligenceIndex");
 
   // Models currently visible (not hidden by the user). Charts, availability
   // counts, and the documentation panel all use this filtered set.
@@ -988,6 +1071,18 @@ export default function AgenticAIPage() {
           </Link>
           .
         </p>
+        <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
+          <p>
+            <strong>Intelligence Index v{aiModels.intelligenceIndexVersion}:</strong>{" "}
+            {v5EvaluatedCount} of {models.length} tracked models have an overall v5 score.
+            Models without one remain available for individual benchmarks; missing results are not zero.
+            Scores and evaluation costs are not directly comparable with v4.3.
+          </p>
+          <p className="mt-1 text-xs">
+            Category scores are locally derived. Code2Video-AA is a separate evaluation,
+            not part of v5, and uses its own estimated API costs.
+          </p>
+        </div>
       </div>
 
       {/* Main layout: sidebar left, content right */}
@@ -1108,11 +1203,7 @@ export default function AgenticAIPage() {
                 </button>
               </div>
               <p className="mt-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
-                {priceMode === "price"
-                  ? "Blended price assuming 7:2:1 ratio of cache hits, input, and output tokens."
-                  : priceMode === "task"
-                    ? "Median API cost per Intelligence Index task (plotted on a log scale — efficient models span three orders of magnitude)."
-                    : "Total API cost to evaluate the model on the full benchmark suite."}
+                {getCostDescription(selectedMetric, priceMode)}
               </p>
             </div>
           </div>
@@ -1206,8 +1297,8 @@ export default function AgenticAIPage() {
           . Last updated: {lastUpdated}.
         </p>
         <p className="mt-1 text-xs">
-          Prices shown are per 1M tokens. Cost to Run is the total expense to
-          evaluate the model on the Artificial Analysis Intelligence Index.
+          Prices are per 1M tokens. Evaluation costs refer to Intelligence Index v{aiModels.intelligenceIndexVersion},
+          except Code2Video-AA, which uses separate contestant API cost estimates.
         </p>
       </footer>
     </div>

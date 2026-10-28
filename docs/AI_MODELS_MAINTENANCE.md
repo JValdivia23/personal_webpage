@@ -1,6 +1,6 @@
 # Maintaining the AI model benchmarks
 
-**Agent handoff — last reviewed October 23, 2026.** Read this before adding models, changing default visibility, or repairing an Artificial Analysis (AA) sync. This guide is tracked in Git and does not require previous chat history. Local `AGENTS.md` is gitignored and is not available in a fresh clone.
+**Agent handoff — last reviewed October 28, 2026.** Read this before adding models, changing default visibility, or repairing an Artificial Analysis (AA) sync. This guide is tracked in Git and does not require previous chat history. Local `AGENTS.md` is gitignored and is not available in a fresh clone.
 
 ## Source of truth and files
 
@@ -12,10 +12,18 @@ Read the current files rather than carrying model counts, rankings, or filter ve
 | [`src/data/ai-models.json`](../src/data/ai-models.json) | Generated data, including `modelCount`, `lastUpdated`, and all tracked models. Do not hand-enter scores. |
 | [`src/app/agentic-ai/page.tsx`](../src/app/agentic-ai/page.tsx) | `DEFAULT_HIDDEN_IDS`, `FILTER_VERSION`, `METRICS`, and a provider color palette for the documentation/bar charts. |
 | [`src/components/ModelBenchmarkChart.tsx`](../src/components/ModelBenchmarkChart.tsx) | `AIModel` interface, scatter plots, cost modes, and a **separate** provider color palette. |
+| [`src/lib/ai-model-costs.ts`](../src/lib/ai-model-costs.ts) | Shared cost-field selection and scope labels; Code2Video must never inherit Intelligence Index costs. |
+| [`scripts/test_sync_ai_models.py`](../scripts/test_sync_ai_models.py), [`scripts/test-ai-model-costs.mjs`](../scripts/test-ai-model-costs.mjs) | Offline category/parser/validation and chart-cost regression tests. |
 | [Metrics reference](../src/data/ai-models-metrics-documentation.md) | Definitions, local composite formulas, historical methodology changes, and sync date/count. |
 | [`next.config.ts`](../next.config.ts) | Static export and `/personal_webpage` base path. |
 
 Routine model additions usually change the sync script, generated JSON, and metrics-reference header. Visibility changes also affect `page.tsx`; a new provider may need both color palettes updated. Do not change unrelated publications, CV, or GitHub data.
+
+### Current methodology: Intelligence Index v5.0
+
+The October 28 migration was explicitly approved alongside Gemini 4 Carbon (high, default-visible) and the standalone Code2Video-AA metric. The overall score is AA's published **v5** `intelligenceIndex`, not a local recomputation. The four current menu categories (Coding, Knowledge Work, Science, General) are **locally derived** v5 reconstructions; the legacy `agenticIndex` key remains in JSON but is not a current menu option. Read `intelligenceIndexVersion` / `metricVersions` in the JSON and the [v5 metrics reference](../src/data/ai-models-metrics-documentation.md#intelligence-index-v5-october-2026).
+
+v5 coverage is smaller than v4.3: many retained models have no current overall score or evaluation cost. Preserve these as `null` and leave them unranked. **Never backfill v5 scores, Omniscience v1.1 results, or costs with v4.3 data.** Existing model visibility defaults were preserved; adding Carbon did not bump the filter version. No Progress Index or historical comparison was added.
 
 ## 1. Check the checkout and environment
 
@@ -132,7 +140,7 @@ Before committing:
 - Investigate coverage losses against AA's **full** HTML/RSC model objects. AA can legitimately withdraw prices or costs for deprecated models; record verified losses rather than filling them with stale values or zeros. The October 23 refresh, for example, confirmed missing Gemini 3.7 medium/low prices and high-effort evaluation costs in both live sources.
 - Missing values remain `null`. A real benchmark zero is not the same as missing data. Models with null intelligence are retained but unranked. Scatter plots require a metric and a non-null/nonzero value for the selected cost basis; a model without pricing can still appear in bar rankings.
 
-**Guard limitations:** `main()` refuses to write when fewer than 90% of target models were fetched. This is a backstop, **not a completeness test**: a smaller unexpected loss can still pass. `validate_output()` runs after the JSON write and only makes basic checks; it is not a full per-model schema/coverage check. Do not weaken guards to make a broken parser pass, and do not commit a partial/degraded refresh.
+**Guards:** The original 90% fetched-row backstop remains. `validate_models()` additionally requires **every target exactly once**, complete per-row schema/metadata, finite values, valid category ranges, and correct rank ordering **before writing**. `validate_output()` repeats those checks and verifies methodology metadata after the write. Fetching all rows does not imply benchmark coverage: null v5 scores are valid when verified against AA. The source guard checks the live v5 label and, when populated, the exact nine evaluation slugs. Empty source evaluation-cost arrays can coexist with valid scores. Do not weaken these checks or commit an unexplained coverage loss.
 
 Update the metrics reference's `Last Updated` from the JSON's sync date and `Models Tracked` from the actual count before running the check below. Do not change the reported sync date for a documentation-only edit.
 
@@ -178,7 +186,12 @@ assert set(models) - set(old) == added, "Unexpected/missing additions"
 assert after["sourceUrl"] == target_url
 required = {"id", "name", "shortName", "provider", "intelligenceIndex",
             "inputPrice", "outputPrice", "blendedPrice", "costToRunIndex",
-            "costPerTask", "codingIndex", "agenticIndex", "url"}
+            "costPerTask", "codingIndex", "knowledgeWorkIndex", "scienceIndex",
+            "generalIndex", "agenticIndex", "frontierCode20", "terminalbenchScience",
+            "hleDiamond", "critptV2Hard", "omniscienceAccuracy",
+            "omniscienceHallucinationRate", "code2videoElo", "code2videoEloInterval",
+            "code2videoCostToRun", "code2videoCostPerTask", "url"}
+assert after["intelligenceIndexVersion"] == "5.0"
 for m in rows:
     assert required <= m.keys(), f"Missing schema fields: {m['id']}"
     assert m["name"] and m["shortName"] and m["provider"]
@@ -210,12 +223,14 @@ for slug in sorted(added):
         "id", "shortName", "provider", "intelligenceIndex", "intelligenceRank",
         "releaseDate", "contextWindow", "isOpenWeights", "inputPrice",
         "outputPrice", "blendedPrice", "costToRunIndex", "costPerTask",
-        "codingIndex", "agenticIndex", "intelligenceIndexIsEstimated",
+        "codingIndex", "knowledgeWorkIndex", "scienceIndex", "generalIndex",
+        "code2videoElo", "intelligenceIndexIsEstimated",
     )}, indent=2))
     print("Default hidden:", slug in hidden)
 print("REVIEW coverage changes against AA before committing:")
 for key in ("inputPrice", "blendedPrice", "costToRunIndex", "costPerTask",
-            "intelligenceIndex", "codingIndex", "agenticIndex"):
+            "intelligenceIndex", "codingIndex", "knowledgeWorkIndex", "scienceIndex",
+            "generalIndex", "agenticIndex", "code2videoElo", "code2videoCostPerTask"):
     lost = sorted(s for s in old if old[s].get(key) is not None
                   and models[s].get(key) is None)
     restored = sorted(s for s in old if old[s].get(key) is None
@@ -231,10 +246,16 @@ This verifies structure, not source accuracy or the user's intended visibility. 
 ## 5. Build and review the page
 
 ```bash
+python3 -B -m unittest discover -s scripts -p 'test_*.py'
+node --experimental-strip-types --test scripts/test-ai-model-costs.mjs
 npm run build
 ```
 
+The JavaScript cost tests use Node's built-in TypeScript stripping (Node 22.18+; the maintainer currently uses Node 25). They require no new npm packages. Python unit tests do not require Playwright; actual syncs still do.
+
 This must complete successfully, including TypeScript and static export. A model's presence in exported HTML alone does not prove that browser-saved filters will show it; inspect the Models panel and the relevant chart/cost modes as needed.
+
+Test both fresh defaults and a browser context preloaded with `filterVersion` / `hiddenModelIds`. Persistence must wait until the saved selection has loaded; otherwise the initial empty set can overwrite saved choices, particularly with development Strict Mode. Do not clear a real user's localStorage. Verify missing-score versus missing-cost empty states, score-only rankings, all four categories, and Code2Video's **own** cost modes.
 
 For interactive checks, use `npm run dev` and open **http://localhost:3000/personal_webpage/agentic-ai**. Internal Next.js links handle the base path; static asset/download paths must include `/personal_webpage`.
 
@@ -271,11 +292,13 @@ Report the actual commit, push/build status, model count, requested visibility, 
 
 - **July 2026:** snake_case fields moved to camelCase, creator lists to a single `creator` object, and evaluation cost `total_cost` to `total`. Keep compatibility reads in `clean_model`.
 - **October 2026:** pages can contain `initialModels[]` or legacy `currentModel` data. The script tries `_extract_from_initial_models` first, then `_extract_model_legacy`. Nested release summaries also carry slugs/intelligence; they are not full model rows. Payload-size/search limits and layout changes can cause parser failures even when the page has evaluations.
-- Raw `terminalBench21` and `terminalBench40` are accepted alongside `terminalbenchV21/V40` and older snake_case fields. Generated JSON retains the `terminalbenchV21/V40` keys. The source also exposes untracked fields such as `terminalBenchScience`; do not silently substitute them into an existing metric.
-- Coding is locally derived as `(terminalbenchV40 + scicode) / 2 * 100`; both inputs are required. Do not revive the old v4.1 Terminal-Bench v2.1 formula for current data.
-- Agentic is locally derived as `(0.5 * briefcaseNorm + 1/3 * gdpvalNorm + 1/6 * automationBench) * 100`. Elo fallback normalization is clamped to `[0, 1]` using `(Elo - 500) / 2000`; use `gdpvalNormalized` when present. All three components are required. Both composite fields prefer a published source value when provided.
+- Raw `terminalBench21` and `terminalBench40` are accepted alongside `terminalbenchV21/V40` and older snake_case fields. Generated JSON retains `terminalbenchV21/V40`. v5 explicitly adds `terminalBenchScience` → `terminalbenchScience`, `frontierCode20`, `hleDiamond`, and `critptAgenticHard` → `critptV2Hard`. These are separate benchmarks, not aliases for older ones.
+- Coding is now `(0.6 * frontierCode20 + 0.4 * terminalbenchV40) * 100`. Never fall back to FrontierCode 1.1, SciCode, or an unversioned source composite. Knowledge Work is `(0.6 * briefcaseNorm + 0.2 * automationBench + 0.2 * gdpPdfAllPass) * 100`; Science is `(0.6 * terminalbenchScience + 0.4 * critptV2Hard) * 100`; General is `(0.4 * omniscienceAccuracy + 0.2 * (1 - omniscienceHallucinationRate) + 0.4 * hleDiamond) * 100`. Every component is required, while real zeros remain valid.
+- The legacy `agenticIndex` formula remains `(0.5 * briefcaseNorm + 1/3 * gdpvalNorm + 1/6 * automationBench) * 100` for compatibility only. Elo normalization is clamped to `[0, 1]` using `(Elo - 500) / 2000`; legacy GDPval uses `gdpvalNormalized` when present. Current Knowledge Work uses the live Briefcase Elo rather than AA's frozen-at-addition snapshot.
+- `omniscience` is now **v1.1**, although AA reused the raw key. Its accuracy and hallucination-rate inputs are extracted separately; do not recreate them from the headline Index or reuse v1 scores.
+- `code2videoElo` is a standalone additional metric, not part of v5. Enrich exact slugs from the Code2Video evaluation page's inline `initialModels[]` rows. These contain more precise overall confidence intervals and `canonicalEvalTokenCounts.code2video`. Cost estimates use the known single-call uncached token accounting, API input/output prices, and 114 tasks, exclude judging/rendering, and remain null for missing prices/counts or unsupported caching. If the benchmark's task count/accounting changes, review the estimator before changing `CODE2VIDEO_TASK_COUNT`. `src/lib/ai-model-costs.ts` routes both Code2Video cost modes to its own fields without fallback.
 - Local reconstructions are not official published composites. Read the [metrics reference](../src/data/ai-models-metrics-documentation.md) and AA's current methodology before proposing changes to their formulas. Null legacy metrics are not evidence that the overall Intelligence Index is unavailable.
-- `costPerTask` comes from `intelligenceIndexCostPerTask.cost.total`: AA's **evaluation-weighted average cost per task**, not the median and not simply total evaluation cost divided by one aggregate task count. Some existing code comments and UI text still say "Median"; that wording is stale, not a different calculation. Correcting the application wording is a separate code change.
+- `costPerTask` comes from `intelligenceIndexCostPerTask.cost.total`: AA's **evaluation-weighted average cost per task**, not the median and not simply total evaluation cost divided by one aggregate task count. UI wording now uses this definition and identifies the full v5 cost scope even when plotting an individual metric.
 
 ## Starting a new agent session
 

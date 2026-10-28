@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
+import { getBenchmarkCost, getCostDescription, getCostScope, type PriceMode } from '@/lib/ai-model-costs';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -25,6 +26,9 @@ interface AIModel {
   provider: string;
   intelligenceIndex: number | null;
   codingIndex: number | null;
+  knowledgeWorkIndex: number | null;
+  scienceIndex: number | null;
+  generalIndex: number | null;
   agenticIndex: number | null;
   mathIndex: number | null;
   inputPrice: number | null;
@@ -49,6 +53,16 @@ interface AIModel {
   tauBanking: number | null;
   terminalbenchV21: number | null;
   terminalbenchV40: number | null;
+  frontierCode20: number | null;
+  terminalbenchScience: number | null;
+  hleDiamond: number | null;
+  critptV2Hard: number | null;
+  omniscienceAccuracy: number | null;
+  omniscienceHallucinationRate: number | null;
+  code2videoElo: number | null;
+  code2videoEloInterval: { lower: number; upper: number } | null;
+  code2videoCostToRun: number | null;
+  code2videoCostPerTask: number | null;
   gdpPdfAllPass: number | null;
   mlcrOverall: number | null;
   analystAgent: number | null;
@@ -59,8 +73,6 @@ interface AIModel {
   itBenchSre: number | null;
   briefcaseElo: number | null;
 }
-
-type PriceMode = 'price' | 'cost' | 'task';
 
 interface ModelBenchmarkChartProps {
   models: AIModel[];
@@ -73,6 +85,7 @@ interface ChartPoint extends AIModel {
   x: number;
   /** Untransformed x value (used by the tooltip for log-scale modes). */
   rawX?: number;
+  benchmarkCostToRun: number | null;
   y: number;
   color: string;
   dx: number;
@@ -389,16 +402,19 @@ function CustomTooltip({
   payload,
   priceMode,
   metricLabel,
+  selectedMetric,
 }: {
   active?: boolean;
   payload?: Array<{ payload: ChartPoint }>;
   priceMode: PriceMode;
   metricLabel: string;
+  selectedMetric: string;
 }) {
   if (!active || !payload || !payload.length) return null;
 
   const model = payload[0].payload;
   const xValue = model.rawX ?? model.x;
+  const costScope = getCostScope(selectedMetric);
 
   return (
     <div className="rounded-lg border border-gray-700 bg-gray-900/95 px-4 py-3 shadow-xl backdrop-blur-sm">
@@ -411,6 +427,11 @@ function CustomTooltip({
             {typeof model.y === 'number' ? model.y.toFixed(3) : model.y}
           </span>
         </div>
+        {selectedMetric === 'code2videoElo' && model.code2videoEloInterval && (
+          <div className="text-gray-400">
+            95% CI: {model.code2videoEloInterval.lower.toFixed(1)}–{model.code2videoEloInterval.upper.toFixed(1)}
+          </div>
+        )}
         {priceMode === 'price' ? (
           <>
             <div className="flex justify-between gap-4">
@@ -431,19 +452,19 @@ function CustomTooltip({
         ) : priceMode === 'task' ? (
           <>
             <div className="flex justify-between gap-4">
-              <span className="text-gray-400">Cost per Task:</span>
+              <span className="text-gray-400">{costScope} / task:</span>
               <span className="font-medium text-emerald-400">
                 ${xValue < 0.01 ? xValue.toFixed(4) : xValue.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-gray-400">Cost to Run Index:</span>
-              <span className="text-gray-300">${model.costToRunIndex?.toFixed(0) ?? 'N/A'}</span>
+              <span className="text-gray-400">{costScope} total:</span>
+              <span className="text-gray-300">${model.benchmarkCostToRun?.toFixed(0) ?? 'N/A'}</span>
             </div>
           </>
         ) : (
           <div className="flex justify-between gap-4">
-            <span className="text-gray-400">Cost to Run Index:</span>
+            <span className="text-gray-400">{costScope} total:</span>
             <span className="font-medium text-emerald-400">
               ${xValue.toFixed(0)}
             </span>
@@ -483,16 +504,8 @@ export function ModelBenchmarkChart({
       .filter((m) => {
         const metricVal = (m as any)[selectedMetric];
         if (metricVal == null || typeof metricVal !== 'number') return false;
-        if (priceMode === 'price') {
-          if (m.blendedPrice == null || m.blendedPrice === 0) return false;
-        }
-        if (priceMode === 'cost') {
-          if (m.costToRunIndex == null || m.costToRunIndex === 0) return false;
-        }
-        if (priceMode === 'task') {
-          if (m.costPerTask == null || m.costPerTask === 0) return false;
-        }
-        return true;
+        const cost = getBenchmarkCost(m, selectedMetric, priceMode);
+        return cost != null && Number.isFinite(cost) && cost > 0;
       })
       .map((m) => {
         // "Cost per task" spans ~3 orders of magnitude across models, so it is
@@ -500,16 +513,12 @@ export function ModelBenchmarkChart({
         // linear collision-aware label placement and quadrant math below, so
         // instead we pre-transform x to log10 and let every downstream step
         // treat it as linear.
-        const rawX =
-          priceMode === 'price'
-            ? (m.blendedPrice ?? 0)
-            : priceMode === 'task'
-              ? (m.costPerTask ?? 0)
-              : (m.costToRunIndex ?? 0);
+        const rawX = getBenchmarkCost(m, selectedMetric, priceMode)!;
         return {
           ...m,
           x: priceMode === 'task' ? Math.log10(rawX) : rawX,
           rawX,
+          benchmarkCostToRun: getBenchmarkCost(m, selectedMetric, 'cost'),
           y: (m as any)[selectedMetric] as number,
           color: getProviderColor(m.provider),
           dx: 10,
@@ -526,7 +535,7 @@ export function ModelBenchmarkChart({
     if (vals.length === 0) return [0, 1];
     const min = Math.min(...vals);
     const max = Math.max(...vals);
-    const pad = (max - min) * 0.15;
+    const pad = Math.max((max - min) * 0.15, Math.abs(max) * 0.01, 0.01);
     // Task mode plots log10(cost); those values can be negative, so don't
     // clamp the lower bound at zero like the linear modes do.
     return priceMode === 'task'
@@ -539,8 +548,8 @@ export function ModelBenchmarkChart({
     if (vals.length === 0) return [0, 1];
     const min = Math.min(...vals);
     const max = Math.max(...vals);
-    const pad = (max - min) * 0.12;
-    return [Math.max(0, min - pad), max + pad];
+    const pad = Math.max((max - min) * 0.12, Math.abs(max) * 0.01, 0.01);
+    return [min < 0 ? min - pad : Math.max(0, min - pad), max + pad];
   }, [allChartData]);
 
   const thresholdX = useMemo(() => {
@@ -601,11 +610,12 @@ export function ModelBenchmarkChart({
     return false;
   };
 
+  const shortCostScope = selectedMetric === 'code2videoElo' ? 'Code2Video' : 'Index v5';
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
     : priceMode === 'task'
-      ? 'Cost per Task ($, log scale) →'
-      : 'Cost to Run Index ($) →';
+      ? `${shortCostScope} / Task ($, log) →`
+      : `${shortCostScope} Total Cost ($) →`;
 
   const chartTitle = `Cost vs. ${metricLabel}`;
 
@@ -619,7 +629,9 @@ export function ModelBenchmarkChart({
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {models.length === 0
               ? "No models selected. Enable models in the filter panel below."
-              : "No models have data for this cost mode. Try switching to \u201CCost to Run\u201D."}
+              : !models.some((m) => typeof (m as any)[selectedMetric] === 'number')
+                ? `No selected models have ${metricLabel} scores. Enable other models or choose another metric.`
+                : 'Scores are available, but pricing or evaluation costs are missing for this cost mode. Try another cost basis or view Documentation for score-only rankings.'}
           </p>
         </div>
       </div>
@@ -634,11 +646,7 @@ export function ModelBenchmarkChart({
           {chartTitle}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {priceMode === 'price'
-            ? `Blended price per 1M tokens vs. ${metricLabel}`
-            : priceMode === 'task'
-              ? `Median API cost per benchmark task (log scale) vs. ${metricLabel}`
-              : `Total cost to run benchmark vs. ${metricLabel}`}
+          {getCostDescription(selectedMetric, priceMode)}
         </p>
       </div>
 
@@ -731,7 +739,7 @@ export function ModelBenchmarkChart({
               }}
             />
             <Tooltip
-              content={<CustomTooltip priceMode={priceMode} metricLabel={metricLabel} />}
+              content={<CustomTooltip priceMode={priceMode} metricLabel={metricLabel} selectedMetric={selectedMetric} />}
               cursor={{ strokeDasharray: '3 3' }}
               wrapperStyle={{ zIndex: 9999 }}
             />

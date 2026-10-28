@@ -13,21 +13,23 @@ What it does:
        lightweight summary object that appears before the full model data)
     5. Cleans the raw data and writes it to src/data/ai-models.json
     6. Uses hybrid field reads (camelCase first, snake_case fallback) to handle
-       AA's RSC format change from snake_case to camelCase (July 2026)
+        AA's RSC format change from snake_case to camelCase (July 2026)
+    7. Verifies v5 source identity/version and enriches Code2Video-AA with its
+       own evaluation rows, confidence intervals, and API cost estimates
+    8. Requires all target rows and validates them before writing
 
 Requirements:
-    - Python 3.x with `playwright` installed
+    - Python 3.10+ with `playwright` installed
     - Playwright browsers installed (`playwright install chromium`)
 """
 
 import json
-import os
+import math
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
-
-from playwright.sync_api import sync_playwright
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -49,7 +51,7 @@ TARGET_URL = (
     "gpt-6-luna,gpt-6-luna-xhigh,gpt-6-luna-high,gpt-6-luna-medium,gpt-6-luna-low,gpt-6-luna-non-reasoning,"
     "gpt-6-astra,gpt-6-astra-xhigh,gpt-6-astra-high,gpt-6-astra-medium,gpt-6-astra-low,"
     "muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,muse-spark-open,muse-wonder,muse-wonder-full,"
-    "gemini-3-1-pro-preview,gemini-3-5-flash,gemini-3-6-flash,gemini-3-7-flash,gemini-3-7-flash-medium,gemini-3-7-flash-low,gemini-3-8-flash,gemini-3-8-flash-medium,gemini-3-8-flash-low,gemini-4-argon,"
+    "gemini-3-1-pro-preview,gemini-3-5-flash,gemini-3-6-flash,gemini-3-7-flash,gemini-3-7-flash-medium,gemini-3-7-flash-low,gemini-3-8-flash,gemini-3-8-flash-medium,gemini-3-8-flash-low,gemini-4-argon,gemini-4-carbon,"
     "claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-sonnet-5-5,claude-sonnet-5-5-xhigh,claude-sonnet-5-5-high,claude-sonnet-5-5-medium,claude-sonnet-5-5-low,claude-haiku-5-5,claude-haiku-5-5-xhigh,claude-haiku-5-5-high,claude-haiku-5-5-medium,claude-haiku-5-5-low,claude-opus-4-7,claude-opus-4-8,claude-opus-5,claude-opus-5-5,claude-opus-5-5-xhigh,claude-opus-5-5-high,claude-opus-5-5-medium,claude-opus-5-5-low,"
     "deepseek-v4-flash,deepseek-v4-flash-vision,deepseek-v4-pro,deepseek-v4-1-flash,deepseek-v4-1-flash-1017,"
     "deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,grok-4-6,grok-4-7,grok-4-7-high,minimax-m2-7,minimax-m3,minimax-m3-1-flash,"
@@ -67,6 +69,29 @@ DISPLAY_NAMES = {
 }
 
 MIN_MODELS = 5
+INTELLIGENCE_INDEX_VERSION = "5.0"
+V5_EVALUATIONS = frozenset({
+    "aa-briefcase", "automationbench-aa", "gdp-pdf", "frontiercode-2-0",
+    "terminalbench-4-0", "terminal-bench-science", "critpt-v2-hard",
+    "omniscience", "hle-diamond",
+})
+CODE2VIDEO_URL = "https://artificialanalysis.ai/evaluations/code2video-aa"
+CODE2VIDEO_TASK_COUNT = 114
+METRIC_VERSIONS = {
+    "codingIndex": "local-v5.0",
+    "knowledgeWorkIndex": "local-v5.0",
+    "scienceIndex": "local-v5.0",
+    "generalIndex": "local-v5.0",
+    "agenticIndex": "legacy-local-v4.3",
+    "omniscience": "1.1",
+    "hle": "legacy-HLE",
+    "critpt": "legacy-CritPt",
+    "frontierCode20": "2.0",
+    "terminalbenchScience": "0.1.0",
+    "hleDiamond": "HLE-Diamond",
+    "critptV2Hard": "2-hard",
+    "code2videoElo": "Code2Video-AA",
+}
 
 
 def log(msg: str) -> None:
@@ -79,6 +104,101 @@ def get_filtered_slugs(url: str) -> set[str]:
     params = parse_qs(parsed.query)
     models_param = params.get("models", [""])[0]
     return set(models_param.split(",")) if models_param else set()
+
+
+def weighted_category(*components: tuple[float, float | None]) -> float | None:
+    """Local category score; missing components never become zero or reweight."""
+    if any(value is None for _, value in components):
+        return None
+    return sum(weight * float(value) for weight, value in components) * 100
+
+
+def _property_values(text: str, name: str):
+    """Decode inline JSON properties without fixed RSC payload-size limits."""
+    decoder = json.JSONDecoder()
+    for match in re.finditer(r'"' + re.escape(name) + r'"\s*:\s*', text):
+        try:
+            value, _ = decoder.raw_decode(text, match.end())
+            yield value
+        except json.JSONDecodeError:
+            continue
+
+
+def _is_full_model(raw, slug: str) -> bool:
+    return (
+        isinstance(raw, dict) and raw.get("slug") == slug and bool(raw.get("name"))
+        and any(key in raw for key in ("contextWindowTokens", "context_window_tokens"))
+        and any(key in raw for key in ("intelligenceIndex", "intelligence_index"))
+    )
+
+
+def validate_source_model(raw: dict, slug: str, text: str) -> None:
+    """Fail closed on summaries, wrong identities, or a changed index suite."""
+    if not _is_full_model(raw, slug):
+        raise ValueError(f"No full matching model object for {slug}")
+    if f"Intelligence Index v{INTELLIGENCE_INDEX_VERSION}" not in text:
+        raise ValueError(f"Unverified Intelligence Index version for {slug}")
+    evaluations = raw.get("intelligenceIndexEvaluations")
+    if evaluations and {e["slug"] for e in evaluations} != V5_EVALUATIONS:
+        raise ValueError(f"Unexpected Intelligence Index evaluation suite for {slug}")
+    # AA can publish a score without evaluation-cost rows (e.g. Flash low).
+    # An empty evaluations array is not by itself evidence of a missing score.
+
+
+def extract_code2video_models(text: str) -> dict[str, dict]:
+    """Evaluation rows include benchmark-specific canonical token counts."""
+    for rows in _property_values(text, "initialModels"):
+        if not isinstance(rows, list):
+            continue
+        matches = [row for row in rows if isinstance(row, dict)
+                   and row.get("slug") and row.get("code2videoElo") is not None]
+        if matches:
+            models = {row["slug"]: row for row in matches}
+            if len(models) != len(matches):
+                raise ValueError("Duplicate Code2Video-AA model slugs")
+            return models
+    raise ValueError("No Code2Video-AA evaluation rows found")
+
+
+def code2video_costs(raw: dict) -> tuple[float | None, float | None]:
+    """Estimate contestant API costs from AA's uncached, single-call tokens.
+
+    Code2Video-AA runs 114 briefs once. Do not borrow Intelligence Index costs,
+    assume missing token counts are zero, or guess future cache accounting.
+    """
+    counts = raw.get("canonicalEvalTokenCounts") or {}
+    tokens = counts.get("code2video") or {}
+    values = [tokens.get(k) for k in ("input", "answer", "reasoning")]
+    input_price = raw.get("price1mInputTokens")
+    output_price = raw.get("price1mOutputTokens")
+    if (any(v is None for v in (*values, input_price, output_price))
+            or tokens.get("cacheableInput") not in (None, 0)):
+        return None, None
+    if any(not math.isfinite(float(v)) or float(v) < 0 for v in (*values, input_price, output_price)):
+        raise ValueError("Invalid Code2Video-AA tokens or prices")
+    total = (float(values[0]) * float(input_price)
+             + (float(values[1]) + float(values[2])) * float(output_price)) / 1_000_000
+    return total, total / CODE2VIDEO_TASK_COUNT
+
+
+def enrich_code2video(models: list[dict], evaluation_models: dict[str, dict]) -> None:
+    for model in models:
+        raw = evaluation_models.get(model["id"])
+        if raw is None:
+            if model["code2videoElo"] is not None:
+                raise ValueError(f"Code2Video-AA evaluation row missing: {model['id']}")
+            continue
+        # Match exact effort slugs, never attach family-level results to variants.
+        if (model["code2videoElo"] is not None
+                and not math.isclose(model["code2videoElo"], raw["code2videoElo"], abs_tol=0.01)):
+            raise ValueError(f"Code2Video-AA sources disagree: {model['id']}")
+        model["code2videoElo"] = raw["code2videoElo"]
+        breakdown = raw.get("code2videoBreakdown") or {}
+        if breakdown.get("lower95ci") is not None and breakdown.get("upper95ci") is not None:
+            model["code2videoEloInterval"] = {
+                "lower": breakdown["lower95ci"], "upper": breakdown["upper95ci"],
+            }
+        model["code2videoCostToRun"], model["code2videoCostPerTask"] = code2video_costs(raw)
 
 
 def extract_models_from_page(page, target_slugs: set[str] | None = None) -> list[dict]:
@@ -121,7 +241,7 @@ def _parse_models_from_text(text: str, target_slugs: set[str] | None) -> list[di
     seen = set()
 
     if target_slugs:
-        for slug in target_slugs:
+        for slug in sorted(target_slugs):
             if slug in seen:
                 continue
             # Find all occurrences of this slug
@@ -278,7 +398,7 @@ def clean_model(raw: dict) -> dict | None:
     if isinstance(cost_data, dict):
         total_cost = cost_data.get("total", cost_data.get("total_cost"))
 
-    # Cost per task (median API cost per Intelligence Index task, nested in
+    # Evaluation-weighted average API cost per Intelligence Index task, nested in
     # intelligenceIndexCostPerTask.cost.total)
     cpt_data = raw.get("intelligenceIndexCostPerTask", raw.get("intelligence_index_cost_per_task", {}))
     cost_per_task = None
@@ -301,15 +421,17 @@ def clean_model(raw: dict) -> dict | None:
     tb40 = raw.get("terminalbenchV40", raw.get("terminalBench40", raw.get("terminalbench_v4_0")))
     scicode = raw.get("scicode")
 
-    # Coding Index: AA removed the standalone composite from RSC payloads
-    # (Aug 2026, v4.1.1). Rebased to Intelligence Index v4.3 (Sep 2026):
-    # equal-weight Terminal-Bench v4.0 + SciCode, scaled to 0-100.
-    # Prefer AA's official value if they ever restore it.
-    coding_index = raw.get("codingIndex", raw.get("coding_index"))
-    if coding_index is None and tb40 is not None and scicode is not None:
-        coding_index = (tb40 + scicode) / 2 * 100
+    # v5 category reconstructions are local, not AA's Coding Agent Index or
+    # published composites. Never fall back to a different benchmark version.
+    frontier_code = raw.get("frontierCode20", raw.get("frontier_code_2_0"))
+    terminal_science = raw.get("terminalBenchScience", raw.get("terminal_bench_science"))
+    hle_diamond = raw.get("hleDiamond", raw.get("hle_diamond"))
+    critpt_hard = raw.get("critptAgenticHard", raw.get("critpt_agentic_hard"))
+    omniscience_accuracy = raw.get("omniscienceAccuracy", raw.get("omniscience_accuracy"))
+    omniscience_hallucination = raw.get("omniscienceHallucinationRate", raw.get("omniscience_hallucination_rate"))
+    coding_index = weighted_category((0.6, frontier_code), (0.4, tb40))
 
-    # Agentic Index: AA dropped the standalone composite in v4.3.
+    # Legacy Agentic Index: retained in JSON for compatibility, not in the UI.
     # Reconstruct from the Agents category (30% of II): AA-Briefcase 15%,
     # GDPval-AA v2 10%, AutomationBench-AA 5% → 50% / 33.3% / 16.7%.
     # Elo scores use AA's documented mapping clamp((Elo - 500) / 2000).
@@ -318,9 +440,19 @@ def clean_model(raw: dict) -> dict | None:
             return None
         return max(0.0, min(1.0, (float(elo) - 500.0) / 2000.0))
 
+    briefcase_n = _elo_to_unit(briefcase_elo)
+    knowledge_work_index = weighted_category(
+        (0.6, briefcase_n), (0.2, automation), (0.2, raw.get("gdpPdfAllPass")),
+    )
+    science_index = weighted_category((0.6, terminal_science), (0.4, critpt_hard))
+    general_index = weighted_category(
+        (0.4, omniscience_accuracy),
+        (0.2, 1 - omniscience_hallucination if omniscience_hallucination is not None else None),
+        (0.4, hle_diamond),
+    )
+
     agentic_index = raw.get("agenticIndex", raw.get("agentic_index"))
     if agentic_index is None:
-        briefcase_n = _elo_to_unit(briefcase_elo)
         gdpval_n = raw.get("gdpvalNormalized")
         if gdpval_n is None:
             gdpval_n = _elo_to_unit(gdpval)
@@ -336,6 +468,9 @@ def clean_model(raw: dict) -> dict | None:
         "provider": creator_name,
         "intelligenceIndex": float(intelligence) if intelligence is not None else None,
         "codingIndex": coding_index,
+        "knowledgeWorkIndex": knowledge_work_index,
+        "scienceIndex": science_index,
+        "generalIndex": general_index,
         "agenticIndex": agentic_index,
         "mathIndex": raw.get("mathIndex", raw.get("math_index")),
         "inputPrice": float(input_price) if input_price is not None else None,
@@ -367,12 +502,18 @@ def clean_model(raw: dict) -> dict | None:
         "mmmuPro": raw.get("mmmuPro", raw.get("mmmu_pro")),
         "multilingualAA": raw.get("multilingualAA", raw.get("multilingual_aa")),
         "omniscience": raw.get("omniscience"),
+        "omniscienceAccuracy": omniscience_accuracy,
+        "omniscienceHallucinationRate": omniscience_hallucination,
         "lcr": raw.get("lcr"),
         # Intelligence Index v4.1 leftovers (still shipped; no longer in the index)
         "tauBanking": raw.get("tauBanking"),
         "terminalbenchV21": tb21,
         # Intelligence Index v4.3 + standalone agentic benchmarks
         "terminalbenchV40": tb40,
+        "frontierCode20": frontier_code,
+        "terminalbenchScience": terminal_science,
+        "hleDiamond": hle_diamond,
+        "critptV2Hard": critpt_hard,
         "gdpPdfAllPass": raw.get("gdpPdfAllPass"),
         "mlcrOverall": raw.get("mlcrOverall"),
         "analystAgent": raw.get("analystAgent"),
@@ -382,6 +523,10 @@ def clean_model(raw: dict) -> dict | None:
         "apexAgents": raw.get("apexAgents"),
         "itBenchSre": raw.get("itBenchSre"),
         "briefcaseElo": briefcase_elo,
+        "code2videoElo": raw.get("code2videoElo", raw.get("code2video_elo")),
+        "code2videoEloInterval": raw.get("code2videoEloInterval"),
+        "code2videoCostToRun": None,
+        "code2videoCostPerTask": None,
         "intelligenceIndexIsEstimated": raw.get("intelligenceIndexIsEstimated"),
     }
 
@@ -391,79 +536,10 @@ def _extract_from_initial_models(text: str, slug: str) -> dict | None:
     (Oct 2026 payload; replaced the old ``"currentModel"`` object).
     Returns the array element whose ``slug`` matches, preferring one with a
     non-null intelligence index. Returns None if no match."""
-    import json as _json
-
-    arr_key = '"initialModels":['
-    arr_pos = text.find(arr_key)
-    if arr_pos < 0:
-        return None
-    # Bracket-match the array (response text uses literal quotes)
-    arr_start = arr_pos + len(arr_key) - 1  # at '['
-    depth = 0
-    in_str = False
-    escape = False
-    arr_end = -1
-    for i in range(arr_start, min(len(text), arr_start + 500000)):
-        c = text[i]
-        if escape:
-            escape = False
-            continue
-        if c == '\\':
-            escape = True
-            continue
-        if c == '"':
-            in_str = not in_str
-            continue
-        if not in_str:
-            if c == '[':
-                depth += 1
-            elif c == ']':
-                depth -= 1
-                if depth == 0:
-                    arr_end = i + 1
-                    break
-    if arr_end < 0:
-        return None
-    # Split top-level elements via brace matching
     matches = []
-    k = arr_start + 1
-    while k < arr_end - 1:
-        while k < arr_end and text[k] in ' \t\r\n,':
-            k += 1
-        if k >= arr_end - 1 or text[k] != '{':
-            break
-        d2 = 0
-        ins2 = False
-        esc2 = False
-        el_end = -1
-        for j in range(k, min(len(text), k + 200000)):
-            cc = text[j]
-            if esc2:
-                esc2 = False
-                continue
-            if cc == '\\':
-                esc2 = True
-                continue
-            if cc == '"':
-                ins2 = not ins2
-                continue
-            if not ins2:
-                if cc == '{':
-                    d2 += 1
-                elif cc == '}':
-                    d2 -= 1
-                    if d2 == 0:
-                        el_end = j + 1
-                        break
-        if el_end < 0:
-            break
-        try:
-            el = _json.loads(text[k:el_end])
-            if isinstance(el, dict) and el.get("slug") == slug:
-                matches.append(el)
-        except Exception:
-            pass
-        k = el_end
+    for rows in _property_values(text, "initialModels"):
+        if isinstance(rows, list):
+            matches.extend(row for row in rows if _is_full_model(row, slug))
     if not matches:
         return None
     # Prefer an element that actually has benchmark data
@@ -478,6 +554,12 @@ def _extract_model_legacy(text: str, slug: str) -> dict | None:
     the { that starts the full model object (pre-Oct-2026 ``currentModel``
     payloads). Kept as a fallback."""
     import json as _json
+
+    # Some current pages use reference-only initialModels arrays alongside a
+    # full currentModel. Decode that directly before the historical fallback.
+    for raw in _property_values(text, "currentModel"):
+        if _is_full_model(raw, slug):
+            return raw
 
     intel_pos = text.find('"intelligenceIndex"')
     if intel_pos < 0:
@@ -527,7 +609,9 @@ def _extract_model_legacy(text: str, slug: str) -> dict | None:
             continue
         # Found it!
         try:
-            return _json.loads(obj_str)
+            raw = _json.loads(obj_str)
+            if _is_full_model(raw, slug):
+                return raw
         except Exception:
             continue
     return None
@@ -535,6 +619,8 @@ def _extract_model_legacy(text: str, slug: str) -> dict | None:
 
 def fetch_and_clean(url: str) -> list[dict]:
     """Fetch models from the page and clean them."""
+    from playwright.sync_api import sync_playwright
+
     target_slugs = get_filtered_slugs(url)
     log(f"Target slugs from URL: {len(target_slugs)}")
 
@@ -555,7 +641,7 @@ def fetch_and_clean(url: str) -> list[dict]:
         # The RSC response contains the full model JSON
         raw_models = []
         fetch_failures = {}
-        for slug in target_slugs:
+        for slug in sorted(target_slugs):
             rsc_url = f"https://artificialanalysis.ai/models/{slug}?_rsc=1"
             try:
                 resp = page.context.request.get(rsc_url, headers={"RSC": "1"})
@@ -569,6 +655,7 @@ def fetch_and_clean(url: str) -> list[dict]:
                 if best_obj is None:
                     best_obj = _extract_model_legacy(text, slug)
                 if best_obj is not None:
+                    validate_source_model(best_obj, slug, text)
                     raw_models.append(best_obj)
                 else:
                     fetch_failures[slug] = "no model object found (initialModels + legacy)"
@@ -582,6 +669,11 @@ def fetch_and_clean(url: str) -> list[dict]:
                 log(f"    {slug}: {reason}")
 
         log(f"Fetched {len(raw_models)} models via RSC")
+        resp = page.context.request.get(f"{CODE2VIDEO_URL}?_rsc=1", headers={"RSC": "1"})
+        if resp.status != 200:
+            raise RuntimeError(f"Code2Video-AA fetch failed: HTTP {resp.status}")
+        evaluation_models = extract_code2video_models(resp.text())
+        log(f"Fetched {len(evaluation_models)} Code2Video-AA evaluation rows")
         browser.close()
 
     # Clean all models
@@ -593,6 +685,7 @@ def fetch_and_clean(url: str) -> list[dict]:
             seen_ids.add(model["id"])
             cleaned.append(model)
 
+    enrich_code2video(cleaned, evaluation_models)
     log(f"Cleaned to {len(cleaned)} unique models")
 
     # Filter to target slugs if specified
@@ -608,13 +701,16 @@ def compute_ranks(models: list[dict]) -> list[dict]:
     """Sort by intelligence and assign ranks. Models with null intelligence
     are kept in the data but not ranked (they appear at the end)."""
     ranked = [m for m in models if m.get("intelligenceIndex") is not None]
-    ranked.sort(key=lambda m: m["intelligenceIndex"], reverse=True)
+    ranked.sort(key=lambda m: (-m["intelligenceIndex"], m["id"]))
 
     for i, model in enumerate(ranked, 1):
         model["intelligenceRank"] = i
 
     # Append unranked models (e.g., brand-new launches without AA benchmarks yet)
     unranked = [m for m in models if m.get("intelligenceIndex") is None]
+    unranked.sort(key=lambda m: m["id"])
+    for model in unranked:
+        model.pop("intelligenceRank", None)
 
     return ranked + unranked
 
@@ -627,6 +723,13 @@ def write_output(models: list[dict]) -> None:
         "lastUpdated": datetime.now().isoformat(),
         "sourceUrl": TARGET_URL,
         "modelCount": len(models),
+        "intelligenceIndexVersion": INTELLIGENCE_INDEX_VERSION,
+        "metricVersions": METRIC_VERSIONS,
+        "code2video": {
+            "sourceUrl": CODE2VIDEO_URL,
+            "taskCount": CODE2VIDEO_TASK_COUNT,
+            "costMethod": "Local estimate from AA canonical uncached contestant tokens and API prices; excludes judging and rendering",
+        },
         "models": models,
     }
 
@@ -636,27 +739,72 @@ def write_output(models: list[dict]) -> None:
     log(f"Wrote {len(models)} models to {OUTPUT_FILE}")
 
 
+def validate_models(models: list[dict]) -> tuple[bool, str]:
+    """Validate every target before writing; score coverage may legitimately fall."""
+    if len(models) < MIN_MODELS:
+        return False, f"Only {len(models)} models found (min {MIN_MODELS})"
+    ids = [m.get("id") for m in models]
+    expected = get_filtered_slugs(TARGET_URL)
+    if len(set(ids)) != len(ids) or set(ids) != expected:
+        return False, f"Incomplete/duplicate model IDs; missing={sorted(expected - set(ids))}"
+    required = {
+        "id", "name", "shortName", "provider", "intelligenceIndex", "contextWindow",
+        "inputPrice", "outputPrice", "blendedPrice", "costToRunIndex", "costPerTask",
+        "codingIndex", "knowledgeWorkIndex", "scienceIndex", "generalIndex", "agenticIndex",
+        "frontierCode20", "terminalbenchV40", "terminalbenchScience", "hleDiamond",
+        "critptV2Hard", "omniscienceAccuracy", "omniscienceHallucinationRate",
+        "code2videoElo", "code2videoEloInterval", "code2videoCostToRun", "code2videoCostPerTask",
+    }
+
+    def finite(value):
+        if isinstance(value, dict):
+            return all(finite(v) for v in value.values())
+        if isinstance(value, list):
+            return all(finite(v) for v in value)
+        return type(value) not in (int, float) or math.isfinite(value)
+
+    for model in models:
+        if required - model.keys():
+            return False, f"Missing schema fields for {model['id']}: {sorted(required - model.keys())}"
+        if not all(model.get(k) for k in ("name", "shortName", "provider", "contextWindow")):
+            return False, f"Incomplete metadata for {model['id']}"
+        if not finite(model):
+            return False, f"Non-finite data for {model['id']}"
+        for key in ("codingIndex", "knowledgeWorkIndex", "scienceIndex", "generalIndex"):
+            if model[key] is not None and not 0 <= model[key] <= 100:
+                return False, f"Invalid {key} for {model['id']}"
+    ranked = [m for m in models if m["intelligenceIndex"] is not None]
+    unranked = [m for m in models if m["intelligenceIndex"] is None]
+    if not ranked or models != ranked + unranked:
+        return False, "Missing ranked models or unranked rows are not last"
+    if [m["intelligenceIndex"] for m in ranked] != sorted((m["intelligenceIndex"] for m in ranked), reverse=True):
+        return False, "Models are not sorted by intelligence"
+    if ([m.get("intelligenceRank") for m in ranked] != list(range(1, len(ranked) + 1))
+            or any("intelligenceRank" in m for m in unranked)):
+        return False, "Invalid ranks"
+    if not any(m["inputPrice"] is not None or m["costToRunIndex"] is not None for m in models):
+        return False, "No models have price or cost data"
+    return True, ""
+
+
 def validate_output() -> tuple[bool, str]:
-    """Validate the generated file."""
+    """Recheck the written data and its explicit methodology metadata."""
     try:
         with open(OUTPUT_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         models = data.get("models", [])
-        if len(models) < MIN_MODELS:
-            return False, f"Only {len(models)} models found (min {MIN_MODELS})"
-
-        required = {"name", "intelligenceIndex", "id", "provider"}
-        missing = required - set(models[0].keys())
-        if missing:
-            return False, f"Missing fields: {missing}"
+        valid, reason = validate_models(models)
+        if not valid:
+            return valid, reason
+        if (data.get("modelCount") != len(models)
+                or data.get("intelligenceIndexVersion") != INTELLIGENCE_INDEX_VERSION
+                or data.get("metricVersions") != METRIC_VERSIONS):
+            return False, "Invalid model count or methodology metadata"
 
         # Check that we have price or cost data for at least some models
         with_price = sum(1 for m in models if m.get("inputPrice") is not None)
         with_cost = sum(1 for m in models if m.get("costToRunIndex") is not None)
-        if with_price == 0 and with_cost == 0:
-            return False, "No models have price or cost data"
-
         log(f"Validation passed: {len(models)} models, {with_price} with price, {with_cost} with cost")
         return True, ""
 
@@ -691,6 +839,10 @@ def main() -> int:
         return 1
 
     models = compute_ranks(models)
+    is_valid, reason = validate_models(models)
+    if not is_valid:
+        log(f"VALIDATION FAILED before writing: {reason} (existing file preserved)")
+        return 1
     write_output(models)
 
     is_valid, reason = validate_output()

@@ -1,9 +1,9 @@
 # AI Model Benchmark Metrics Documentation
 
-**Source:** [Artificial Analysis](https://artificialanalysis.ai)  
-**Last Updated:** 2026-10-26  
-**Models Tracked:** 128 leading LLMs  
-**Intelligence Index Version:** v4.3 family (AA labels the live index v4.3.2 as of 2026-10-26; see [v4.3 notes](#intelligence-index-v43-september-2026) below)
+**Source:** [Artificial Analysis](https://artificialanalysis.ai)\
+**Last Updated:** 2026-10-28\
+**Models Tracked:** 129 leading LLMs\
+**Intelligence Index Version:** v5.0 (see [v5 migration notes](#intelligence-index-v5-october-2026))
 
 **Agent maintenance:** Start with the tracked [AI Models Maintenance guide](../../docs/AI_MODELS_MAINTENANCE.md) for setup, model additions, variants/defaults, parser troubleshooting, validation, and release instructions. This file is the metric reference, not the full operational checklist.
 
@@ -13,35 +13,53 @@
 
 ## Composite Indices (Averages)
 
-These are aggregate scores computed by Artificial Analysis from multiple individual benchmarks. They provide a high-level view of model capabilities.
+The overall Intelligence Index is published by Artificial Analysis. The four category scores below are **locally derived**, not official AA composites or the separate Coding Agent Index. They summarize different capabilities; missing inputs never become zeros or trigger reweighting.
 
 ### Artificial Analysis Intelligence Index
 - **What it measures:** Overall model intelligence across reasoning, knowledge, maths and programming.
 - **Scale:** Higher is better. The scale depends on the evaluation suite; scores from different index versions are not directly comparable. Read current leaders from the JSON rather than a fixed example.
-- **How it's calculated:** Weighted average across four categories that emphasize agentic work.
-- **Included benchmarks (v4.3 — September 2026):** AA-Briefcase, GDPval-AA v2, AutomationBench-AA, Terminal-Bench v4.0, SciCode, AA-Omniscience, GDP.pdf, AA-LCR v1.1, HLE, CritPt.
+- **How it's calculated:** AA's published score across nine evaluations; four equally weighted categories. We do not reconstruct the overall score from the local categories.
+- **Included benchmarks (v5 — October 2026):** AA-Briefcase v1.1, AutomationBench-AA, GDP.pdf, FrontierCode 2.0, Terminal-Bench 4.0, Terminal-Bench-Science 0.1, CritPt v2 hard subset, AA-Omniscience v1.1, HLE-Diamond.
 - **Category breakdown:**
-  - **Agents (30%):** AA-Briefcase 15%, GDPval-AA v2 10%, AutomationBench-AA 5%
-  - **Coding (20%):** Terminal-Bench v4.0 10%, SciCode 10%
-  - **General (30%):** AA-Omniscience 15% (accuracy 10% + 1 − hallucination rate 5%), GDP.pdf 10%, AA-LCR v1.1 5%
-  - **Scientific Reasoning (20%):** HLE 10%, CritPt 10%
-- **Changes from v4.1:** Dropped τ³-Banking, Terminal-Bench v2.1, GPQA Diamond, and IFBench from the index (they remain as additional/legacy evaluations). Added AA-Briefcase, AutomationBench-AA, Terminal-Bench v4.0, GDP.pdf, and AA-LCR v1.1. Category weights shifted from equal 25% to Agents 30% / Coding 20% / General 30% / Sci Reasoning 20%.
-- **Methodology:** Artificial Analysis estimates a 95% confidence interval of less than ±1% based on experiments with >10 repeats on certain models. The Intelligence Index is a primarily text-based, English-language evaluation suite; multimodal and multilingual performance are benchmarked separately.
+  - **Knowledge Work (25%):** AA-Briefcase v1.1 15%, AutomationBench-AA 5%, GDP.pdf 5%
+  - **Coding (25%):** FrontierCode 2.0 15%, Terminal-Bench 4.0 10%
+  - **Science (25%):** Terminal-Bench-Science 15%, CritPt v2 hard subset 10%
+  - **General (25%):** AA-Omniscience v1.1 accuracy 10% + non-hallucination 5%, HLE-Diamond 10%
+- **Changes from v4.3:** Removed GDPval-AA, SciCode, and AA-LCR; added FrontierCode 2.0 and Terminal-Bench-Science; upgraded HLE, CritPt, and AA-Omniscience. GDP.pdf's weight changed from 10% to 5%. Scores and evaluation costs are not directly comparable across index versions.
+- **Methodology:** 60% of v5 is based on private test sets or held-out answers. The suite is primarily text-based and English-language, but HLE-Diamond includes 272 image questions. Consult the current methodology for each evaluation's tools, harness, and normalization.
 - **Why it matters:** The single best metric for comparing overall model capability.
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
 ### Coding Index
 - **What it measures:** Programming and software development capabilities.
 - **Scale:** Higher is better (0–100)
-- **How it's calculated:** Equal-weight average of Intelligence Index v4.3 Coding components: Terminal-Bench v4.0 (50%) and SciCode (50%).
-- **⚠️ Derived field:** AA removed the standalone `codingIndex` composite from RSC payloads in v4.1.1. This field is **recomputed locally**. Through August 2026 it used the retired v4.1 formula `(2/3 × terminalbenchV21 + 1/3 × scicode) × 100`. As of the v4.3 rebase (September 2026) it uses `(1/2 × terminalbenchV40 + 1/2 × scicode) × 100`. Prefer AA's official value if they restore the field. AA's current coding-agent leaderboard (`/agents/coding-agents`) is not model-level and is not tracked here.
-- **Included benchmarks:** Terminal-Bench v4.0 (66 tasks, pass@1 over 3 repeats), SciCode (288 subproblems across 16 disciplines).
+- **How it's calculated:** `(0.6 × frontierCode20 + 0.4 × terminalbenchV40) × 100`.
+- **⚠️ Derived field:** `codingIndex` is a local v5 category reconstruction. Both components are required. Never fall back to `frontierCode` (v1.1), SciCode, or an unversioned source composite. The prior v4.3 formula was `(0.5 × terminalbenchV40 + 0.5 × scicode) × 100`; it must not be compared as the same scale.
+- **Included benchmarks:** FrontierCode 2.0 (132 private repository tasks, 3 attempts) and Terminal-Bench 4.0 (66 tasks, pass@1 over 3 repeats).
 - **Why it matters:** Critical for developers choosing models for code generation, debugging, and software engineering tasks.
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
 
-### Agentic Index
+### Knowledge Work Index
+- **What it measures:** Professional deliverables, SaaS workflows, and reasoning over documents.
+- **Field:** `knowledgeWorkIndex`; replaces the old Agentic menu option, not the legacy data key.
+- **Formula:** `(0.6 × briefcaseNorm + 0.2 × automationBench + 0.2 × gdpPdfAllPass) × 100`.
+- **Normalization:** `briefcaseNorm = clamp((briefcaseElo − 500) / 2000, 0, 1)`. Uses current source Elo, not AA's frozen-at-addition index snapshot. This is a local approximation, not an official category score.
+- **Missing inputs:** All three components are required; otherwise `null`.
+
+### Science Index
+- **Field:** `scienceIndex`.
+- **Formula:** `(0.6 × terminalbenchScience + 0.4 × critptV2Hard) × 100`.
+- **Missing inputs:** Both components are required. Legacy CritPt and Terminal-Bench 4.0 are not substitutes.
+
+### General Index
+- **Field:** `generalIndex`.
+- **Formula:** `(0.4 × omniscienceAccuracy + 0.2 × (1 − omniscienceHallucinationRate) + 0.4 × hleDiamond) × 100`.
+- **Missing inputs:** All three v5 inputs are required. The Omniscience headline Index is not a substitute for accuracy and hallucination rate.
+
+### Agentic Index (legacy compatibility field)
 - **What it measures:** The model's ability to act as an autonomous agent — planning, tool use, multi-step reasoning, and real-world task completion.
 - **Scale:** Higher is better (0–100)
+- **Status:** Retained in JSON as `agenticIndex` but no longer offered as a current category in the UI. It uses the legacy v4.3 formula on current source data, not a frozen historical snapshot.
 - **How it's calculated:** Weighted reconstruction of Intelligence Index v4.3's Agents category.
 - **⚠️ Derived field (v4.3):** AA dropped the standalone `agenticIndex` composite from RSC payloads. This field is **recomputed locally** as `(0.5 × briefcaseNorm + 1/3 × gdpvalNorm + 1/6 × automationBench) × 100`, matching the 15/10/5 index weights. Elo scores use AA's documented mapping `clamp((Elo − 500) / 2000)` (`gdpvalNormalized` is used when present). Requires all three components; otherwise `null`.
 - **Included benchmarks:** AA-Briefcase, GDPval-AA v2, AutomationBench-AA.
@@ -57,7 +75,7 @@ These are aggregate scores computed by Artificial Analysis from multiple individ
 
 ## Intelligence Index v4.3 (September 2026)
 
-AA launched Intelligence Index v4.3 in early September 2026. Live RSC payloads confirm:
+**Historical methodology — superseded by v5.** AA launched Intelligence Index v4.3 in early September 2026. The payloads at that time confirmed:
 
 | Change | Detail |
 |---|---|
@@ -70,6 +88,53 @@ AA launched Intelligence Index v4.3 in early September 2026. Live RSC payloads c
 | Score scale | Frontier scores compressed (~65 → ~53 for Claude Fable 5.1 max) because the suite got harder |
 
 Consult AA's current methodology for index-level Elo freezing and normalization. The local Agentic Index reconstruction does not store frozen Elo snapshots: it uses the current payload's `briefcaseElo`, `gdpvalNormalized` when present (otherwise the Elo mapping), and `automationBench`. It should not be presented as an official published composite.
+
+---
+
+## Intelligence Index v5 (October 2026)
+
+AA launched v5 on October 27. The October 28 refresh retains all existing models and adds only `gemini-4-carbon` (high), default-visible. Of 129 tracked models, 57 have official v5 intelligence scores and 55 have v5 evaluation costs. These are a dated snapshot, not completeness thresholds. The other models remain available for individual evaluations; their missing v5 scores and costs remain `null`, never backfilled from v4.3.
+
+The JSON records `intelligenceIndexVersion` and `metricVersions`. The sync verifies the source's v5 label and, when present, its nine evaluation slugs before accepting a full matching model object. AA sometimes publishes a non-null score with an empty `intelligenceIndexEvaluations` array and missing costs (e.g. Gemini 3.8 Flash low); preserve that source score. No Progress Index or cross-version historical trend is introduced by this migration.
+
+| Source field | Generated field | Meaning |
+| --- | --- | --- |
+| `frontierCode20` | `frontierCode20` | FrontierCode **2.0**, not `frontierCode` v1.1 |
+| `terminalBenchScience` | `terminalbenchScience` | Terminal-Bench-Science 0.1.0, not Terminal-Bench 4.0 |
+| `hleDiamond` | `hleDiamond` | Refined 1,000-question exam, not legacy `hle` |
+| `critptAgenticHard` | `critptV2Hard` | Private 40-question CritPt v2 subset with Python tools, not legacy `critpt` or the full 70-question v2 score |
+| `omniscience` | `omniscience` | **v1.1** headline Index; the upstream field name was reused |
+| `omniscienceAccuracy` / `omniscienceHallucinationRate` | same | Separate v1.1 inputs needed for the General reconstruction |
+
+### FrontierCode 2.0
+- 132 private open-source repository-change tasks, 3 attempts in Stirrup; failing blocking checks or looking up the solution scores zero, otherwise weighted rubric scoring.
+- **Weight:** v5 Coding, 15% overall.
+- **Official:** https://artificialanalysis.ai/evaluations/frontiercode-2-0
+
+### Terminal-Bench-Science 0.1.0
+- 70 expert-curated research workflows across life (19), physical (17), mathematical (17), engineering (9), and earth sciences (8). mini-swe-agent, up to 1,000 steps, pass@1 over 3 repeats; all verification tests must pass.
+- **Weight:** v5 Science, 15% overall.
+- **Official:** https://artificialanalysis.ai/evaluations/terminal-bench-science
+
+### HLE-Diamond
+- 1,000 questions, evenly split between reasoning and knowledge, including 272 image questions. No tools; pass@1. Not directly comparable to AA's legacy 2,158-question text-only HLE.
+- **Weight:** v5 General, 10% overall.
+- **Official:** https://artificialanalysis.ai/evaluations/hle-diamond
+
+### CritPt v2 Hard Subset
+- A fixed private subset of 40 of the 70 revised physics problems. Offline Python tools in Stirrup, up to 50 turns, pass@1 over 5 repeats; official grading server.
+- **Weight:** v5 Science, 10% overall.
+- **Official:** https://artificialanalysis.ai/evaluations/critpt-v2?critpt-subset=hard
+
+### Code2Video-AA (standalone)
+- **What it measures:** Designing short product/brand videos in HyperFrames HTML and GSAP code, not native video generation.
+- 114 briefs (39 public, 75 private), one model call per brief, no tools. Rendered videos are compared by a Gemini 4 Argon judge on engagement, prompt intent, composition, temporal consistency, and craft.
+- **Score:** `code2videoElo`, the mean of five axis Elo ratings, anchored to GPT-5.5 (xhigh) at 1000. Higher is better. `code2videoEloInterval` stores the overall 95% comparison-sampling interval, not uncertainty across repeated tasks.
+- **Coverage:** 23 selected models have results in the October 28 snapshot; the source leaderboard has 27. We join exact model/effort slugs and do not add unrelated models or copy a family's score to its variants. Missing results remain `null`.
+- **Not part of v5:** Does not contribute to overall intelligence or any local category composite.
+- **Costs:** `code2videoCostToRun` and `code2videoCostPerTask` are separate **local contestant API cost estimates**, using the evaluation page's `canonicalEvalTokenCounts.code2video` and API prices: `(input × inputPrice + (answer + reasoning) × outputPrice) / 1,000,000`, then divide by 114 for per-task cost. This applies only to the known single-call, uncached accounting (`cacheableInput` is null/zero). Missing counts/prices or unsupported cache accounting produce `null`. Excludes judging and rendering; not an end-to-end video-production price.
+- **Charts:** Code2Video uses these costs in both evaluation-cost modes, never Intelligence Index costs. Blended token price remains model-level. Score-only documentation rankings do not require pricing.
+- **Official:** https://artificialanalysis.ai/evaluations/code2video-aa
 
 ---
 
@@ -87,7 +152,8 @@ Consult AA's current methodology for index-level Elo freezing and normalization.
 - **Publication:** [GPQA: A Graduate-Level Google-Proof Q&A Benchmark](https://arxiv.org/abs/2311.12022) (David Rein, Betty Li Hou, Asa Cooper Stickland, Jackson Petty, Richard Yuanzhe Pang, Julien Dirani, Julian Michael, Samuel R. Bowman)
 
 ### HLE (Humanity's Last Exam)
-- **What it measures:** A frontier-level benchmark with 2,500 expert-vetted questions across mathematics, sciences, and humanities, designed to be the final closed-ended academic evaluation.
+- **Status:** Legacy, removed from the index in v5; use the separate HLE-Diamond metric for current index results.
+- **What it measures:** AA's legacy 2,158-question text-only evaluation drawn from Humanity's Last Exam, across mathematics, sciences, and humanities.
 - **Scale:** 0.0 to 1.0 (accuracy score)
 - **Background:** A collaborative effort by the Center for AI Safety involving over 1,000 contributors to create frontier-level academic questions that challenge current AI capabilities. The questions are designed to be 'Google-proof' and require genuine understanding rather than information retrieval, serving as the intended final closed-ended academic benchmark.
 - **Methodology:** All evaluations are conducted independently by Artificial Analysis.
@@ -96,6 +162,7 @@ Consult AA's current methodology for index-level Elo freezing and normalization.
 - **Official page:** https://artificialanalysis.ai/evaluations/humanitys-last-exam
 
 ### SciCode
+- **Status:** Removed from the index in v5 and retained as legacy; AA marks it under review. It no longer contributes to `codingIndex`.
 - **What it measures:** A scientist-curated coding benchmark featuring 288 test set subproblems from 80 laboratory problems across 16 scientific disciplines.
 - **Scale:** 0.0 to 1.0 (accuracy score)
 - **Background:** Unlike traditional coding benchmarks, SciCode requires integrating scientific knowledge with programming skills to solve real research problems rather than abstract puzzles. The benchmark was developed by domain experts across 16 diverse natural science sub-fields, including mathematics, physics, chemistry, biology, and materials science.
@@ -105,6 +172,7 @@ Consult AA's current methodology for index-level Elo freezing and normalization.
 - **Publication:** [SciCode: A Research Coding Benchmark Curated by Scientists](https://arxiv.org/abs/2407.13168) (Minyang Tian, Luyu Gao, Shizhuo Dylan Zhang, Xinan Chen, Cunwei Fan, Xuefei Guo, Roland Haas, Pan Ji, Kittithat Krongchon, Yao Li, Shengyan Liu, Di Luo, Yutao Ma, Hao Tong, Kha Trinh, Chenyu Tian, Zihan Wang, Bohao Wu, Yanyu Xiong, Shengzhu Yin, and 10 others)
 
 ### GDPval (GDPval-AA Leaderboard)
+- **Status:** Standalone in v5. The current v2.1 Elo scale is anchored to DeepSeek V4.1 Flash (max) at 1600 and fitted with Crowd-BT; the original v2 description below is historical. Not part of the Knowledge Work category.
 - **What it measures:** Artificial Analysis' evaluation framework for OpenAI's GDPval dataset. Tests AI models on real-world tasks across 44 occupations and 9 major industries. Models are given shell access and web browsing capabilities in an agentic loop via Stirrup to solve tasks.
 - **Scale:** ELO rating (higher is better, no fixed upper bound)
 - **How it's calculated:** ELO ratings are derived from blind pairwise comparisons of model outputs.
@@ -143,6 +211,7 @@ Consult AA's current methodology for index-level Elo freezing and normalization.
 - **Official page:** https://artificialanalysis.ai/evaluations/terminalbench-hard
 
 ### CritPT (Critical Physics Thinking)
+- **Status:** Legacy; distinct from both the full CritPt v2 and its tool-assisted hard subset. Removed from the index in v5.
 - **What it measures:** A benchmark designed to test LLMs on research-level physics reasoning tasks, featuring 71 composite research challenges.
 - **Scale:** 0.0 to 1.0 (accuracy score)
 - **Background:** CritPt evaluates language models on solving unpublished, frontier-level physics problems that require genuine research-scale reasoning. The benchmark comprises 71 challenges (70 test challenges and one example), created by over 50 active physics researchers across 30 institutions and spanning 11 physics subfields including condensed matter, quantum physics, astrophysics, high energy physics, and biophysics. Each problem underwent extensive review (averaging 40+ hours per challenge) and uses "guess-resistant" answer formats including floating-point arrays, symbolic expressions, and Python functions.
@@ -164,6 +233,7 @@ Consult AA's current methodology for index-level Elo freezing and normalization.
 - **Publication:** [MMMU-Pro: A More Robust Multi-discipline Multimodal Understanding Benchmark](https://arxiv.org/abs/2409.02813) (Xiang Yue, Tianyu Zheng, Yuansheng Ni, Yubo Wang, Kai Zhang, Shengbang Tong, Yuxuan Sun, Botao Yu, Ge Zhang, Huan Sun, Yu Su, Wenhu Chen, Graham Neubig)
 
 ### LCR (Long Context Reasoning)
+- **Status:** Removed from the index in v5; retained as legacy.
 - **What it measures:** Language models' ability to extract, reason about, and synthesize information from long-form documents ranging from 10k to 100k tokens (measured using the cl100k_base tokenizer).
 - **Scale:** 0.0 to 1.0 (accuracy score)
 - **Background:** Long-form text comprehension represents an under-studied class of evaluations where humans dramatically outscore language models, despite expanding context windows in current AI systems. LCR features 100 questions across diverse document types including academic papers, company financials, government consultations, legal documents, industry reports, and marketing materials, requiring genuine reasoning rather than simple data extraction.
@@ -172,13 +242,13 @@ Consult AA's current methodology for index-level Elo freezing and normalization.
 - **Historical range (38-model sample):** 0.507 — 0.743
 - **Official page:** https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning
 
-### Omniscience
+### Omniscience v1.1
 - **What it measures:** Factual recall and hallucination across various economically relevant domains. AA-Omniscience is a knowledge and hallucination benchmark that rewards accuracy, punishes bad guesses, and provides a comprehensive view of which models produce factually reliable outputs across different domains.
 - **Scale:** -100 to 100 (higher is better, can be negative)
-- **Background:** The benchmark contains 6,000 questions across 6 major domains, derived from authoritative academic and industry sources and generated automatically using an LLM-based question generation agent to ensure unambiguity, scalability, and factual precision.
+- **Background:** v1.1 contains 3,000 questions across 42 topics. Saturated and public v1 questions were removed, new questions added, and ambiguous/erroneous items revised. The upstream `omniscience` key now refers to v1.1; do not backfill missing values with v1 scores. Scores are not directly comparable across these dataset versions.
 - **Methodology:** The evaluation measures a model's AA-Omniscience Index, a bounded metric (-100 to 100) measuring factual recall that jointly penalizes hallucinations and rewards abstention when uncertain, with 0 equating to a model that answers questions correctly as much as it does incorrectly. All evaluations are conducted independently by Artificial Analysis.
 - **Why it matters:** Indicates the breadth of the model's training knowledge and its tendency to hallucinate. Performance varies by domain, suggesting models should be chosen according to the demands of the use case rather than general performance for tasks where knowledge is important.
-- **Historical range (38-model sample):** -50.1 — 40.2
+- **Historical v1 range (38-model sample, not comparable to v1.1):** -50.1 — 40.2
 - **Official page:** https://artificialanalysis.ai/evaluations/omniscience
 - **Publication:** [AA-Omniscience: Evaluating Cross-Domain Knowledge Reliability in Large Language Models](https://arxiv.org/abs/2511.13029) (Declan Jackson, William Keating, George Cameron, Micah Hill-Smith)
 
@@ -212,18 +282,18 @@ The following fields are retained in the JSON schema for backward compatibility 
 
 ---
 
-## Intelligence Index v4.3 Components & Additional Evals
+## Continuing Components & Additional Evals
 
 ### Terminal-Bench v4.0 (`terminalbenchV40`)
 - **What it measures:** 66 terminal-based agentic tasks scored by a test-suite pass/fail (pass@1, 3 repeats).
 - **Scale:** 0.0 to 1.0 (accuracy)
-- **Part of:** Intelligence Index v4.3 (Coding, 10%)
+- **Part of:** Intelligence Index v5 (Coding, 10%; unchanged from v4.3)
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking#terminal-bench-v4-0
 
 ### GDP.pdf (`gdpPdfAllPass`)
 - **What it measures:** Free-form answers grounded in a long PDF — 100 tasks across 10 domains, 5 repeats. Headline metric is all-pass rate.
 - **Scale:** 0.0 to 1.0 (all-pass)
-- **Part of:** Intelligence Index v4.3 (General, 10%)
+- **Part of:** Intelligence Index v5 (Knowledge Work, 5%; was General, 10% in v4.3)
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking#gdp-pdf
 
 ### MLCR-AA (`mlcrOverall`)
@@ -256,7 +326,7 @@ The following fields are retained in the JSON schema for backward compatibility 
 - **Historical coverage (38-model sample):** 20/38 models
 - **Historical range (same sample):** 0.057 — 0.514
 - **Developed by:** Zapier (arXiv: 2604.18934)
-- **Part of:** Intelligence Index v4.3 (Agents, 5%)
+- **Part of:** Intelligence Index v5 (Knowledge Work, 5%; was Agents, 5% in v4.3)
 - **Official page:** https://artificialanalysis.ai/evaluations/automationbench-aa
 
 ### EnterpriseOps-Gym-AA (`enterpriseOpsGym`)
@@ -289,7 +359,7 @@ The following fields are retained in the JSON schema for backward compatibility 
 ### AA-Briefcase (`briefcaseElo`)
 - **What it measures:** Realistic multi-week knowledge-work projects (91 tasks across 4 scenarios) with thousands of source files. Combined Elo aggregates rubric pass rate, analytical quality, and presentation quality from a three-judge panel.
 - **Scale:** Elo rating (higher is better); index contribution uses `clamp((Elo − 500) / 2000)`
-- **Part of:** Intelligence Index v4.3 (Agents, 15%) — largest single component
+- **Part of:** Intelligence Index v5 (Knowledge Work, 15%; was Agents, 15% in v4.3)
 - **Official page:** https://artificialanalysis.ai/evaluations/aa-briefcase
 
 ---
@@ -320,7 +390,7 @@ The following fields are retained in the JSON schema for backward compatibility 
 - **What it measures:** AA's evaluation-weighted average API cost per Intelligence Index task, sourced directly from `intelligenceIndexCostPerTask.cost.total`. Each evaluation's cost per task is weighted by its Intelligence Index weight. It is **not a median** and should not be reconstructed by dividing total evaluation cost by a single aggregate task count.
 - **Why it matters:** Estimates cost per benchmark task while accounting for the evaluation mix. Values span a wide range, so the chart uses a **logarithmic x-axis** in cost-per-task mode. It is not a guarantee of the cost of a user's workload.
 - **Coverage:** Varies; count non-null `costPerTask` values in the current JSON. The old 63/70 figure was an August 2026 snapshot, not live coverage.
-- **Application wording caveat:** Some existing code comments and UI labels still say "Median"; they refer to this same source field. That wording is stale and is not a separate statistic.
+- **Chart scope:** Except for Code2Video-AA's separate estimates, evaluation-cost modes use the whole v5 index's costs even when the y-axis is a category or individual benchmark. Labels explicitly identify this scope; these are not metric-specific evaluation costs. The UI uses "evaluation-weighted average", not "median".
 - **Related fields (not tracked here):** `intelligenceIndexTimePerTask` (time per benchmark task) and `intelligenceIndexOutputTokensPerTask` (verbosity breakdown). Consult AA's current definitions for weighting and timing exclusions.
 
 ### Output Speed
@@ -340,11 +410,11 @@ The following fields are retained in the JSON schema for backward compatibility 
 
 2. **Lab-claimed vs. independent:** Artificial Analysis runs independent evaluations. Some fields like `lab_claimed_aime` represent the model creator's self-reported scores, which may differ.
 
-3. **Composite indices are most reliable:** When comparing models, the composite indices (Intelligence, Coding, Agentic) are more robust than individual benchmarks because they average across multiple tasks.
+3. **Composite limitations:** The official overall score and locally derived category scores aggregate different evaluations. Category reconstructions are not official published scores, and Briefcase's current Elo can differ from AA's frozen-at-addition contribution. Choose metrics relevant to the actual use case.
 
 4. **Scale differences:** Be careful comparing raw scores — benchmarks have different scales and difficulty ceilings. GPQA scores of 0.9+ are excellent, while HLE scores above 0.4 are world-class.
 
-5. **Description accuracy:** Where possible, descriptions are sourced from the official Artificial Analysis evaluation pages. Some composite indices (Intelligence, Coding, Agentic, Math) and sparsely-tested benchmarks rely on inferred descriptions.
+5. **Description accuracy:** Benchmark descriptions come from AA's methodology and evaluation pages. The local Coding, Knowledge Work, Science, and General formulas are explicitly documented reconstructions, not official published composites.
 
 ---
 
@@ -376,11 +446,12 @@ Follow the [maintenance guide](../../docs/AI_MODELS_MAINTENANCE.md) for the comp
 
 ## How to Add New Benchmark Metrics
 
-Adding a new **benchmark metric** (e.g., when AA announces a new evaluation) requires changes in 3 files:
+Adding a new **benchmark metric** (e.g., when AA announces a new evaluation) requires coordinated changes:
 
 1. **`scripts/sync-ai-models.py`** — Add the field to the `clean_model()` output dict. Use hybrid reads: `raw.get("camelCaseName", raw.get("snake_case_name"))`.
 2. **`src/components/ModelBenchmarkChart.tsx`** — Add the field to the `AIModel` interface (e.g., `newField: number | null;`).
 3. **`src/app/agentic-ai/page.tsx`** — Add an entry to the `METRICS` array with `key`, `label`, `description`, `testBadge`, `scale`, `fullDescription`, and `officialUrl`.
+   For benchmark-specific costs, update **`src/lib/ai-model-costs.ts`**, both chart tooltips, and cost labels. Never silently reuse another benchmark's costs. Add version metadata, regression tests, and source coverage checks.
 4. Run `python3 scripts/sync-ai-models.py` to regenerate the data, then validate the full model set and metadata coverage.
 5. Run `npm run build` to verify TypeScript compiles.
 6. Commit and push all changed files.
@@ -411,6 +482,6 @@ AA pages can now carry full model rows in `initialModels[]`, while other pages s
 | `terminalbenchV40`, `terminalBench40`, `terminalbench_v4_0` | `terminalbenchV40` |
 | `harveyLab`, `harveyLabAllPass` | `harveyLabAllPass` |
 
-New raw fields such as `terminalBenchScience` are not automatically tracked or substitutes for Terminal-Bench v4.0. Adding a benchmark requires the explicit schema/UI workflow above.
+The v5 migration explicitly added `terminalBenchScience` and other new evaluations through the schema/UI workflow above. They are not aliases or substitutes for legacy fields. Reference-only `initialModels[]` arrays fall back to a full matching `currentModel`; JSON decoding has no arbitrary array-size limit.
 
-The October sync also added a **90% target-count guard before writing**. It prevents a large partial fetch from overwriting the JSON, but smaller losses and metadata-only degradation can pass. Follow the maintenance guide's full validation and source checks; do not treat a successful command or unchanged row count as proof of data integrity.
+The original October sync added a **90% target-count backstop**. The v5 migration adds a stricter **all-target, all-row validation before writing**, with duplicate/schema/metadata/finite-value/rank checks. A lower number of benchmarked models is not a missing-row error. Follow the maintenance guide's source coverage review and run the offline tests; even a complete model count is not proof of source accuracy.
