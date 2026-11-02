@@ -7,7 +7,9 @@ Downloads the self-contained viewer from the mrms-radar repository
 
 PWA/service-worker caching was intentionally removed: this script scrubs any
 manifest / apple-touch-icon / serviceWorker registration markers so re-syncs
-stay PWA-free.
+stay PWA-free. It also injects a one-time cleanup snippet that unregisters
+any previously installed radar service worker (cache "mrms-*") in returning
+visitors' browsers.
 
 Usage:
     python scripts/sync-radar.py [--source-url URL] [--min-bytes N]
@@ -71,6 +73,28 @@ def scrub_pwa(html: str) -> tuple[str, int]:
     return "".join(kept), len(lines) - len(kept)
 
 
+CLEANUP_MARKER = "radar-sw-cleanup"
+
+CLEANUP_SNIPPET = """<!-- radar-sw-cleanup: PWA removed; drop any previously installed radar SW/caches -->
+<script>
+(function(){try{
+if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){if((r.scope||"").indexOf("/radar")!==-1){r.unregister();}});}).catch(function(){});}
+if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(function(k){if(k.indexOf("mrms")===0){caches.delete(k);}});}).catch(function(){});}
+}catch(e){}})();
+</script>
+"""
+
+
+def inject_cleanup(html: str) -> tuple[str, bool]:
+    """Insert the SW-cleanup snippet right after <head>. Idempotent."""
+    if CLEANUP_MARKER in html:
+        return html, False
+    if html.count("<head>") != 1:
+        print("WARNING: <head> anchor not unique; skipping cleanup injection.")
+        return html, False
+    return html.replace("<head>", "<head>\n" + CLEANUP_SNIPPET, 1), True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-url", default=SOURCE_URL)
@@ -118,6 +142,9 @@ def main() -> int:
         print(f"Scrubbed {removals} PWA marker(s).")
     else:
         print("No PWA markers found (already PWA-free).")
+
+    html, injected = inject_cleanup(html)
+    print("Cleanup snippet injected." if injected else "Cleanup snippet already present/skipped.")
 
     DEST_FILE.parent.mkdir(parents=True, exist_ok=True)
     tmp = DEST_FILE.with_suffix(".tmp")
