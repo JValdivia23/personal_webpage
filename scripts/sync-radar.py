@@ -75,6 +75,8 @@ def scrub_pwa(html: str) -> tuple[str, int]:
 
 CLEANUP_MARKER = "radar-sw-cleanup"
 
+FAVICON_LINK = '<link rel="icon" href="/personal_webpage/icon.svg">\n'
+
 CLEANUP_SNIPPET = """<!-- radar-sw-cleanup: PWA removed; drop any previously installed radar SW/caches -->
 <script>
 (function(){try{
@@ -86,13 +88,14 @@ if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(functi
 
 
 def inject_cleanup(html: str) -> tuple[str, bool]:
-    """Insert the SW-cleanup snippet right after <head>. Idempotent."""
+    """Insert favicon link + SW-cleanup snippet right after <head>. Idempotent."""
     if CLEANUP_MARKER in html:
         return html, False
     if html.count("<head>") != 1:
-        print("WARNING: <head> anchor not unique; skipping cleanup injection.")
+        print("WARNING: <head> anchor not unique; skipping head injection.")
         return html, False
-    return html.replace("<head>", "<head>\n" + CLEANUP_SNIPPET, 1), True
+    injection = "<head>\n" + FAVICON_LINK + CLEANUP_SNIPPET
+    return html.replace("<head>", injection, 1), True
 
 
 def main() -> int:
@@ -144,7 +147,7 @@ def main() -> int:
         print("No PWA markers found (already PWA-free).")
 
     html, injected = inject_cleanup(html)
-    print("Cleanup snippet injected." if injected else "Cleanup snippet already present/skipped.")
+    print("Head extras injected (favicon + cleanup)." if injected else "Head extras already present/skipped.")
 
     DEST_FILE.parent.mkdir(parents=True, exist_ok=True)
     tmp = DEST_FILE.with_suffix(".tmp")
