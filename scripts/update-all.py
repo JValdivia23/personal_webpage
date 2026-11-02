@@ -12,9 +12,10 @@ What it does:
     1. Pulls latest changes from origin/main
     2. Runs sync-scholar.py  (Google Scholar -> publications.json + stats.json)
     3. Runs sync-github.js   (GitHub GraphQL -> github.json)
-    4. Validates the output files (safety checks)
-    5. Commits and pushes only if data actually changed
-    6. Triggers the Deploy workflow on GitHub Pages automatically
+    4. Runs sync-radar.py    (mrms-radar repo -> public/radar/index.html)
+    5. Validates the output files (safety checks)
+    6. Commits and pushes only if data actually changed
+    7. Triggers the Deploy workflow on GitHub Pages automatically
 
 Requirements:
     - Python 3.x with `scholarly` installed
@@ -37,10 +38,12 @@ REPO_ROOT = Path(__file__).parent.parent.resolve()
 DATA_DIR = REPO_ROOT / "src" / "data"
 SCHOLAR_SCRIPT = REPO_ROOT / "scripts" / "sync-scholar.py"
 GITHUB_SCRIPT = REPO_ROOT / "scripts" / "sync-github.js"
+RADAR_SCRIPT = REPO_ROOT / "scripts" / "sync-radar.py"
 
 PUBLICATIONS_FILE = DATA_DIR / "publications.json"
 STATS_FILE = DATA_DIR / "stats.json"
 GITHUB_FILE = DATA_DIR / "github.json"
+RADAR_FILE = REPO_ROOT / "public" / "radar" / "index.html"
 
 MIN_PUBLICATIONS = 10
 MIN_GITHUB_REPOS = 1
@@ -100,6 +103,19 @@ def run_github_sync() -> bool:
     return True
 
 
+def run_radar_sync() -> bool:
+    """Run the radar viewer sync script. Returns True on success."""
+    result = run([sys.executable, str(RADAR_SCRIPT)], capture_output=True, text=True)
+    print(result.stdout)
+    if result.returncode != 0:
+        log(f"Radar sync FAILED (exit {result.returncode}).")
+        if result.stderr:
+            print(result.stderr, file=sys.stderr)
+        return False
+    log("Radar sync succeeded.")
+    return True
+
+
 def validate_data() -> tuple[bool, str]:
     """
     Validate generated data files to prevent bad syncs from being committed.
@@ -143,9 +159,9 @@ def validate_data() -> tuple[bool, str]:
 
 
 def commit_and_push() -> bool:
-    """Stage data files, commit if changed, and push. Returns True if pushed."""
-    # Stage only data files
-    run(["git", "add", "src/data/*.json"], capture_output=True, text=True)
+    """Stage synced files, commit if changed, and push. Returns True if pushed."""
+    # Stage data files + radar viewer
+    run(["git", "add", "src/data/*.json", "public/radar/index.html"], capture_output=True, text=True)
 
     # Check if there is anything staged
     diff_result = run(["git", "diff", "--staged", "--quiet"], capture_output=True, text=True)
@@ -186,12 +202,13 @@ def main() -> int:
         log("Aborting: could not pull latest changes.")
         return 1
 
-    # 2. Run syncs (best effort: if one fails, still try the other)
+    # 2. Run syncs (best effort: if one fails, still try the others)
     scholar_ok = run_scholar_sync()
     github_ok = run_github_sync()
+    radar_ok = run_radar_sync()
 
-    if not scholar_ok and not github_ok:
-        log("Both syncs failed. Nothing to commit.")
+    if not scholar_ok and not github_ok and not radar_ok:
+        log("All syncs failed. Nothing to commit.")
         return 1
 
     # 3. Validate outputs
