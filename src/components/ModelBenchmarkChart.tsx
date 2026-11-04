@@ -3,7 +3,7 @@
 import { useMemo, useState, type MouseEventHandler } from 'react';
 import { Check } from 'lucide-react';
 import { getBenchmarkCost, getCostDescription, getCostScope, type PriceMode } from '@/lib/ai-model-costs';
-import { adjacentPlottedPairs, groupModelFamilies } from '@/lib/ai-model-families';
+import { adjacentPlottedPairs, groupModelFamilies, sortModelsByEffort } from '@/lib/ai-model-families';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -595,7 +595,7 @@ export function ModelBenchmarkChart({
     const points = new Map(allChartData.map((point) => [point.id, point]));
     return families.map((family) => ({
       ...family,
-      orderedPoints: family.models.map((model) => points.get(model.id)),
+      orderedPoints: sortModelsByEffort(family.models).map((model) => points.get(model.id)),
     }));
   }, [families, allChartData]);
   const unplottedModels = useMemo(() => {

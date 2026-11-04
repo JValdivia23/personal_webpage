@@ -1,23 +1,36 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { adjacentPlottedPairs, groupModelFamilies, modelFamilyInfo } from '../src/lib/ai-model-families.ts';
+import { adjacentPlottedPairs, groupModelFamilies, modelFamilyInfo, sortModelsByEffort } from '../src/lib/ai-model-families.ts';
 
-const model = (id, shortName, provider = 'OpenAI') => ({ id, shortName, provider });
+const model = (id, shortName, provider = 'OpenAI', intelligenceIndex = null) => ({ id, shortName, provider, intelligenceIndex });
 
-test('groups explicit effort variants in effort order and preserves fallback', () => {
+test('groups variants by intelligence while chart lines retain effort order', () => {
   const variants = [
-    model('max', 'GPT-6.1 Terra (max)'),
-    model('high', 'GPT-6.1 Terra (high)'),
-    model('none', 'GPT-6.1 Terra (non-reasoning)'),
-    model('xhigh', 'GPT-6.1 Terra (xhigh)'),
-    model('low', 'GPT-6.1 Terra (low)'),
-    model('medium', 'GPT-6.1 Terra (medium)'),
+    model('max', 'GPT-6.1 Terra (max)', 'OpenAI', 50),
+    model('high', 'GPT-6.1 Terra (high)', 'OpenAI', 42),
+    model('none', 'GPT-6.1 Terra (non-reasoning)', 'OpenAI', 30),
+    model('xhigh', 'GPT-6.1 Terra (xhigh)', 'OpenAI', 45),
+    model('low', 'GPT-6.1 Terra (low)', 'OpenAI', 29),
+    model('medium', 'GPT-6.1 Terra (medium)', 'OpenAI', 38),
   ];
   const [family] = groupModelFamilies(variants);
   assert.equal(family.name, 'GPT-6.1 Terra');
-  assert.deepEqual(family.models.map(m => m.id), ['none', 'low', 'medium', 'high', 'xhigh', 'max']);
+  assert.deepEqual(family.models.map(m => m.id), ['max', 'xhigh', 'high', 'medium', 'none', 'low']);
+  assert.deepEqual(sortModelsByEffort(family.models).map(m => m.id), ['none', 'low', 'medium', 'high', 'xhigh', 'max']);
   assert.equal(modelFamilyInfo(model('a', 'Claude Opus 5.5 (max with fallback)')).effort, 'max with fallback');
+});
+
+test('families and variants sort by highest actual score, with unscored entries last', () => {
+  const families = groupModelFamilies([
+    model('alpha-max', 'Alpha (max)', 'OpenAI', null),
+    model('alpha-low', 'Alpha (low)', 'OpenAI', 40),
+    model('beta', 'Beta (max)', 'OpenAI', 50),
+    model('gamma', 'Gamma (max)', 'OpenAI', null),
+    model('zero', 'Zero (max)', 'OpenAI', 0),
+  ]);
+  assert.deepEqual(families.map(f => f.name), ['Beta', 'Alpha', 'Zero', 'Gamma']);
+  assert.deepEqual(families[1].models.map(m => m.id), ['alpha-low', 'alpha-max']);
 });
 
 test('does not merge different providers, generations, releases, or variants without explicit effort', () => {
@@ -45,6 +58,6 @@ test('current dataset keeps Terra, Sol, Gemini and fallback variants separate an
   const find = (name) => families.find(f => f.name === name);
   assert.equal(find('GPT-6.1 Terra').models.length, 6);
   assert.equal(find('GPT-6.1 Sol').models.length, 5);
-  assert.deepEqual(find('Gemini 3.8 Flash').models.map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high']);
+  assert.deepEqual(sortModelsByEffort(find('Gemini 3.8 Flash').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high']);
   assert.ok(find('Claude Opus 5.5').models.every(m => modelFamilyInfo(m).effort.includes('fallback')));
 });

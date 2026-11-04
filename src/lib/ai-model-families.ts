@@ -3,6 +3,7 @@ export interface FamilyModel {
   id: string;
   shortName: string;
   provider: string;
+  intelligenceIndex: number | null;
 }
 
 export interface ModelFamily<T extends FamilyModel> {
@@ -30,6 +31,24 @@ export function modelFamilyInfo(model: FamilyModel) {
   };
 }
 
+function score(model: FamilyModel): number {
+  return typeof model.intelligenceIndex === 'number' && Number.isFinite(model.intelligenceIndex)
+    ? model.intelligenceIndex : -Infinity;
+}
+
+function compareScores(a: number, b: number): number {
+  return a === b ? 0 : a > b ? -1 : 1;
+}
+
+/** Chart connections follow effort, independent of the selector's score order. */
+export function sortModelsByEffort<T extends FamilyModel>(models: T[]): T[] {
+  return [...models].sort((a, b) =>
+    modelFamilyInfo(a).effortOrder - modelFamilyInfo(b).effortOrder ||
+    a.shortName.localeCompare(b.shortName, undefined, { numeric: true }) || a.id.localeCompare(b.id)
+  );
+}
+
+/** Families are ranked by their highest-scoring tracked variant, including hidden ones. */
 export function groupModelFamilies<T extends FamilyModel>(models: T[]): ModelFamily<T>[] {
   const groups = new Map<string, ModelFamily<T>>();
   for (const model of models) {
@@ -41,11 +60,13 @@ export function groupModelFamilies<T extends FamilyModel>(models: T[]): ModelFam
   }
   for (const family of groups.values()) {
     family.models.sort((a, b) =>
-      modelFamilyInfo(a).effortOrder - modelFamilyInfo(b).effortOrder ||
+      compareScores(score(a), score(b)) ||
+      modelFamilyInfo(b).effortOrder - modelFamilyInfo(a).effortOrder ||
       a.shortName.localeCompare(b.shortName, undefined, { numeric: true }) || a.id.localeCompare(b.id)
     );
   }
   return [...groups.values()].sort((a, b) =>
+    compareScores(score(a.models[0]), score(b.models[0])) ||
     a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }) || a.key.localeCompare(b.key)
   );
 }

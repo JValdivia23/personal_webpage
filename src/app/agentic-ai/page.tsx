@@ -805,6 +805,9 @@ function ModelFilterPanel({
       {/* Expandable content */}
       {showModelPanel && (
         <div id="model-filter-content" className="mt-3 space-y-3">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Within each provider, families are ranked by their highest Intelligence Index v{aiModels.intelligenceIndexVersion} score; variants are ranked by their own score. Unscored models appear last.
+          </p>
           {byProvider.map(([provider, providerModels]) => {
             const providerActive = providerModels.filter(
               (m) => !hiddenModelIds.has(m.id)
