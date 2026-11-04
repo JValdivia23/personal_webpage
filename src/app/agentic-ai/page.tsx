@@ -861,7 +861,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving saved hidden IDs, but reapplying default-hidden IDs). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 15;
+const FILTER_VERSION = 16;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
@@ -939,6 +939,12 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "gpt-6-1-sol-high",
   "gpt-6-1-sol-medium",
   "gpt-6-1-sol-low",
+  // GPT-6.1 Terra lower efforts — hidden, max only visible
+  "gpt-6-1-terra-xhigh",
+  "gpt-6-1-terra-high",
+  "gpt-6-1-terra-medium",
+  "gpt-6-1-terra-low",
+  "gpt-6-1-terra-non-reasoning",
   // Superseded generations — hidden, enable to compare
   "deepseek-v4-flash",
   "deepseek-v4-flash-vision",
