@@ -847,17 +847,6 @@ export function ModelBenchmarkChart({
 
       </div>
 
-      <details className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-        <summary className="cursor-pointer font-medium">Inspect plotted models (keyboard and touch)</summary>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {chartDataWithLabels.map((point) => (
-            <button key={point.id} type="button" onClick={() => setInspectedId(point.id)} onFocus={() => setInspectedId(point.id)}
-              aria-pressed={inspectedId === point.id} className="rounded border border-gray-300 px-2 py-1 hover:border-blue-500 focus:border-blue-500 dark:border-gray-700">
-              {point.shortName}
-            </button>
-          ))}
-        </div>
-      </details>
       {(() => {
         const inspected = chartDataWithLabels.find((point) => point.id === inspectedId);
         return inspected ? <div className="mt-2" aria-live="polite">
