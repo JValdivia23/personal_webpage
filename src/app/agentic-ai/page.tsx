@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, type Dispatch, type SetStateAction } from
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
 import { getBenchmarkCost, getCostDescription, getCostScope } from "@/lib/ai-model-costs";
+import { groupModelFamilies, modelFamilyInfo, type FamilyModel } from "@/lib/ai-model-families";
 import {
   ExternalLink,
   DollarSign,
@@ -711,7 +712,7 @@ function ModelFilterPanel({
   showModelPanel,
   setShowModelPanel,
 }: {
-  models: any[];
+  models: FamilyModel[];
   hiddenModelIds: Set<string>;
   setHiddenModelIds: Dispatch<SetStateAction<Set<string>>>;
   showModelPanel: boolean;
@@ -719,7 +720,7 @@ function ModelFilterPanel({
 }) {
   // Group models by provider, sorted by model count desc then name
   const byProvider = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+    const groups: Record<string, FamilyModel[]> = {};
     for (const m of models) {
       (groups[m.provider] ??= []).push(m);
     }
@@ -729,7 +730,7 @@ function ModelFilterPanel({
     });
   }, [models]);
 
-  const activeCount = models.length - hiddenModelIds.size;
+  const activeCount = models.filter((m) => !hiddenModelIds.has(m.id)).length;
 
   const toggleModel = (id: string) => {
     setHiddenModelIds((prev) => {
@@ -740,11 +741,10 @@ function ModelFilterPanel({
     });
   };
 
-  const toggleProvider = (providerModels: any[]) => {
-    const allHidden = providerModels.every((m) => hiddenModelIds.has(m.id));
+  const toggleProvider = (providerModels: FamilyModel[]) => {
     setHiddenModelIds((prev) => {
       const next = new Set(prev);
-      if (allHidden) {
+      if (providerModels.every((m) => prev.has(m.id))) {
         providerModels.forEach((m) => next.delete(m.id));
       } else {
         providerModels.forEach((m) => next.add(m.id));
@@ -755,6 +755,17 @@ function ModelFilterPanel({
 
   const selectAll = () => setHiddenModelIds(new Set());
   const clearAll = () => setHiddenModelIds(new Set(models.map((m) => m.id)));
+  const setFamilyVisible = (family: FamilyModel[], visible: boolean) => {
+    setHiddenModelIds((prev) => {
+      const next = new Set(prev);
+      family.forEach((m) => visible ? next.delete(m.id) : next.add(m.id));
+      return next;
+    });
+  };
+  const onlyFamily = (family: FamilyModel[]) => {
+    const ids = new Set(family.map((m) => m.id));
+    setHiddenModelIds(new Set(models.filter((m) => !ids.has(m.id)).map((m) => m.id)));
+  };
 
   return (
     <div className="mb-12 mt-8">
@@ -762,6 +773,8 @@ function ModelFilterPanel({
       <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50">
         <button
           onClick={() => setShowModelPanel(!showModelPanel)}
+          aria-expanded={showModelPanel}
+          aria-controls="model-filter-content"
           className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200"
         >
           <ChevronDown
@@ -791,7 +804,7 @@ function ModelFilterPanel({
 
       {/* Expandable content */}
       {showModelPanel && (
-        <div className="mt-3 space-y-3">
+        <div id="model-filter-content" className="mt-3 space-y-3">
           {byProvider.map(([provider, providerModels]) => {
             const providerActive = providerModels.filter(
               (m) => !hiddenModelIds.has(m.id)
@@ -821,27 +834,47 @@ function ModelFilterPanel({
                     {allHidden ? "Show all" : "Hide all"}
                   </button>
                 </div>
-                {/* Model chips grid */}
-                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
-                  {providerModels.map((m) => {
-                    const active = !hiddenModelIds.has(m.id);
+                <div className="space-y-3">
+                  {groupModelFamilies(providerModels).map((family) => {
+                    const familyActive = family.models.filter((m) => !hiddenModelIds.has(m.id)).length;
                     return (
-                      <button
-                        key={m.id}
-                        onClick={() => toggleModel(m.id)}
-                        className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors ${
-                          active
-                            ? "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
-                            : "border border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-600 dark:hover:bg-gray-800/50"
-                        }`}
-                      >
-                        {active ? (
-                          <Eye className="h-3 w-3 shrink-0" />
-                        ) : (
-                          <EyeOff className="h-3 w-3 shrink-0 opacity-60" />
-                        )}
-                        <span className="truncate">{m.shortName}</span>
-                      </button>
+                      <div key={family.key} className="border-t border-gray-100 pt-2 dark:border-gray-800">
+                        <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">{family.name}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{familyActive}/{family.models.length}</span>
+                          <div className="ml-auto flex gap-3 text-xs">
+                            <button onClick={() => setFamilyVisible(family.models, true)} disabled={familyActive === family.models.length} aria-label={`Select all ${family.name} models`} className="font-medium text-blue-600 disabled:opacity-40 dark:text-blue-400">Select all</button>
+                            <button onClick={() => setFamilyVisible(family.models, false)} disabled={familyActive === 0} aria-label={`Clear ${family.name} models`} className="font-medium text-gray-500 disabled:opacity-40 dark:text-gray-400">Clear</button>
+                            <button onClick={() => onlyFamily(family.models)} aria-label={`Show only ${family.name}`} className="font-medium text-blue-600 dark:text-blue-400">Only</button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
+                          {family.models.map((m) => {
+                            const active = !hiddenModelIds.has(m.id);
+                            const effort = modelFamilyInfo(m).effort;
+                            return (
+                              <button
+                                key={m.id}
+                                onClick={() => toggleModel(m.id)}
+                                aria-pressed={active}
+                                aria-label={`${m.shortName}, ${active ? "selected" : "not selected"}`}
+                                className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors ${
+                                  active
+                                    ? "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                                    : "border border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-600 dark:hover:bg-gray-800/50"
+                                }`}
+                              >
+                                {active ? (
+                                  <Eye className="h-3 w-3 shrink-0" />
+                                ) : (
+                                  <EyeOff className="h-3 w-3 shrink-0 opacity-60" />
+                                )}
+                                <span className="truncate" title={m.shortName}>{effort || m.shortName}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>

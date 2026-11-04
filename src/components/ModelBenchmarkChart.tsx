@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type MouseEventHandler } from 'react';
 import { Check } from 'lucide-react';
 import { getBenchmarkCost, getCostDescription, getCostScope, type PriceMode } from '@/lib/ai-model-costs';
+import { adjacentPlottedPairs, groupModelFamilies } from '@/lib/ai-model-families';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -90,6 +91,7 @@ interface ChartPoint extends AIModel {
   color: string;
   dx: number;
   dy: number;
+  displayLabel?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -241,8 +243,9 @@ function placeLabels(
   const results: LabelPlacement[] = new Array(allPoints.length);
 
   for (const pi of order) {
+    if (!allPoints[pi].displayLabel) continue;
     const p = pixels[pi];
-    const label = allPoints[pi].shortName || allPoints[pi].name;
+    const label = allPoints[pi].displayLabel!;
 
     const textW = label.length * 6.2; // px
     const textH = 13; // px
@@ -326,11 +329,19 @@ function placeLabels(
 // ---------------------------------------------------------------------------
 // Custom Scatter Shape — label at fixed (dx, dy) offset from dot
 // ---------------------------------------------------------------------------
-function CustomScatterShape(props: any) {
-  const { cx, cy, fill, payload, onClick, fillOpacity, strokeOpacity } = props;
-  if (cx == null || cy == null) return null;
+function CustomScatterShape(props: {
+  cx?: number;
+  cy?: number;
+  fill?: string;
+  payload?: ChartPoint;
+  onClick?: MouseEventHandler<SVGGElement>;
+  fillOpacity?: number;
+  onPointFocus: (id: string) => void;
+}) {
+  const { cx, cy, fill, payload, onClick, fillOpacity, onPointFocus } = props;
+  if (cx == null || cy == null || !payload) return null;
 
-  const label = payload.shortName || payload.name;
+  const label = payload.displayLabel;
   const dx = payload.dx ?? 10;
   const dy = payload.dy ?? 0;
 
@@ -350,7 +361,11 @@ function CustomScatterShape(props: any) {
   const shapeOpacity = fillOpacity ?? 1;
 
   return (
-    <g style={{ cursor: 'pointer', opacity: shapeOpacity }} onClick={onClick}>
+    <g style={{ cursor: 'pointer', opacity: shapeOpacity }} onClick={onClick}
+      role="link" tabIndex={0} aria-label={`${payload.shortName}, ${payload.y.toFixed(3)}. Focus for details; press Enter to open the model page.`}
+      onFocus={() => onPointFocus(payload.id)}
+      onKeyDown={(event) => { if (event.key === 'Enter') window.open(payload.url, '_blank', 'noopener,noreferrer'); }}>
+      {label && (
       <line
         x1={cx}
         y1={cy}
@@ -361,7 +376,9 @@ function CustomScatterShape(props: any) {
         strokeDasharray="3 2"
         opacity={0.5}
       />
+      )}
       <circle cx={cx} cy={cy} r={5} fill={fill} stroke="none" />
+      {label && <>
       {/* outline */}
       <text
         x={ax}
@@ -390,6 +407,7 @@ function CustomScatterShape(props: any) {
       >
         {label}
       </text>
+      </>}
     </g>
   );
 }
@@ -497,6 +515,8 @@ export function ModelBenchmarkChart({
 }: ModelBenchmarkChartProps) {
   const [selectedProviders, setSelectedProviders] = useState<Set<string>>(new Set());
   const [hoveredProvider, setHoveredProvider] = useState<string | null>(null);
+  const [familyView, setFamilyView] = useState(false);
+  const [inspectedId, setInspectedId] = useState<string | null>(null);
 
   // All valid points (used for stable axes / thresholds)
   const allChartData = useMemo<ChartPoint[]>(() => {
@@ -568,16 +588,43 @@ export function ModelBenchmarkChart({
       : sorted[mid].y;
   }, [allChartData]);
 
-  // Assign collision-aware label placements to ALL data
+  // Group the selected models, not just the plottable subset, so a missing
+  // intermediate effort breaks the line instead of suggesting a measurement.
+  const families = useMemo(() => groupModelFamilies(models), [models]);
+  const familySeries = useMemo(() => {
+    const points = new Map(allChartData.map((point) => [point.id, point]));
+    return families.map((family) => ({
+      ...family,
+      orderedPoints: family.models.map((model) => points.get(model.id)),
+    }));
+  }, [families, allChartData]);
+  const unplottedModels = useMemo(() => {
+    const plottedIds = new Set(allChartData.map((point) => point.id));
+    return models.filter((model) => !plottedIds.has(model.id));
+  }, [models, allChartData]);
+
+  // Assign collision-aware placements to visible labels while avoiding all dots.
   const chartDataWithLabels = useMemo<ChartPoint[]>(() => {
     if (allChartData.length === 0) return [];
-    const placements = placeLabels(allChartData, xDomain, yDomain);
-    return allChartData.map((m, i) => ({
-      ...m,
-      dx: placements[i].dx,
-      dy: placements[i].dy,
+    const labels = new Map<string, string>();
+    if (familyView) {
+      for (const family of familySeries) {
+        const points = family.orderedPoints.filter((point): point is ChartPoint => !!point);
+        if (points.length > 1) labels.set(points[Math.floor((points.length - 1) / 2)].id, family.name);
+        else if (points.length === 1) labels.set(points[0].id, points[0].shortName);
+      }
+    }
+    const labeled = allChartData.map((point) => ({
+      ...point,
+      displayLabel: familyView ? labels.get(point.id) : point.shortName || point.name,
     }));
-  }, [allChartData, xDomain, yDomain]);
+    const placements = placeLabels(labeled, xDomain, yDomain);
+    return labeled.map((m, i) => ({
+      ...m,
+      dx: placements[i]?.dx ?? 10,
+      dy: placements[i]?.dy ?? 0,
+    }));
+  }, [allChartData, xDomain, yDomain, familyView, familySeries]);
 
   const providers = useMemo(
     () => Array.from(new Set(allChartData.map((d) => d.provider))).sort(),
@@ -648,6 +695,19 @@ export function ModelBenchmarkChart({
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {getCostDescription(selectedMetric, priceMode)}
         </p>
+        <button type="button" onClick={() => setFamilyView((value) => !value)} aria-pressed={familyView}
+          className={`mt-3 rounded-md border px-3 py-1.5 text-xs font-medium ${familyView ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-gray-300 text-gray-600 dark:border-gray-700 dark:text-gray-300'}`}>
+          Family view {familyView ? 'on' : 'off'}
+        </button>
+        {familyView && <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          Lines connect selected efforts in order, not interpolated results. Gaps indicate selected variants without a score or cost.
+        </p>}
+        {familyView && unplottedModels.length > 0 && <details className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+          <summary className="cursor-pointer">{unplottedModels.length} selected {unplottedModels.length === 1 ? 'model is' : 'models are'} not plotted for this metric and cost mode</summary>
+          <ul className="mt-1 list-inside list-disc">
+            {unplottedModels.map((model) => <li key={model.id}>{model.shortName}</li>)}
+          </ul>
+        </details>}
       </div>
 
       {/* Chart */}
@@ -759,9 +819,14 @@ export function ModelBenchmarkChart({
               className="text-gray-500 dark:text-gray-500"
             />
 
+            {familyView && familySeries.flatMap((family) => adjacentPlottedPairs(family.orderedPoints).map(([previous, point]) => {
+              return <ReferenceLine key={`${family.key}-${previous.id}-${point.id}`}
+                segment={[{ x: previous.x, y: previous.y }, { x: point.x, y: point.y }]}
+                stroke={point.color} strokeWidth={2} strokeOpacity={isProviderDimmed(point.provider) ? 0.2 : 0.8} />;
+            }))}
             <Scatter
               data={chartDataWithLabels}
-              shape={<CustomScatterShape />}
+              shape={<CustomScatterShape onPointFocus={setInspectedId} />}
             >
               {chartDataWithLabels.map((entry) => (
                 <Cell
@@ -781,6 +846,25 @@ export function ModelBenchmarkChart({
         </ResponsiveContainer>
 
       </div>
+
+      <details className="mt-3 text-xs text-gray-600 dark:text-gray-300">
+        <summary className="cursor-pointer font-medium">Inspect plotted models (keyboard and touch)</summary>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {chartDataWithLabels.map((point) => (
+            <button key={point.id} type="button" onClick={() => setInspectedId(point.id)} onFocus={() => setInspectedId(point.id)}
+              aria-pressed={inspectedId === point.id} className="rounded border border-gray-300 px-2 py-1 hover:border-blue-500 focus:border-blue-500 dark:border-gray-700">
+              {point.shortName}
+            </button>
+          ))}
+        </div>
+      </details>
+      {(() => {
+        const inspected = chartDataWithLabels.find((point) => point.id === inspectedId);
+        return inspected ? <div className="mt-2" aria-live="polite">
+          <CustomTooltip active payload={[{ payload: inspected }]} priceMode={priceMode} metricLabel={metricLabel} selectedMetric={selectedMetric} />
+          <a href={inspected.url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs text-blue-600 underline dark:text-blue-400">Open {inspected.shortName} on Artificial Analysis</a>
+        </div> : null;
+      })()}
 
       {/* Provider legend — hover to peek, click to toggle */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
