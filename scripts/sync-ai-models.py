@@ -50,7 +50,7 @@ TARGET_URL = (
     "gpt-6-1-sol,gpt-6-1-sol-xhigh,gpt-6-1-sol-high,gpt-6-1-sol-medium,gpt-6-1-sol-low,gpt-6-1-terra,gpt-6-1-terra-xhigh,gpt-6-1-terra-high,gpt-6-1-terra-medium,gpt-6-1-terra-low,gpt-6-1-terra-non-reasoning,"
     "gpt-6-luna,gpt-6-luna-xhigh,gpt-6-luna-high,gpt-6-luna-medium,gpt-6-luna-low,gpt-6-luna-non-reasoning,"
     "gpt-6-astra,gpt-6-astra-xhigh,gpt-6-astra-high,gpt-6-astra-medium,gpt-6-astra-low,"
-    "muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,muse-spark-open,muse-wonder,muse-wonder-full,"
+    "muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,muse-spark-open,muse-ember,muse-ember-xhigh,muse-wonder,muse-wonder-full,"
     "gemini-3-1-pro-preview,gemini-3-5-flash,gemini-3-6-flash,gemini-3-7-flash,gemini-3-7-flash-medium,gemini-3-7-flash-low,gemini-3-8-flash,gemini-3-8-flash-medium,gemini-3-8-flash-low,gemini-4-argon,gemini-4-carbon,"
     "claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-sonnet-5-5,claude-sonnet-5-5-xhigh,claude-sonnet-5-5-high,claude-sonnet-5-5-medium,claude-sonnet-5-5-low,claude-haiku-5-5,claude-haiku-5-5-xhigh,claude-haiku-5-5-high,claude-haiku-5-5-medium,claude-haiku-5-5-low,claude-opus-4-7,claude-opus-4-8,claude-opus-5,claude-opus-5-5,claude-opus-5-5-xhigh,claude-opus-5-5-high,claude-opus-5-5-medium,claude-opus-5-5-low,"
     "deepseek-v4-flash,deepseek-v4-flash-vision,deepseek-v4-pro,deepseek-v4-1-flash,deepseek-v4-1-flash-1017,"
@@ -77,6 +77,10 @@ V5_EVALUATIONS = frozenset({
 })
 CODE2VIDEO_URL = "https://artificialanalysis.ai/evaluations/code2video-aa"
 CODE2VIDEO_TASK_COUNT = 114
+# AA's evaluation response omits this model's detailed row even though its
+# full model page publishes the score. Review this exception on future syncs;
+# all other unexpected missing rows continue to fail closed.
+CODE2VIDEO_SCORE_ONLY_EXCEPTIONS = frozenset({"nvidia-nemotron-3-ultra-550b-a55b"})
 METRIC_VERSIONS = {
     "codingIndex": "local-v5.0",
     "knowledgeWorkIndex": "local-v5.0",
@@ -186,7 +190,14 @@ def enrich_code2video(models: list[dict], evaluation_models: dict[str, dict]) ->
         raw = evaluation_models.get(model["id"])
         if raw is None:
             if model["code2videoElo"] is not None:
-                raise ValueError(f"Code2Video-AA evaluation row missing: {model['id']}")
+                if model["id"] not in CODE2VIDEO_SCORE_ONLY_EXCEPTIONS:
+                    raise ValueError(f"Code2Video-AA evaluation row missing: {model['id']}")
+                # Keep the current full model-page score/interval, never a stale
+                # cost or an Intelligence Index cost in place of missing tokens.
+                model["code2videoCostToRun"] = None
+                model["code2videoCostPerTask"] = None
+                log(f"WARNING: Code2Video-AA detailed row missing for {model['id']}; "
+                    "using current model-page score and leaving benchmark costs unavailable")
             continue
         # Match exact effort slugs, never attach family-level results to variants.
         if (model["code2videoElo"] is not None
@@ -364,6 +375,14 @@ def clean_model(raw: dict) -> dict | None:
 
     if not name or not slug:
         return None
+    short_name = DISPLAY_NAMES.get(slug, raw.get("shortName", raw.get("short_name")) or name)
+    # AA can omit fallback from shortName while explicitly retaining it in
+    # the full model name. Keep that distinction without changing the effort.
+    if "fallback" in name.lower() and "fallback" not in short_name.lower():
+        if re.search(r"\((?:non-reasoning|low|medium|high|xhigh|max)\)$", short_name, re.I):
+            short_name = short_name[:-1] + " with fallback)"
+        else:
+            short_name += " (with fallback)"
     # Allow null intelligence_index for brand-new models that AA hasn't
     # benchmarked yet. The chart skips points with null intelligence.
 
@@ -464,7 +483,7 @@ def clean_model(raw: dict) -> dict | None:
     return {
         "id": slug,
         "name": name,
-        "shortName": DISPLAY_NAMES.get(slug, raw.get("shortName", raw.get("short_name")) or name),
+        "shortName": short_name,
         "provider": creator_name,
         "intelligenceIndex": float(intelligence) if intelligence is not None else None,
         "codingIndex": coding_index,

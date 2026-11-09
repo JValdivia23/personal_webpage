@@ -903,7 +903,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving saved hidden IDs, but reapplying default-hidden IDs). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 17;
+const FILTER_VERSION = 18;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
@@ -963,6 +963,8 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "claude-fable-5-2-high",
   "claude-fable-5-2-medium",
   "claude-fable-5-2-low",
+  // Muse Ember xhigh — hidden, max only visible
+  "muse-ember-xhigh",
   // Gemini 3.8 Flash variants — only high stays visible (matches 3.7 pattern)
   "gemini-3-8-flash-medium",
   "gemini-3-8-flash-low",

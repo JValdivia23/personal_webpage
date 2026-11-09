@@ -97,6 +97,15 @@ class CategoryTests(unittest.TestCase):
         self.assertIsNone(model["costToRunIndex"])
         self.assertIsNone(model["costPerTask"])
 
+    def test_fallback_in_full_name_survives_short_name(self):
+        model = sync.clean_model(model_raw(name="Example (Max, Default Fallback)",
+                                           shortName="Example (max)"))
+        self.assertEqual(model["shortName"], "Example (max with fallback)")
+        model = sync.clean_model(model_raw(name="Example (Opus Fallback)", shortName="Example"))
+        self.assertEqual(model["shortName"], "Example (with fallback)")
+        model = sync.clean_model(model_raw(name="Example (Max)", shortName="Example (max)"))
+        self.assertEqual(model["shortName"], "Example (max)")
+
     def test_cost_per_task_is_source_weighted_value(self):
         model = sync.clean_model(model_raw(intelligenceIndexCost={"total": 9999},
                                           intelligenceIndexCostPerTask={"cost": {"total": 1.25}}))
@@ -194,6 +203,30 @@ class Code2VideoTests(unittest.TestCase):
             sync.enrich_code2video([model], {"test-model": self.row()})
         with self.assertRaises(ValueError):
             sync.enrich_code2video([model], {})
+
+    def test_verified_missing_row_retains_current_score_but_not_cost(self):
+        slug = "nvidia-nemotron-3-ultra-550b-a55b"
+        interval = {"lower": 270.34, "upper": 336.82}
+        model = sync.clean_model(model_raw(slug=slug, code2videoElo=303.58,
+                                           code2videoEloInterval=interval))
+        model["code2videoCostToRun"] = 999
+        model["code2videoCostPerTask"] = 10
+        with patch.object(sync, "log") as warning:
+            sync.enrich_code2video([model], {})
+        self.assertEqual(model["code2videoElo"], 303.58)
+        self.assertEqual(model["code2videoEloInterval"], interval)
+        self.assertIsNone(model["code2videoCostToRun"])
+        self.assertIsNone(model["code2videoCostPerTask"])
+        self.assertIn(slug, warning.call_args.args[0])
+
+    def test_exception_does_not_hide_mismatching_or_restored_rows(self):
+        slug = "nvidia-nemotron-3-ultra-550b-a55b"
+        model = sync.clean_model(model_raw(slug=slug, code2videoElo=1400))
+        with self.assertRaises(ValueError):
+            sync.enrich_code2video([model], {slug: self.row()})
+        model["code2videoElo"] = 1500
+        sync.enrich_code2video([model], {slug: self.row()})
+        self.assertEqual(model["code2videoCostToRun"], 64)
 
     def test_evaluation_parser(self):
         text = json.dumps({"initialModels": [self.row()]})
