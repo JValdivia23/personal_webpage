@@ -71,6 +71,14 @@ export function groupModelFamilies<T extends FamilyModel>(models: T[]): ModelFam
   );
 }
 
+/** Bulk-enabling a family shows every variant except non-reasoning ones,
+ *  which stay hidden unless toggled individually. A family consisting only
+ *  of non-reasoning variants still enables (avoids a dead control). */
+export function familyEnableTargets<T extends FamilyModel>(models: T[]): T[] {
+  const reasoning = models.filter((m) => modelFamilyInfo(m).effort !== 'non-reasoning');
+  return reasoning.length > 0 ? reasoning : [...models];
+}
+
 /** Join only adjacent selected efforts with data; missing entries break a line. */
 export function adjacentPlottedPairs<T>(points: Array<T | undefined>): Array<[T, T]> {
   const pairs: Array<[T, T]> = [];

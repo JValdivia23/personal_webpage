@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, type Dispatch, type SetStateAction } from
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
 import { getBenchmarkCost, getCostDescription, getCostScope } from "@/lib/ai-model-costs";
-import { groupModelFamilies, modelFamilyInfo, type FamilyModel } from "@/lib/ai-model-families";
+import { groupModelFamilies, modelFamilyInfo, familyEnableTargets, type FamilyModel } from "@/lib/ai-model-families";
 import {
   ExternalLink,
   DollarSign,
@@ -758,12 +758,15 @@ function ModelFilterPanel({
   const setFamilyVisible = (family: FamilyModel[], visible: boolean) => {
     setHiddenModelIds((prev) => {
       const next = new Set(prev);
-      family.forEach((m) => visible ? next.delete(m.id) : next.add(m.id));
+      // Enabling a family shows every variant except non-reasoning ones,
+      // which stay hidden unless toggled individually. Clearing hides all.
+      const targets = visible ? familyEnableTargets(family) : family;
+      targets.forEach((m) => visible ? next.delete(m.id) : next.add(m.id));
       return next;
     });
   };
   const onlyFamily = (family: FamilyModel[]) => {
-    const ids = new Set(family.map((m) => m.id));
+    const ids = new Set(familyEnableTargets(family).map((m) => m.id));
     setHiddenModelIds(new Set(models.filter((m) => !ids.has(m.id)).map((m) => m.id)));
   };
 
@@ -840,15 +843,18 @@ function ModelFilterPanel({
                 <div className="space-y-3">
                   {groupModelFamilies(providerModels).map((family) => {
                     const familyActive = family.models.filter((m) => !hiddenModelIds.has(m.id)).length;
+                    const enableTargets = familyEnableTargets(family.models);
+                    const enableActive = enableTargets.filter((m) => !hiddenModelIds.has(m.id)).length;
+                    const excludesNonReasoning = enableTargets.length < family.models.length;
                     return (
                       <div key={family.key} className="border-t border-gray-100 pt-2 dark:border-gray-800">
                         <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">{family.name}</span>
                           <span className="text-xs text-gray-500 dark:text-gray-400">{familyActive}/{family.models.length}</span>
                           <div className="ml-auto flex gap-3 text-xs">
-                            <button onClick={() => setFamilyVisible(family.models, true)} disabled={familyActive === family.models.length} aria-label={`Select all ${family.name} models`} className="font-medium text-blue-600 disabled:opacity-40 dark:text-blue-400">Select all</button>
+                            <button onClick={() => setFamilyVisible(family.models, true)} disabled={enableActive === enableTargets.length} aria-label={excludesNonReasoning ? `Select all ${family.name} models (except non-reasoning)` : `Select all ${family.name} models`} className="font-medium text-blue-600 disabled:opacity-40 dark:text-blue-400">Select all</button>
                             <button onClick={() => setFamilyVisible(family.models, false)} disabled={familyActive === 0} aria-label={`Clear ${family.name} models`} className="font-medium text-gray-500 disabled:opacity-40 dark:text-gray-400">Clear</button>
-                            <button onClick={() => onlyFamily(family.models)} aria-label={`Show only ${family.name}`} className="font-medium text-blue-600 dark:text-blue-400">Only</button>
+                            <button onClick={() => onlyFamily(family.models)} aria-label={excludesNonReasoning ? `Show only ${family.name} (except non-reasoning)` : `Show only ${family.name}`} className="font-medium text-blue-600 dark:text-blue-400">Only</button>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
@@ -897,7 +903,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving saved hidden IDs, but reapplying default-hidden IDs). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 16;
+const FILTER_VERSION = 17;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
@@ -952,6 +958,11 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "qwen3-8-2-4t-a95b",
   // Claude Fable 5.1 medium — hidden, xhigh/max visible (max is #1 leader)
   "claude-fable-5-1-medium",
+  // Claude Fable 5.2 lower efforts — hidden, max only visible
+  "claude-fable-5-2-xhigh",
+  "claude-fable-5-2-high",
+  "claude-fable-5-2-medium",
+  "claude-fable-5-2-low",
   // Gemini 3.8 Flash variants — only high stays visible (matches 3.7 pattern)
   "gemini-3-8-flash-medium",
   "gemini-3-8-flash-low",

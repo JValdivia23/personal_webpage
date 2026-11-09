@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { adjacentPlottedPairs, groupModelFamilies, modelFamilyInfo, sortModelsByEffort } from '../src/lib/ai-model-families.ts';
+import { adjacentPlottedPairs, familyEnableTargets, groupModelFamilies, modelFamilyInfo, sortModelsByEffort } from '../src/lib/ai-model-families.ts';
 
 const model = (id, shortName, provider = 'OpenAI', intelligenceIndex = null) => ({ id, shortName, provider, intelligenceIndex });
 
@@ -43,6 +43,17 @@ test('does not merge different providers, generations, releases, or variants wit
     model('unknown1', 'Example'), model('unknown2', 'Example'),
   ];
   assert.equal(groupModelFamilies(variants).length, variants.length);
+});
+
+test('bulk-enabling a family skips non-reasoning variants unless the family is only non-reasoning', () => {
+  const family = [
+    model('max', 'GPT-6.1 Terra (max)', 'OpenAI', 50),
+    model('low', 'GPT-6.1 Terra (low)', 'OpenAI', 29),
+    model('none', 'GPT-6.1 Terra (non-reasoning)', 'OpenAI', 30),
+  ];
+  assert.deepEqual(familyEnableTargets(family).map(m => m.id), ['max', 'low']);
+  const onlyNonReasoning = [model('none', 'Example (non-reasoning)', 'OpenAI', 10)];
+  assert.deepEqual(familyEnableTargets(onlyNonReasoning).map(m => m.id), ['none']);
 });
 
 test('missing points break lines, while hidden efforts can be omitted from the selection', () => {
