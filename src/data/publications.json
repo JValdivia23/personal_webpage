@@ -1,5 +1,13 @@
 [
   {
+    "paperId": "eCZJkKcAAAAJ:7PzlFSSx8tAC",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:7PzlFSSx8tAC",
+    "title": "Evaluation and Correction of Precipitation Types Measured by a PARSIVEL2 Disdrometer in a Tropical Glacier Environment",
+    "venue": "",
+    "year": 2026,
+    "citationCount": 1
+  },
+  {
     "paperId": "eCZJkKcAAAAJ:9ZlFYXVOiuMC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:9ZlFYXVOiuMC",
     "title": "Spectral-Domain Local Statistics with Missing-Data Support for Cartesian and Polar Grids",
@@ -9,9 +17,9 @@
   },
   {
     "paperId": "eCZJkKcAAAAJ:mVmsd5A6BfQC",
-    "url": "https://doi.org/10.5194/amt-19-5211-2026",
+    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:mVmsd5A6BfQC",
     "title": "Radar data smoothing using the Discrete Cosine Transform: a fast spectral domain algorithm",
-    "venue": "Atmos. Meas. Tech.",
+    "venue": "",
     "year": 2026,
     "citationCount": 0,
     "highlighted": true
@@ -20,14 +28,6 @@
     "paperId": "eCZJkKcAAAAJ:L8Ckcad2t8MC",
     "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:L8Ckcad2t8MC",
     "title": "Temporal Evolution of Cloud-Top Generating Cells: A Case Study",
-    "venue": "",
-    "year": 2026,
-    "citationCount": 0
-  },
-  {
-    "paperId": "eCZJkKcAAAAJ:7PzlFSSx8tAC",
-    "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=eCZJkKcAAAAJ&citation_for_view=eCZJkKcAAAAJ:7PzlFSSx8tAC",
-    "title": "Evaluation and Correction of Precipitation Types Measured by a PARSIVEL2 Disdrometer in a Tropical Glacier Environment",
     "venue": "",
     "year": 2026,
     "citationCount": 0
@@ -70,7 +70,7 @@
     "title": "Future changes of precipitation types in the Peruvian Andes",
     "venue": "",
     "year": 2024,
-    "citationCount": 15
+    "citationCount": 17
   },
   {
     "paperId": "eCZJkKcAAAAJ:MXK_kJrjxJIC",
@@ -110,7 +110,7 @@
     "title": "The GPM-DPR blind zone effect on satellite-based radar estimation of precipitation over the Andes from a ground-based ka-band profiler perspective",
     "venue": "",
     "year": 2022,
-    "citationCount": 24
+    "citationCount": 25
   },
   {
     "paperId": "eCZJkKcAAAAJ:Se3iqnhoufwC",
@@ -142,7 +142,7 @@
     "title": "On the dynamic mechanisms of intense rainfall events in the central Andes of Peru, Mantaro valley",
     "venue": "",
     "year": 2021,
-    "citationCount": 36
+    "citationCount": 37
   },
   {
     "paperId": "eCZJkKcAAAAJ:WF5omc3nYNoC",
@@ -238,7 +238,7 @@
     "title": "The impact of microphysics parameterization in the simulation of two convective rainfall events over the central Andes of Peru using WRF-ARW",
     "venue": "",
     "year": 2019,
-    "citationCount": 61
+    "citationCount": 62
   },
   {
     "paperId": "eCZJkKcAAAAJ:roLk4NBRz8UC",

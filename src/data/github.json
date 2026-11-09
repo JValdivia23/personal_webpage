@@ -4,8 +4,8 @@
     "description": "My personal web page. Contains automated Google Scholar stats and description of my personal projects.",
     "url": "https://github.com/JValdivia23/personal_webpage",
     "stars": 0,
-    "language": "TypeScript",
-    "languageColor": "#3178c6"
+    "language": "HTML",
+    "languageColor": "#e34c26"
   },
   {
     "name": "dct-toolkit",
