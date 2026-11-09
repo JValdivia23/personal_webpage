@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, type Dispatch, type SetStateAction } from
 import { ModelBenchmarkChart } from "@/components/ModelBenchmarkChart";
 import aiModels from "@/data/ai-models.json";
 import { getBenchmarkCost, getCostDescription, getCostScope } from "@/lib/ai-model-costs";
-import { groupModelFamilies, modelFamilyInfo, familyEnableTargets, type FamilyModel } from "@/lib/ai-model-families";
+import { expandSelectedModelFamilies, groupModelFamilies, modelFamilyInfo, familyEnableTargets, type FamilyModel } from "@/lib/ai-model-families";
 import {
   ExternalLink,
   DollarSign,
@@ -864,6 +864,7 @@ function ModelFilterPanel({
                             return (
                               <button
                                 key={m.id}
+                                data-model-id={m.id}
                                 onClick={() => toggleModel(m.id)}
                                 aria-pressed={active}
                                 aria-label={`${m.shortName}, ${active ? "selected" : "not selected"}`}
@@ -903,7 +904,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving saved hidden IDs, but reapplying default-hidden IDs). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 18;
+const FILTER_VERSION = 19;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
@@ -956,8 +957,9 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "gemini-3-7-flash-low",
   // Qwen3.8 2.4T A95B overlaps Qwen3.8 Max (same base model, similar scores)
   "qwen3-8-2-4t-a95b",
-  // Claude Fable 5.1 medium — hidden, xhigh/max visible (max is #1 leader)
+  // Claude Fable 5.1 lower efforts — hidden, max only visible
   "claude-fable-5-1-medium",
+  "claude-fable-5-1-xhigh",
   // Claude Fable 5.2 lower efforts — hidden, max only visible
   "claude-fable-5-2-xhigh",
   "claude-fable-5-2-high",
@@ -970,9 +972,13 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "gemini-3-8-flash-low",
   // Grok 4.7 high — 0.12 below xhigh, hidden as near-duplicate
   "grok-4-7-high",
-  // Claude Opus 5.5 medium/low — hidden, max/xhigh/high visible (new top-3 sweep)
+  // Claude Opus 5.5 lower efforts — hidden, max only visible
+  "claude-opus-5-5-xhigh",
+  "claude-opus-5-5-high",
   "claude-opus-5-5-medium",
   "claude-opus-5-5-low",
+  // Muse Spark 1.3 lower effort — hidden, max only visible
+  "muse-spark-1-3-xhigh",
   // Claude Sonnet 5.5 lower efforts — hidden, max only visible
   "claude-sonnet-5-5-xhigh",
   "claude-sonnet-5-5-high",
@@ -1015,9 +1021,11 @@ export default function AgenticAIPage() {
   const [selectedMetric, setSelectedMetric] = useState("intelligenceIndex");
   const [priceMode, setPriceMode] = useState<"price" | "cost" | "task">("price");
   const [sidebarTab, setSidebarTab] = useState<"metrics" | "docs">("metrics");
-  const [hiddenModelIds, setHiddenModelIds] = useState<Set<string>>(new Set());
+  const [hiddenModelIds, setHiddenModelIds] = useState<Set<string>>(() => new Set(DEFAULT_HIDDEN_IDS));
   const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [showModelPanel, setShowModelPanel] = useState(false);
+  const [familyView, setFamilyView] = useState(false);
+  const [familyHiddenModelIds, setFamilyHiddenModelIds] = useState<Set<string>>(new Set());
 
   // Load hidden-model selection from localStorage on mount.
   // Versioned: when FILTER_VERSION bumps, merge the new DEFAULT_HIDDEN_IDS
@@ -1077,12 +1085,25 @@ export default function AgenticAIPage() {
     METRICS.find((m) => m.key === selectedMetric) || METRICS[0];
   const v5EvaluatedCount = countAvailable(models, "intelligenceIndex");
 
-  // Models currently visible (not hidden by the user). Charts, availability
-  // counts, and the documentation panel all use this filtered set.
+  // Family view has one shared, temporary selection: the selector, charts,
+  // availability counts and documentation all reflect the expanded variants.
+  // Only the normal selection above is saved to localStorage.
+  const displayedHiddenModelIds = familyView ? familyHiddenModelIds : hiddenModelIds;
+  const setDisplayedHiddenModelIds = familyView ? setFamilyHiddenModelIds : setHiddenModelIds;
+  const toggleFamilyView = () => {
+    if (!familyView) {
+      const selected = models.filter((model) => !hiddenModelIds.has(model.id));
+      const expanded = new Set(expandSelectedModelFamilies(models, selected).map((model) => model.id));
+      setFamilyHiddenModelIds(new Set(models.filter((model) => !expanded.has(model.id)).map((model) => model.id)));
+    }
+    setFamilyView(!familyView);
+  };
+
+  // Models currently visible in the active view.
   // Recent Releases intentionally uses the full `models` set.
   const activeModels = useMemo(
-    () => models.filter((m) => !hiddenModelIds.has(m.id)),
-    [models, hiddenModelIds]
+    () => models.filter((m) => !displayedHiddenModelIds.has(m.id)),
+    [models, displayedHiddenModelIds]
   );
 
   // Availability counts
@@ -1270,7 +1291,8 @@ export default function AgenticAIPage() {
             <>
               <ModelBenchmarkChart
                 models={activeModels}
-                allModels={models}
+                familyView={familyView}
+                onToggleFamilyView={toggleFamilyView}
                 selectedMetric={selectedMetric}
                 priceMode={priceMode}
                 metricLabel={currentMetric.label}
@@ -1288,8 +1310,8 @@ export default function AgenticAIPage() {
       {/* Model filter panel (collapsible) — toggles which models appear in the charts */}
       <ModelFilterPanel
         models={models}
-        hiddenModelIds={hiddenModelIds}
-        setHiddenModelIds={setHiddenModelIds}
+        hiddenModelIds={displayedHiddenModelIds}
+        setHiddenModelIds={setDisplayedHiddenModelIds}
         showModelPanel={showModelPanel}
         setShowModelPanel={setShowModelPanel}
       />

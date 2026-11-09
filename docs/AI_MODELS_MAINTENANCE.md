@@ -110,6 +110,7 @@ If a request is blocked, times out, or fails to parse, inspect the actual failur
 - To hide an effort variant, keep it in `TARGET_URL` and the JSON, add its ID to `DEFAULT_HIDDEN_IDS`, and increment the **current** `FILTER_VERSION`. Do not hardcode a version from this guide or an earlier conversation.
 - An addition that is entirely default-visible does not need a version bump.
 - Hidden models remain selectable through the Models panel. Charts and metric availability use `activeModels`; **Recent Releases intentionally uses the full model set**, including hidden models.
+- **Family view:** `page.tsx` owns a temporary expanded selection shared by the Models panel, scatter plot, availability counts, and documentation. Turning it on enables the reasoning variants of selected families; explicitly selected non-reasoning variants are retained. Turning it off restores the saved normal selection. Family-mode changes are not written to `hiddenModelIds`. Do not reintroduce chart-only expansion or separate dot/connector animations. For enabled families offering max, normal defaults show max only; models without max retain their existing highest-effort defaults.
 
 ### Important localStorage migration limitation
 
@@ -256,6 +257,8 @@ The JavaScript cost tests use Node's built-in TypeScript stripping (Node 22.18+;
 This must complete successfully, including TypeScript and static export. A model's presence in exported HTML alone does not prove that browser-saved filters will show it; inspect the Models panel and the relevant chart/cost modes as needed.
 
 Test both fresh defaults and a browser context preloaded with `filterVersion` / `hiddenModelIds`. Persistence must wait until the saved selection has loaded; otherwise the initial empty set can overwrite saved choices, particularly with development Strict Mode. Do not clear a real user's localStorage. Verify missing-score versus missing-cost empty states, score-only rankings, all four categories, and Code2Video's **own** cost modes.
+
+After building, `python3 scripts/check-ai-family-view.py` checks the production export in private browser contexts: max-only defaults, expanded selector state, actual dot-to-connector geometry, cost modes/categories, saved choices, and touch-sized layout. Pass `--url https://jvaldivia23.github.io/personal_webpage/agentic-ai` to repeat against the deployed page. This requires Playwright/Chromium, unlike the offline Python unit tests.
 
 For interactive checks, use `npm run dev` and open **http://localhost:3000/personal_webpage/agentic-ai**. Internal Next.js links handle the base path; static asset/download paths must include `/personal_webpage`.
 
