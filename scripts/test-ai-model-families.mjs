@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { adjacentPlottedPairs, familyEnableTargets, groupModelFamilies, modelFamilyInfo, sortModelsByEffort } from '../src/lib/ai-model-families.ts';
+import { adjacentPlottedPairs, expandSelectedModelFamilies, familyEnableTargets, groupModelFamilies, modelFamilyInfo, sortModelsByEffort } from '../src/lib/ai-model-families.ts';
 
 const model = (id, shortName, provider = 'OpenAI', intelligenceIndex = null) => ({ id, shortName, provider, intelligenceIndex });
 
@@ -54,6 +54,20 @@ test('bulk-enabling a family skips non-reasoning variants unless the family is o
   assert.deepEqual(familyEnableTargets(family).map(m => m.id), ['max', 'low']);
   const onlyNonReasoning = [model('none', 'Example (non-reasoning)', 'OpenAI', 10)];
   assert.deepEqual(familyEnableTargets(onlyNonReasoning).map(m => m.id), ['none']);
+});
+
+test('family view expands only selected families without mutating selection', () => {
+  const variants = [
+    model('terra-max', 'Terra (max)'), model('terra-low', 'Terra (low)'),
+    model('terra-none', 'Terra (non-reasoning)'),
+    model('sol-max', 'Sol (max)'), model('sol-low', 'Sol (low)'),
+    model('other', 'Terra (low)', 'Other'),
+  ];
+  const selected = [variants[0]];
+  assert.deepEqual(expandSelectedModelFamilies(variants, selected).map(m => m.id), ['terra-max', 'terra-low']);
+  assert.deepEqual(selected.map(m => m.id), ['terra-max']);
+  assert.deepEqual(expandSelectedModelFamilies(variants, [variants[0], variants[2]]).map(m => m.id), ['terra-max', 'terra-low', 'terra-none']);
+  assert.deepEqual(expandSelectedModelFamilies(variants, []).map(m => m.id), []);
 });
 
 test('missing points break lines, while hidden efforts can be omitted from the selection', () => {

@@ -79,6 +79,16 @@ export function familyEnableTargets<T extends FamilyModel>(models: T[]): T[] {
   return reasoning.length > 0 ? reasoning : [...models];
 }
 
+/** Expand selected families for the chart only, keeping the saved selection intact. */
+export function expandSelectedModelFamilies<T extends FamilyModel>(allModels: T[], selectedModels: T[]): T[] {
+  const selectedIds = new Set(selectedModels.map((model) => model.id));
+  const selectedFamilies = new Set(selectedModels.map((model) => modelFamilyInfo(model).key));
+  return allModels.filter((model) => selectedIds.has(model.id) || (
+    selectedFamilies.has(modelFamilyInfo(model).key) &&
+    modelFamilyInfo(model).effort !== 'non-reasoning'
+  ));
+}
+
 /** Join only adjacent selected efforts with data; missing entries break a line. */
 export function adjacentPlottedPairs<T>(points: Array<T | undefined>): Array<[T, T]> {
   const pairs: Array<[T, T]> = [];

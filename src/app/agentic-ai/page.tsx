@@ -1270,6 +1270,7 @@ export default function AgenticAIPage() {
             <>
               <ModelBenchmarkChart
                 models={activeModels}
+                allModels={models}
                 selectedMetric={selectedMetric}
                 priceMode={priceMode}
                 metricLabel={currentMetric.label}

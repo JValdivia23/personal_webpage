@@ -3,7 +3,7 @@
 import { useMemo, useState, type MouseEventHandler } from 'react';
 import { Check } from 'lucide-react';
 import { getBenchmarkCost, getCostDescription, getCostScope, type PriceMode } from '@/lib/ai-model-costs';
-import { adjacentPlottedPairs, groupModelFamilies, sortModelsByEffort } from '@/lib/ai-model-families';
+import { adjacentPlottedPairs, expandSelectedModelFamilies, groupModelFamilies, sortModelsByEffort } from '@/lib/ai-model-families';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -77,6 +77,7 @@ interface AIModel {
 
 interface ModelBenchmarkChartProps {
   models: AIModel[];
+  allModels: AIModel[];
   selectedMetric: string;
   priceMode: PriceMode;
   metricLabel: string;
@@ -509,6 +510,7 @@ function CustomTooltip({
 // ---------------------------------------------------------------------------
 export function ModelBenchmarkChart({
   models,
+  allModels,
   selectedMetric,
   priceMode,
   metricLabel,
@@ -517,10 +519,14 @@ export function ModelBenchmarkChart({
   const [hoveredProvider, setHoveredProvider] = useState<string | null>(null);
   const [familyView, setFamilyView] = useState(false);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
+  const chartModels = useMemo(
+    () => familyView ? expandSelectedModelFamilies(allModels, models) : models,
+    [allModels, models, familyView]
+  );
 
   // All valid points (used for stable axes / thresholds)
   const allChartData = useMemo<ChartPoint[]>(() => {
-    const raw = models
+    const raw = chartModels
       .filter((m) => {
         const metricVal = (m as any)[selectedMetric];
         if (metricVal == null || typeof metricVal !== 'number') return false;
@@ -547,7 +553,7 @@ export function ModelBenchmarkChart({
       });
     raw.sort((a, b) => b.y - a.y);
     return raw;
-  }, [models, selectedMetric, priceMode]);
+  }, [chartModels, selectedMetric, priceMode]);
 
   // Compute axis domains from ALL data so limits stay identical
   const xDomain = useMemo<[number, number]>(() => {
@@ -590,7 +596,7 @@ export function ModelBenchmarkChart({
 
   // Group the selected models, not just the plottable subset, so a missing
   // intermediate effort breaks the line instead of suggesting a measurement.
-  const families = useMemo(() => groupModelFamilies(models), [models]);
+  const families = useMemo(() => groupModelFamilies(chartModels), [chartModels]);
   const familySeries = useMemo(() => {
     const points = new Map(allChartData.map((point) => [point.id, point]));
     return families.map((family) => ({
@@ -600,8 +606,8 @@ export function ModelBenchmarkChart({
   }, [families, allChartData]);
   const unplottedModels = useMemo(() => {
     const plottedIds = new Set(allChartData.map((point) => point.id));
-    return models.filter((model) => !plottedIds.has(model.id));
-  }, [models, allChartData]);
+    return chartModels.filter((model) => !plottedIds.has(model.id));
+  }, [chartModels, allChartData]);
 
   // Assign collision-aware placements to visible labels while avoiding all dots.
   const chartDataWithLabels = useMemo<ChartPoint[]>(() => {
@@ -665,18 +671,25 @@ export function ModelBenchmarkChart({
       : `${shortCostScope} Total Cost ($) →`;
 
   const chartTitle = `Cost vs. ${metricLabel}`;
+  const familyViewToggle = (
+    <button type="button" onClick={() => setFamilyView((value) => !value)} aria-pressed={familyView}
+      className={`mt-3 rounded-md border px-3 py-1.5 text-xs font-medium ${familyView ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-gray-300 text-gray-600 dark:border-gray-700 dark:text-gray-300'}`}>
+      Family view {familyView ? 'on' : 'off'}
+    </button>
+  );
 
   if (allChartData.length === 0) {
     return (
       <div className="w-full">
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{chartTitle}</h3>
+          {familyViewToggle}
         </div>
         <div className="flex h-[400px] items-center justify-center rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {models.length === 0
               ? "No models selected. Enable models in the filter panel below."
-              : !models.some((m) => typeof (m as any)[selectedMetric] === 'number')
+              : !chartModels.some((m) => typeof (m as any)[selectedMetric] === 'number')
                 ? `No selected models have ${metricLabel} scores. Enable other models or choose another metric.`
                 : 'Scores are available, but pricing or evaluation costs are missing for this cost mode. Try another cost basis or view Documentation for score-only rankings.'}
           </p>
@@ -695,15 +708,12 @@ export function ModelBenchmarkChart({
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {getCostDescription(selectedMetric, priceMode)}
         </p>
-        <button type="button" onClick={() => setFamilyView((value) => !value)} aria-pressed={familyView}
-          className={`mt-3 rounded-md border px-3 py-1.5 text-xs font-medium ${familyView ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'border-gray-300 text-gray-600 dark:border-gray-700 dark:text-gray-300'}`}>
-          Family view {familyView ? 'on' : 'off'}
-        </button>
+        {familyViewToggle}
         {familyView && <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          Lines connect selected efforts in order, not interpolated results. Gaps indicate selected variants without a score or cost.
+          Shows reasoning variants of selected families without changing your saved selection. Non-reasoning variants appear only if individually selected. Lines follow effort order, not interpolated results; gaps indicate variants without a score or cost.
         </p>}
         {familyView && unplottedModels.length > 0 && <details className="mt-1 text-xs text-amber-700 dark:text-amber-400">
-          <summary className="cursor-pointer">{unplottedModels.length} selected {unplottedModels.length === 1 ? 'model is' : 'models are'} not plotted for this metric and cost mode</summary>
+          <summary className="cursor-pointer">{unplottedModels.length} family {unplottedModels.length === 1 ? 'model is' : 'models are'} not plotted for this metric and cost mode</summary>
           <ul className="mt-1 list-inside list-disc">
             {unplottedModels.map((model) => <li key={model.id}>{model.shortName}</li>)}
           </ul>
