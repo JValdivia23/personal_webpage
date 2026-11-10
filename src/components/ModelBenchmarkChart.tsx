@@ -116,6 +116,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   'Zhipu AI': '#6366f1',
   'Xiaomi': '#ff6900',
   'Z AI': '#6366f1',
+  'Tencent': '#0052d9',
   'Unknown': '#9ca3af',
 };
 

@@ -2,7 +2,7 @@
 
 **Source:** [Artificial Analysis](https://artificialanalysis.ai)\
 **Last Updated:** 2026-11-09\
-**Models Tracked:** 141 leading LLMs\
+**Models Tracked:** 142 leading LLMs\
 **Intelligence Index Version:** v5.0 (see [v5 migration notes](#intelligence-index-v5-october-2026))
 
 **Agent maintenance:** Start with the tracked [AI Models Maintenance guide](../../docs/AI_MODELS_MAINTENANCE.md) for setup, model additions, variants/defaults, parser troubleshooting, validation, and release instructions. This file is the metric reference, not the full operational checklist.
