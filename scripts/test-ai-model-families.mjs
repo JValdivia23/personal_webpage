@@ -84,10 +84,11 @@ test('current dataset keeps Terra, Sol, Gemini and fallback variants separate an
   assert.equal(find('GPT-6.1 Terra').models.length, 6);
   assert.equal(find('GPT-6.1 Sol').models.length, 5);
   assert.deepEqual(sortModelsByEffort(find('Gemini 3.8 Flash').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high']);
+  assert.deepEqual(sortModelsByEffort(find('Gemini 4 Hydrogen').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high', 'xhigh']);
   assert.ok(find('Claude Opus 5.5').models.every(m => modelFamilyInfo(m).effort.includes('fallback')));
 });
 
-test('defaults show only max within enabled families that offer max, and family view expands them', () => {
+test('defaults show only the highest effort within enabled effort families, and family view expands them', () => {
   const { models } = JSON.parse(readFileSync(new URL('../src/data/ai-models.json', import.meta.url)));
   const page = readFileSync(new URL('../src/app/agentic-ai/page.tsx', import.meta.url), 'utf8');
   const defaultBlock = page.split('const DEFAULT_HIDDEN_IDS')[1].split(']);')[0];
@@ -100,9 +101,10 @@ test('defaults show only max within enabled families that offer max, and family 
       assert.ok(family.models.every(m => !expandedIds.has(m.id)));
       continue;
     }
-    if (family.models.some(m => modelFamilyInfo(m).effortOrder === 5)) {
-      assert.equal(visible.length, 1, `${family.name} should default to max only`);
-      assert.equal(modelFamilyInfo(visible[0]).effortOrder, 5);
+    const highestEffort = Math.max(...family.models.map(m => modelFamilyInfo(m).effortOrder));
+    if (highestEffort >= 0) {
+      assert.equal(visible.length, 1, `${family.name} should default to its highest effort only`);
+      assert.equal(modelFamilyInfo(visible[0]).effortOrder, highestEffort);
     }
     for (const variant of familyEnableTargets(family.models)) {
       assert.ok(expandedIds.has(variant.id), `Family view should enable ${variant.id}`);

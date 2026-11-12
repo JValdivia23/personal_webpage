@@ -904,7 +904,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving saved hidden IDs, but reapplying default-hidden IDs). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 19;
+const FILTER_VERSION = 20;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
@@ -970,6 +970,10 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // Gemini 3.8 Flash variants — only high stays visible (matches 3.7 pattern)
   "gemini-3-8-flash-medium",
   "gemini-3-8-flash-low",
+  // Gemini 4 Hydrogen lower efforts — hidden, xhigh only visible (no max)
+  "gemini-4-hydrogen-high",
+  "gemini-4-hydrogen-medium",
+  "gemini-4-hydrogen-low",
   // Grok 4.7 high — 0.12 below xhigh, hidden as near-duplicate
   "grok-4-7-high",
   // Claude Opus 5.5 lower efforts — hidden, max only visible
