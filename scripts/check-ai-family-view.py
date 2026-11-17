@@ -14,7 +14,7 @@ from pathlib import Path
 import re
 from threading import Thread
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -155,6 +155,16 @@ def check_gpt62_families(browser, url):
             missing = [model for model in variants if model.get(cost) is None]
             listed = page.locator("main.min-w-0 details li").all_text_contents()
             assert set(listed) == {model["shortName"] for model in missing}, "Missing-cost variants must be disclosed"
+            if cost == "costPerTask":
+                for model in variants:
+                    value = model.get(cost)
+                    if value is None:
+                        continue
+                    page.locator(f'svg g[data-model-id="{model["id"]}"] circle').hover()
+                    tooltip = page.locator(".recharts-tooltip-wrapper")
+                    expect(tooltip).to_contain_text(model["shortName"])
+                    expected_cost = f"${value:.4f}" if value < 0.01 else f"${value:.2f}"
+                    expect(tooltip.locator(".text-emerald-400")).to_have_text(expected_cost)
         page.get_by_role("button", name="Documentation", exact=True).click()
         ranking_labels = page.locator(".recharts-yAxis-tick-labels text").all_text_contents()
         assert set(ranking_labels) == {model["shortName"] for model in variants}, "Score rankings must retain variants without prices"
