@@ -83,11 +83,11 @@ const METRICS: MetricDef[] = [
   {
     key: "intelligenceIndex",
     label: "Overall Intelligence",
-    description: "Official v5.0 composite across knowledge work, coding, science, and general capability",
-    testBadge: "AA v5.0",
+    description: `Official v${aiModels.intelligenceIndexVersion} composite across knowledge work, coding, science, and general capability`,
+    testBadge: `AA v${aiModels.intelligenceIndexVersion}`,
     scale: "Higher is better; compare only within the same index version",
     fullDescription:
-      "Artificial Analysis Intelligence Index v5.0 incorporates nine evaluations in four equally weighted categories: Knowledge Work 25% (AA-Briefcase v1.1 15%, AutomationBench-AA 5%, GDP.pdf 5%); Coding 25% (FrontierCode 2.0 15%, Terminal-Bench 4.0 10%); Science 25% (Terminal-Bench-Science 0.1 15%, CritPt v2 hard subset 10%); General 25% (AA-Omniscience v1.1 accuracy 10% and non-hallucination 5%, HLE-Diamond 10%). 60% of the index uses private test sets or held-out answers. GDPval-AA, SciCode, and AA-LCR were removed from the index. We use AA's published overall score, not an average of our local category reconstructions. Scores and evaluation costs are not directly comparable with v4.3. Models without a v5 score remain tracked and unranked; missing is not zero.",
+      `Artificial Analysis Intelligence Index v${aiModels.intelligenceIndexVersion} incorporates nine evaluations in four equally weighted categories: Knowledge Work 25% (AA-Briefcase v1.1 15%, AutomationBench-AA 5%, GDP.pdf 5%); Coding 25% (FrontierCode 2.0 15%, Terminal-Bench 4.0 10%); Science 25% (Terminal-Bench-Science 0.1 15%, CritPt v2 hard subset 10%); General 25% (AA-Omniscience v1.1 accuracy 10% and non-hallucination 5%, HLE-Diamond 10%). v5.0.1 incorporates CritPt v2 grading robustness improvements and regrades all models; the evaluations, weights, and local category formulas are unchanged. 60% of the index uses private test sets or held-out answers. GDPval-AA, SciCode, and AA-LCR were removed from the index. We use AA's published overall score, not an average of our local category reconstructions. Scores and evaluation costs are not directly comparable with v4.3. Models without a current score remain tracked and unranked; missing is not zero.`,
     officialUrl: "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
   },
   {
@@ -167,7 +167,7 @@ const METRICS: MetricDef[] = [
     testBadge: "CritPt v2 Hard",
     scale: "0.0 to 1.0 (accuracy, pass@1)",
     fullDescription:
-      "The fixed hard subset contains 40 of CritPt v2's 70 research-level physics problems, excluding 30 solved in every attempt by seven frontier models at launch. AA runs models in Stirrup with an offline Python sandbox for up to 50 turns, with five repeats scored by the official grading server. Part of Intelligence Index v5 Science (10%). This is not the full 70-question CritPt v2 score or legacy tool-free CritPt.",
+      "The fixed hard subset contains 40 of CritPt v2's 70 research-level physics problems, excluding 30 solved in every attempt by seven frontier models at launch. AA runs models in Stirrup with an offline Python sandbox for up to 50 turns, with five repeats scored by the official grading server. Part of Intelligence Index v5 Science (10%); v5.0.1 regrades all models with grading robustness improvements from the CritPt authors. This is not the full 70-question CritPt v2 score or legacy tool-free CritPt.",
     officialUrl: "https://artificialanalysis.ai/evaluations/critpt-v2?critpt-subset=hard",
   },
   {
@@ -904,7 +904,7 @@ function ModelFilterPanel({
 // On version mismatch, the saved selection is merged with the new defaults
 // (preserving saved hidden IDs, but reapplying default-hidden IDs). On version match, the saved
 // selection is loaded as-is.
-const FILTER_VERSION = 20;
+const FILTER_VERSION = 21;
 const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   // GPT-5.6 Sol variants (high/medium/low/non-reasoning hidden; max visible, xhigh hidden)
   "gpt-5-6-sol-high",
@@ -1004,6 +1004,15 @@ const DEFAULT_HIDDEN_IDS: Set<string> = new Set([
   "gpt-6-1-terra-medium",
   "gpt-6-1-terra-low",
   "gpt-6-1-terra-non-reasoning",
+  // GPT-6.2 Sol/Astra lower efforts — hidden, max only visible per family
+  "gpt-6-2-sol-xhigh",
+  "gpt-6-2-sol-high",
+  "gpt-6-2-sol-medium",
+  "gpt-6-2-sol-low",
+  "gpt-6-2-astra-xhigh",
+  "gpt-6-2-astra-high",
+  "gpt-6-2-astra-medium",
+  "gpt-6-2-astra-low",
   // Superseded generations — hidden, enable to compare
   "deepseek-v4-flash",
   "deepseek-v4-flash-vision",
@@ -1159,6 +1168,7 @@ export default function AgenticAIPage() {
             Scores and evaluation costs are not directly comparable with v4.3.
           </p>
           <p className="mt-1 text-xs">
+            v5.0.1 includes a CritPt v2 regrade; use current scores rather than comparing against older snapshots.{" "}
             Category scores are locally derived. Code2Video-AA is a separate evaluation,
             not part of v5, and uses its own estimated API costs.
           </p>

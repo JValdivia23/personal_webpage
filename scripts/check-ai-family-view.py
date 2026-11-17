@@ -19,6 +19,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
 MODELS = json.loads((ROOT / "src/data/ai-models.json").read_text())["models"]
+INDEX_VERSION = json.loads((ROOT / "src/data/ai-models.json").read_text())["intelligenceIndexVersion"]
 PAGE_SOURCE = (ROOT / "src/app/agentic-ai/page.tsx").read_text()
 DEFAULT_HIDDEN = set(re.findall(
     r'"([^"]+)"', PAGE_SOURCE.split("const DEFAULT_HIDDEN_IDS", 1)[1].split("]);", 1)[0],
@@ -128,6 +129,41 @@ def run_context(browser, url, saved_hidden=None, mobile=False, saved_version=Non
     context.close()
 
 
+def check_gpt62_families(browser, url):
+    """Verify new families, with score-only handling driven by actual cost coverage."""
+    context = browser.new_context(viewport={"width": 1440, "height": 1000})
+    page = context.new_page()
+    page.goto(url, wait_until="networkidle", timeout=90000)
+    assert page.get_by_role("button", name=re.compile(r"^Overall Intelligence.*AA v" + re.escape(INDEX_VERSION))).count() == 1
+    page.get_by_role("button", name="Models", exact=True).click()
+    for name in ("GPT-6.2 Sol", "GPT-6.2 Astra"):
+        variants = [model for model in MODELS if family(model) == ("OpenAI", name)]
+        assert len(variants) == 5
+        for model in variants:
+            button = page.locator(f'#model-filter-content button[data-model-id="{model["id"]}"]')
+            assert button.get_attribute("aria-pressed") == ("true" if effort(model) == "max" else "false")
+    saved = page.evaluate("localStorage.getItem('hiddenModelIds')")
+    page.get_by_role("button", name="Family view off", exact=True).click()
+    for name in ("GPT-6.2 Sol", "GPT-6.2 Astra"):
+        variants = [model for model in MODELS if family(model) == ("OpenAI", name)]
+        page.get_by_role("button", name=f"Show only {name}", exact=True).click()
+        check_selection(page, variants)
+        for label, cost in [("Price / 1M tokens", "blendedPrice"), ("Total cost to run", "costToRunIndex"),
+                            ("Cost per task", "costPerTask")]:
+            page.get_by_role("button", name=label, exact=True).click()
+            check_chart(page, variants, cost=cost)
+            missing = [model for model in variants if model.get(cost) is None]
+            listed = page.locator("main.min-w-0 details li").all_text_contents()
+            assert set(listed) == {model["shortName"] for model in missing}, "Missing-cost variants must be disclosed"
+        page.get_by_role("button", name="Documentation", exact=True).click()
+        ranking_labels = page.locator(".recharts-yAxis-tick-labels text").all_text_contents()
+        assert set(ranking_labels) == {model["shortName"] for model in variants}, "Score rankings must retain variants without prices"
+        page.get_by_role("button", name="Documentation", exact=True).click()
+    page.get_by_role("button", name="Family view on", exact=True).click()
+    assert page.evaluate("localStorage.getItem('hiddenModelIds')") == saved
+    context.close()
+
+
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/personal_webpage"):
@@ -163,6 +199,8 @@ def main():
             print("PASS: previous filter-version migration preserves user-hidden models and applies max-only defaults")
             run_context(browser, args.url, mobile=True)
             print("PASS: touch-sized viewport")
+            check_gpt62_families(browser, args.url)
+            print("PASS: GPT-6.2 max-only defaults, family connections, score-only rankings, missing-cost disclosure and current index labels")
             browser.close()
     finally:
         if server:

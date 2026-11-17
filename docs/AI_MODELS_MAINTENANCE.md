@@ -1,6 +1,6 @@
 # Maintaining the AI model benchmarks
 
-**Agent handoff — last reviewed October 28, 2026.** Read this before adding models, changing default visibility, or repairing an Artificial Analysis (AA) sync. This guide is tracked in Git and does not require previous chat history. Local `AGENTS.md` is gitignored and is not available in a fresh clone.
+**Agent handoff — last reviewed November 17, 2026.** Read this before adding models, changing default visibility, or repairing an Artificial Analysis (AA) sync. This guide is tracked in Git and does not require previous chat history. Local `AGENTS.md` is gitignored and is not available in a fresh clone.
 
 ## Source of truth and files
 
@@ -19,7 +19,9 @@ Read the current files rather than carrying model counts, rankings, or filter ve
 
 Routine model additions usually change the sync script, generated JSON, and metrics-reference header. Visibility changes also affect `page.tsx`; a new provider may need both color palettes updated. Do not change unrelated publications, CV, or GitHub data.
 
-### Current methodology: Intelligence Index v5.0
+### Current methodology: Intelligence Index v5.0.1
+
+The November 17 patch update was approved with GPT-6.2 Sol/Astra. AA's v5.0.1 incorporates CritPt v2 grading robustness improvements and regrades all models, without changing the nine evaluations, their weights, or our local formulas. Require the **exact** source version (not a substring/prefix match); record `intelligenceIndexVersion: "5.0.1"` and `local-v5.0.1` category versions. UI and cost labels read the dataset's version. Do not mix older snapshot values into the refreshed methodology or add new benchmarks merely because the current source offers them.
 
 The October 28 migration was explicitly approved alongside Gemini 4 Carbon (high, default-visible) and the standalone Code2Video-AA metric. The overall score is AA's published **v5** `intelligenceIndex`, not a local recomputation. The four current menu categories (Coding, Knowledge Work, Science, General) are **locally derived** v5 reconstructions; the legacy `agenticIndex` key remains in JSON but is not a current menu option. Read `intelligenceIndexVersion` / `metricVersions` in the JSON and the [v5 metrics reference](../src/data/ai-models-metrics-documentation.md#intelligence-index-v5-october-2026).
 
@@ -192,7 +194,7 @@ required = {"id", "name", "shortName", "provider", "intelligenceIndex",
             "hleDiamond", "critptV2Hard", "omniscienceAccuracy",
             "omniscienceHallucinationRate", "code2videoElo", "code2videoEloInterval",
             "code2videoCostToRun", "code2videoCostPerTask", "url"}
-assert after["intelligenceIndexVersion"] == "5.0"
+assert after["intelligenceIndexVersion"] == "5.0.1"
 for m in rows:
     assert required <= m.keys(), f"Missing schema fields: {m['id']}"
     assert m["name"] and m["shortName"] and m["provider"]
@@ -301,6 +303,7 @@ Report the actual commit, push/build status, model count, requested visibility, 
 - `omniscience` is now **v1.1**, although AA reused the raw key. Its accuracy and hallucination-rate inputs are extracted separately; do not recreate them from the headline Index or reuse v1 scores.
 - `code2videoElo` is a standalone additional metric, not part of v5. Enrich exact slugs from the Code2Video evaluation page's inline `initialModels[]` rows. These contain more precise overall confidence intervals and `canonicalEvalTokenCounts.code2video`. Cost estimates use the known single-call uncached token accounting, API input/output prices, and 114 tasks, exclude judging/rendering, and remain null for missing prices/counts or unsupported caching. If the benchmark's task count/accounting changes, review the estimator before changing `CODE2VIDEO_TASK_COUNT`. `src/lib/ai-model-costs.ts` routes both Code2Video cost modes to its own fields without fallback.
 - **November 9, 2026 source gap:** The Code2Video evaluation response omitted the detailed `nvidia-nemotron-3-ultra-550b-a55b` row, while its full model page still published a score and interval. The sync has an explicit exception for this exact slug: it logs a warning, keeps the current model-page score/interval, and leaves Code2Video costs null. Unexpected missing rows and inconsistent scores still fail. When the detailed row returns, normal enrichment and consistency checks apply; review the exception on future syncs and remove it once the source is stable. Do not backfill costs from prior syncs or another benchmark.
+- **November 17, 2026 source gaps:** GPT-6.2 Sol's lower efforts (xhigh/high/medium/low) have scores but no prices or evaluation costs in either full HTML or RSC objects. Track them with null costs; Family view enables them in the selector and score-only rankings, but cost plots cannot show them yet. Gemini 3.7 Flash high's token prices were also withdrawn in both sources. Do not borrow a family's max prices or retain stale prices to force a connecting line.
 - Local reconstructions are not official published composites. Read the [metrics reference](../src/data/ai-models-metrics-documentation.md) and AA's current methodology before proposing changes to their formulas. Null legacy metrics are not evidence that the overall Intelligence Index is unavailable.
 - `costPerTask` comes from `intelligenceIndexCostPerTask.cost.total`: AA's **evaluation-weighted average cost per task**, not the median and not simply total evaluation cost divided by one aggregate task count. UI wording now uses this definition and identifies the full v5 cost scope even when plotting an individual metric.
 

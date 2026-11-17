@@ -1,3 +1,5 @@
+import aiModels from '../data/ai-models.json' with { type: 'json' };
+
 export type PriceMode = 'price' | 'cost' | 'task';
 
 interface BenchmarkCosts {
@@ -18,7 +20,7 @@ export function getBenchmarkCost(model: BenchmarkCosts, metric: string, mode: Pr
 }
 
 export function getCostScope(metric: string): string {
-  return metric === 'code2videoElo' ? 'Code2Video-AA' : 'Intelligence Index v5.0';
+  return metric === 'code2videoElo' ? 'Code2Video-AA' : `Intelligence Index v${aiModels.intelligenceIndexVersion}`;
 }
 
 export function getCostDescription(metric: string, mode: PriceMode): string {
@@ -31,6 +33,6 @@ export function getCostDescription(metric: string, mode: PriceMode): string {
       : 'Estimated contestant API cost for all 114 Code2Video-AA briefs. Excludes judging and rendering.';
   }
   return mode === 'task'
-    ? 'Evaluation-weighted average API cost per Intelligence Index v5.0 task (log scale), not the cost of the selected individual metric.'
-    : 'Total API cost to run Intelligence Index v5.0, not the cost of the selected individual metric.';
+    ? `Evaluation-weighted average API cost per ${getCostScope(metric)} task (log scale), not the cost of the selected individual metric.`
+    : `Total API cost to run ${getCostScope(metric)}, not the cost of the selected individual metric.`;
 }

@@ -662,7 +662,7 @@ export function ModelBenchmarkChart({
     return false;
   };
 
-  const shortCostScope = selectedMetric === 'code2videoElo' ? 'Code2Video' : 'Index v5';
+  const shortCostScope = getCostScope(selectedMetric).replace('Intelligence ', '').replace('-AA', '');
   const xAxisLabel = priceMode === 'price'
     ? 'Blended Price ($ / 1M tokens) →'
     : priceMode === 'task'

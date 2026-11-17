@@ -1,6 +1,7 @@
 // Run with: node --experimental-strip-types --test scripts/test-ai-model-costs.mjs
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import aiModels from '../src/data/ai-models.json' with { type: 'json' };
 import { getBenchmarkCost, getCostDescription, getCostScope } from '../src/lib/ai-model-costs.ts';
 
 const model = {
@@ -31,9 +32,17 @@ test('real zero is preserved for the chart to handle explicitly', () => {
 
 test('cost descriptions identify both the benchmark and estimator', () => {
   assert.equal(getCostScope('code2videoElo'), 'Code2Video-AA');
-  assert.equal(getCostScope('codingIndex'), 'Intelligence Index v5.0');
+  assert.equal(getCostScope('codingIndex'), `Intelligence Index v${aiModels.intelligenceIndexVersion}`);
   assert.match(getCostDescription('code2videoElo', 'task'), /Estimated.*Code2Video-AA/);
   assert.match(getCostDescription('intelligenceIndex', 'task'), /Evaluation-weighted average/);
   assert.match(getCostDescription('code2videoElo', 'cost'), /114.*Excludes judging and rendering/);
   assert.match(getCostDescription('code2videoElo', 'price'), /7:2:1/);
+});
+
+test('all index cost labels use the dataset methodology version', () => {
+  const label = `Intelligence Index v${aiModels.intelligenceIndexVersion}`;
+  for (const metric of ['intelligenceIndex', 'codingIndex', 'knowledgeWorkIndex', 'scienceIndex', 'generalIndex']) {
+    assert.ok(getCostDescription(metric, 'task').includes(label));
+    assert.ok(getCostDescription(metric, 'cost').includes(label));
+  }
 });

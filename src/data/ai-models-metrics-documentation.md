@@ -1,9 +1,9 @@
 # AI Model Benchmark Metrics Documentation
 
 **Source:** [Artificial Analysis](https://artificialanalysis.ai)\
-**Last Updated:** 2026-11-12\
-**Models Tracked:** 146 leading LLMs\
-**Intelligence Index Version:** v5.0 (see [v5 migration notes](#intelligence-index-v5-october-2026))
+**Last Updated:** 2026-11-17\
+**Models Tracked:** 156 leading LLMs\
+**Intelligence Index Version:** v5.0.1 (see [patch update](#intelligence-index-v501-november-2026) and [v5 migration notes](#intelligence-index-v5-october-2026))
 
 **Agent maintenance:** Start with the tracked [AI Models Maintenance guide](../../docs/AI_MODELS_MAINTENANCE.md) for setup, model additions, variants/defaults, parser troubleshooting, validation, and release instructions. This file is the metric reference, not the full operational checklist.
 
@@ -26,6 +26,7 @@ The overall Intelligence Index is published by Artificial Analysis. The four cat
   - **Science (25%):** Terminal-Bench-Science 15%, CritPt v2 hard subset 10%
   - **General (25%):** AA-Omniscience v1.1 accuracy 10% + non-hallucination 5%, HLE-Diamond 10%
 - **Changes from v4.3:** Removed GDPval-AA, SciCode, and AA-LCR; added FrontierCode 2.0 and Terminal-Bench-Science; upgraded HLE, CritPt, and AA-Omniscience. GDP.pdf's weight changed from 10% to 5%. Scores and evaluation costs are not directly comparable across index versions.
+- **v5.0.1 patch:** AA incorporated grading robustness improvements from the CritPt authors and regraded all models on CritPt v2. The nine evaluations, weights, and local category formulas are unchanged. The current sync records this exact patch version; earlier snapshots are not a controlled longitudinal comparison.
 - **Methodology:** 60% of v5 is based on private test sets or held-out answers. The suite is primarily text-based and English-language, but HLE-Diamond includes 272 image questions. Consult the current methodology for each evaluation's tools, harness, and normalization.
 - **Why it matters:** The single best metric for comparing overall model capability.
 - **Official page:** https://artificialanalysis.ai/methodology/intelligence-benchmarking
@@ -88,6 +89,16 @@ The overall Intelligence Index is published by Artificial Analysis. The four cat
 | Score scale | Frontier scores compressed (~65 → ~53 for Claude Fable 5.1 max) because the suite got harder |
 
 Consult AA's current methodology for index-level Elo freezing and normalization. The local Agentic Index reconstruction does not store frozen Elo snapshots: it uses the current payload's `briefcaseElo`, `gdpvalNormalized` when present (otherwise the Elo mapping), and `automationBench`. It should not be presented as an official published composite.
+
+---
+
+## Intelligence Index v5.0.1 (November 2026)
+
+The November 17 refresh follows AA's published v5.0.1 methodology: grading robustness improvements and a regrade of all models on CritPt v2, with no change to the evaluation suite or category weights. `intelligenceIndexVersion` is `5.0.1` and the four local category versions are `local-v5.0.1`. The overall score remains AA's published result, not a recomputed average. The sync requires the exact source version, so a label such as v5.0.10 cannot silently satisfy a v5.0.1 check.
+
+The refresh adds all five efforts of GPT-6.2 Sol and GPT-6.2 Astra. Max is visible by default; Family view enables each selected family's other reasoning efforts. Sol's xhigh/high/medium/low scores are published but their pricing and evaluation costs are absent in both the full HTML and RSC model objects. Keep those costs null: the variants remain available in score-only rankings and in the selector, but cannot be plotted against cost until AA supplies the missing data. Do not copy the max variant's prices or estimate evaluation costs from the family name.
+
+Source coverage review also verified that Gemini 3.7 Flash high no longer publishes token prices in either HTML or RSC; its price fields now remain null. The existing Nemotron Code2Video score-only exception is unchanged. No tracked models were removed.
 
 ---
 

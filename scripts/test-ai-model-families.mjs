@@ -83,6 +83,9 @@ test('current dataset keeps Terra, Sol, Gemini and fallback variants separate an
   const find = (name) => families.find(f => f.name === name);
   assert.equal(find('GPT-6.1 Terra').models.length, 6);
   assert.equal(find('GPT-6.1 Sol').models.length, 5);
+  for (const familyName of ['GPT-6.2 Sol', 'GPT-6.2 Astra']) {
+    assert.deepEqual(sortModelsByEffort(find(familyName).models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high', 'xhigh', 'max']);
+  }
   assert.deepEqual(sortModelsByEffort(find('Gemini 3.8 Flash').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high']);
   assert.deepEqual(sortModelsByEffort(find('Gemini 4 Hydrogen').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high', 'xhigh']);
   assert.ok(find('Claude Opus 5.5').models.every(m => modelFamilyInfo(m).effort.includes('fallback')));

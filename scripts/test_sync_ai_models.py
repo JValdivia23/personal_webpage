@@ -112,6 +112,18 @@ class CategoryTests(unittest.TestCase):
         self.assertEqual(model["costToRunIndex"], 9999)
         self.assertEqual(model["costPerTask"], 1.25)
 
+    def test_variant_missing_costs_does_not_inherit_family_prices(self):
+        model = sync.clean_model(model_raw(
+            slug="gpt-6-2-sol-high", name="GPT-6.2 Sol (High)",
+            price1mInputTokens=None, price1mOutputTokens=None,
+            intelligenceIndexCost=None, intelligenceIndexCostPerTask=None,
+            release={"slug": "gpt-6-2-sol", "price1mInputTokens": 2, "price1mOutputTokens": 10},
+        ))
+        self.assertEqual(model["intelligenceIndex"], 50)
+        for key in ("inputPrice", "outputPrice", "blendedPrice", "costToRunIndex", "costPerTask"):
+            with self.subTest(key=key):
+                self.assertIsNone(model[key])
+
 
 class ExtractionTests(unittest.TestCase):
     def test_initial_models_skip_summary_and_references(self):
@@ -138,14 +150,24 @@ class ExtractionTests(unittest.TestCase):
 
     def test_version_and_evaluation_suite_checks(self):
         raw = model_raw(intelligenceIndexEvaluations=[{"slug": s} for s in sync.V5_EVALUATIONS])
-        sync.validate_source_model(raw, raw["slug"], "Intelligence Index v5.0")
+        label = f"Intelligence Index v{sync.INTELLIGENCE_INDEX_VERSION}"
+        sync.validate_source_model(raw, raw["slug"], label)
         with self.assertRaises(ValueError):
             sync.validate_source_model(raw, raw["slug"], "Intelligence Index v4.3.2")
         raw["intelligenceIndexEvaluations"] = [{"slug": "hle"}]
         with self.assertRaises(ValueError):
-            sync.validate_source_model(raw, raw["slug"], "Intelligence Index v5.0")
+            sync.validate_source_model(raw, raw["slug"], label)
         raw["intelligenceIndexEvaluations"] = []
-        sync.validate_source_model(raw, raw["slug"], "Intelligence Index v5.0")
+        sync.validate_source_model(raw, raw["slug"], label)
+
+    def test_source_version_must_match_exactly_not_a_prefix(self):
+        raw = model_raw()
+        for version in ("5.0", "5.0.10", "5.0.1.1", "5.0.1-preview", "5.1", "6.0"):
+            with self.subTest(version=version), self.assertRaises(ValueError):
+                sync.validate_source_model(raw, raw["slug"], f"Intelligence Index v{version}")
+        with patch.object(sync, "INTELLIGENCE_INDEX_VERSION", "5.0"):
+            with self.assertRaises(ValueError):
+                sync.validate_source_model(raw, raw["slug"], "Intelligence Index v5.0.1")
 
 
 class Code2VideoTests(unittest.TestCase):

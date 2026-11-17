@@ -48,6 +48,8 @@ TARGET_URL = (
     "gpt-5-6-luna,gpt-5-6-luna-high,gpt-5-6-luna-medium,gpt-5-6-luna-low,gpt-5-6-luna-non-reasoning,"
     "gpt-6-sol,gpt-6-sol-xhigh,gpt-6-sol-high,gpt-6-sol-medium,gpt-6-sol-low,gpt-6-sol-non-reasoning,"
     "gpt-6-1-sol,gpt-6-1-sol-xhigh,gpt-6-1-sol-high,gpt-6-1-sol-medium,gpt-6-1-sol-low,gpt-6-1-terra,gpt-6-1-terra-xhigh,gpt-6-1-terra-high,gpt-6-1-terra-medium,gpt-6-1-terra-low,gpt-6-1-terra-non-reasoning,"
+    "gpt-6-2-sol,gpt-6-2-sol-xhigh,gpt-6-2-sol-high,gpt-6-2-sol-medium,gpt-6-2-sol-low,"
+    "gpt-6-2-astra,gpt-6-2-astra-xhigh,gpt-6-2-astra-high,gpt-6-2-astra-medium,gpt-6-2-astra-low,"
     "gpt-6-luna,gpt-6-luna-xhigh,gpt-6-luna-high,gpt-6-luna-medium,gpt-6-luna-low,gpt-6-luna-non-reasoning,"
     "gpt-6-astra,gpt-6-astra-xhigh,gpt-6-astra-high,gpt-6-astra-medium,gpt-6-astra-low,"
     "muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,muse-spark-open,muse-ember,muse-ember-xhigh,muse-wonder,muse-wonder-full,"
@@ -70,7 +72,7 @@ DISPLAY_NAMES = {
 }
 
 MIN_MODELS = 5
-INTELLIGENCE_INDEX_VERSION = "5.0"
+INTELLIGENCE_INDEX_VERSION = "5.0.1"
 V5_EVALUATIONS = frozenset({
     "aa-briefcase", "automationbench-aa", "gdp-pdf", "frontiercode-2-0",
     "terminalbench-4-0", "terminal-bench-science", "critpt-v2-hard",
@@ -83,10 +85,10 @@ CODE2VIDEO_TASK_COUNT = 114
 # all other unexpected missing rows continue to fail closed.
 CODE2VIDEO_SCORE_ONLY_EXCEPTIONS = frozenset({"nvidia-nemotron-3-ultra-550b-a55b"})
 METRIC_VERSIONS = {
-    "codingIndex": "local-v5.0",
-    "knowledgeWorkIndex": "local-v5.0",
-    "scienceIndex": "local-v5.0",
-    "generalIndex": "local-v5.0",
+    "codingIndex": "local-v5.0.1",
+    "knowledgeWorkIndex": "local-v5.0.1",
+    "scienceIndex": "local-v5.0.1",
+    "generalIndex": "local-v5.0.1",
     "agenticIndex": "legacy-local-v4.3",
     "omniscience": "1.1",
     "hle": "legacy-HLE",
@@ -141,7 +143,9 @@ def validate_source_model(raw: dict, slug: str, text: str) -> None:
     """Fail closed on summaries, wrong identities, or a changed index suite."""
     if not _is_full_model(raw, slug):
         raise ValueError(f"No full matching model object for {slug}")
-    if f"Intelligence Index v{INTELLIGENCE_INDEX_VERSION}" not in text:
+    # Require the full version, never a prefix (e.g. v5.0 matching v5.0.1).
+    version_label = r"\bIntelligence Index v" + re.escape(INTELLIGENCE_INDEX_VERSION) + r"(?![\w.-])"
+    if not re.search(version_label, text):
         raise ValueError(f"Unverified Intelligence Index version for {slug}")
     evaluations = raw.get("intelligenceIndexEvaluations")
     if evaluations and {e["slug"] for e in evaluations} != V5_EVALUATIONS:
