@@ -129,23 +129,28 @@ def run_context(browser, url, saved_hidden=None, mobile=False, saved_version=Non
     context.close()
 
 
-def check_gpt62_families(browser, url):
-    """Verify new families, with score-only handling driven by actual cost coverage."""
+def check_effort_families(browser, url):
+    """Verify max/xhigh defaults, effort-specific costs, and actual connections."""
+    families = [
+        ("OpenAI", "GPT-6.2 Sol", "max", 5),
+        ("OpenAI", "GPT-6.2 Astra", "max", 5),
+        ("Google", "Gemini 4 Neon", "xhigh", 4),
+    ]
     context = browser.new_context(viewport={"width": 1440, "height": 1000})
     page = context.new_page()
     page.goto(url, wait_until="networkidle", timeout=90000)
     assert page.get_by_role("button", name=re.compile(r"^Overall Intelligence.*AA v" + re.escape(INDEX_VERSION))).count() == 1
     page.get_by_role("button", name="Models", exact=True).click()
-    for name in ("GPT-6.2 Sol", "GPT-6.2 Astra"):
-        variants = [model for model in MODELS if family(model) == ("OpenAI", name)]
-        assert len(variants) == 5
+    for provider, name, default_effort, count in families:
+        variants = [model for model in MODELS if family(model) == (provider, name)]
+        assert len(variants) == count
         for model in variants:
             button = page.locator(f'#model-filter-content button[data-model-id="{model["id"]}"]')
-            assert button.get_attribute("aria-pressed") == ("true" if effort(model) == "max" else "false")
+            assert button.get_attribute("aria-pressed") == ("true" if effort(model) == default_effort else "false")
     saved = page.evaluate("localStorage.getItem('hiddenModelIds')")
     page.get_by_role("button", name="Family view off", exact=True).click()
-    for name in ("GPT-6.2 Sol", "GPT-6.2 Astra"):
-        variants = [model for model in MODELS if family(model) == ("OpenAI", name)]
+    for provider, name, _default_effort, _count in families:
+        variants = [model for model in MODELS if family(model) == (provider, name)]
         page.get_by_role("button", name=f"Show only {name}", exact=True).click()
         check_selection(page, variants)
         for label, cost in [("Price / 1M tokens", "blendedPrice"), ("Total cost to run", "costToRunIndex"),
@@ -209,8 +214,8 @@ def main():
             print("PASS: previous filter-version migration preserves user-hidden models and applies max-only defaults")
             run_context(browser, args.url, mobile=True)
             print("PASS: touch-sized viewport")
-            check_gpt62_families(browser, args.url)
-            print("PASS: GPT-6.2 max-only defaults, family connections, score-only rankings, missing-cost disclosure and current index labels")
+            check_effort_families(browser, args.url)
+            print("PASS: GPT-6.2/Neon highest-effort defaults, connected variants, exact cost tooltips, score rankings and current index labels")
             browser.close()
     finally:
         if server:

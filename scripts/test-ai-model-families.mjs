@@ -88,6 +88,7 @@ test('current dataset keeps Terra, Sol, Gemini and fallback variants separate an
   }
   assert.deepEqual(sortModelsByEffort(find('Gemini 3.8 Flash').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high']);
   assert.deepEqual(sortModelsByEffort(find('Gemini 4 Hydrogen').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high', 'xhigh']);
+  assert.deepEqual(sortModelsByEffort(find('Gemini 4 Neon').models).map(m => modelFamilyInfo(m).effort), ['low', 'medium', 'high', 'xhigh']);
   assert.ok(find('Claude Opus 5.5').models.every(m => modelFamilyInfo(m).effort.includes('fallback')));
 });
 

@@ -1,7 +1,7 @@
 {
-  "lastUpdated": "2026-11-17T14:18:59.319708",
-  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,gpt-5-6-terra-xhigh,gpt-5-6-sol-xhigh,gpt-5-6-luna-xhigh,gpt-5-6-terra,gpt-5-6-terra-high,gpt-5-6-terra-medium,gpt-5-6-terra-low,gpt-5-6-terra-non-reasoning,gpt-5-6-sol,gpt-5-6-sol-high,gpt-5-6-sol-medium,gpt-5-6-sol-low,gpt-5-6-sol-non-reasoning,gpt-5-6-luna,gpt-5-6-luna-high,gpt-5-6-luna-medium,gpt-5-6-luna-low,gpt-5-6-luna-non-reasoning,gpt-6-sol,gpt-6-sol-xhigh,gpt-6-sol-high,gpt-6-sol-medium,gpt-6-sol-low,gpt-6-sol-non-reasoning,gpt-6-1-sol,gpt-6-1-sol-xhigh,gpt-6-1-sol-high,gpt-6-1-sol-medium,gpt-6-1-sol-low,gpt-6-1-terra,gpt-6-1-terra-xhigh,gpt-6-1-terra-high,gpt-6-1-terra-medium,gpt-6-1-terra-low,gpt-6-1-terra-non-reasoning,gpt-6-2-sol,gpt-6-2-sol-xhigh,gpt-6-2-sol-high,gpt-6-2-sol-medium,gpt-6-2-sol-low,gpt-6-2-astra,gpt-6-2-astra-xhigh,gpt-6-2-astra-high,gpt-6-2-astra-medium,gpt-6-2-astra-low,gpt-6-luna,gpt-6-luna-xhigh,gpt-6-luna-high,gpt-6-luna-medium,gpt-6-luna-low,gpt-6-luna-non-reasoning,gpt-6-astra,gpt-6-astra-xhigh,gpt-6-astra-high,gpt-6-astra-medium,gpt-6-astra-low,muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,muse-spark-open,muse-ember,muse-ember-xhigh,muse-wonder,muse-wonder-full,gemini-3-1-pro-preview,gemini-3-5-flash,gemini-3-6-flash,gemini-3-7-flash,gemini-3-7-flash-medium,gemini-3-7-flash-low,gemini-3-8-flash,gemini-3-8-flash-medium,gemini-3-8-flash-low,gemini-4-argon,gemini-4-carbon,gemini-4-hydrogen,gemini-4-hydrogen-high,gemini-4-hydrogen-medium,gemini-4-hydrogen-low,claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-sonnet-5-5,claude-sonnet-5-5-xhigh,claude-sonnet-5-5-high,claude-sonnet-5-5-medium,claude-sonnet-5-5-low,claude-haiku-5-5,claude-haiku-5-5-xhigh,claude-haiku-5-5-high,claude-haiku-5-5-medium,claude-haiku-5-5-low,claude-opus-4-7,claude-opus-4-8,claude-opus-5,claude-opus-5-5,claude-opus-5-5-xhigh,claude-opus-5-5-high,claude-opus-5-5-medium,claude-opus-5-5-low,deepseek-v4-flash,deepseek-v4-flash-vision,deepseek-v4-pro,deepseek-v4-1-flash,deepseek-v4-1-flash-1017,deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,grok-4-6,grok-4-7,grok-4-7-high,minimax-m2-7,minimax-m3,minimax-m3-1-flash,nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,kimi-k2-6,kimi-k3,kimi-k3-1-pro,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,mimo-v2-6-pro,mimo-v2-6-flash,glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,qwen3-8-max,qwen3-8-2-4t-a95b,qwen3-8-27b,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,glm-5-3,glm-5-3-flash,claude-fable-5,claude-fable-5-1,claude-fable-5-1-medium,claude-fable-5-1-xhigh,claude-fable-5-2,claude-fable-5-2-xhigh,claude-fable-5-2-high,claude-fable-5-2-medium,claude-fable-5-2-low,hy3,tencent-hy4&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
-  "modelCount": 156,
+  "lastUpdated": "2026-11-18T16:19:30.916637",
+  "sourceUrl": "https://artificialanalysis.ai/models/deepseek-v4-pro?models=gpt-5-4-mini,gpt-oss-120b,gpt-5-5,gpt-5-4,gpt-5-6-terra-xhigh,gpt-5-6-sol-xhigh,gpt-5-6-luna-xhigh,gpt-5-6-terra,gpt-5-6-terra-high,gpt-5-6-terra-medium,gpt-5-6-terra-low,gpt-5-6-terra-non-reasoning,gpt-5-6-sol,gpt-5-6-sol-high,gpt-5-6-sol-medium,gpt-5-6-sol-low,gpt-5-6-sol-non-reasoning,gpt-5-6-luna,gpt-5-6-luna-high,gpt-5-6-luna-medium,gpt-5-6-luna-low,gpt-5-6-luna-non-reasoning,gpt-6-sol,gpt-6-sol-xhigh,gpt-6-sol-high,gpt-6-sol-medium,gpt-6-sol-low,gpt-6-sol-non-reasoning,gpt-6-1-sol,gpt-6-1-sol-xhigh,gpt-6-1-sol-high,gpt-6-1-sol-medium,gpt-6-1-sol-low,gpt-6-1-terra,gpt-6-1-terra-xhigh,gpt-6-1-terra-high,gpt-6-1-terra-medium,gpt-6-1-terra-low,gpt-6-1-terra-non-reasoning,gpt-6-2-sol,gpt-6-2-sol-xhigh,gpt-6-2-sol-high,gpt-6-2-sol-medium,gpt-6-2-sol-low,gpt-6-2-astra,gpt-6-2-astra-xhigh,gpt-6-2-astra-high,gpt-6-2-astra-medium,gpt-6-2-astra-low,gpt-6-luna,gpt-6-luna-xhigh,gpt-6-luna-high,gpt-6-luna-medium,gpt-6-luna-low,gpt-6-luna-non-reasoning,gpt-6-astra,gpt-6-astra-xhigh,gpt-6-astra-high,gpt-6-astra-medium,gpt-6-astra-low,muse-spark,muse-spark-1-2,muse-spark-1-3,muse-spark-1-3-xhigh,muse-spark-open,muse-ember,muse-ember-xhigh,muse-wonder,muse-wonder-full,gemini-3-1-pro-preview,gemini-3-5-flash,gemini-3-6-flash,gemini-3-7-flash,gemini-3-7-flash-medium,gemini-3-7-flash-low,gemini-3-8-flash,gemini-3-8-flash-medium,gemini-3-8-flash-low,gemini-4-argon,gemini-4-carbon,gemini-4-hydrogen,gemini-4-hydrogen-high,gemini-4-hydrogen-medium,gemini-4-hydrogen-low,gemini-4-neon,gemini-4-neon-high,gemini-4-neon-medium,gemini-4-neon-low,claude-sonnet-4-6-adaptive,claude-sonnet-5,claude-sonnet-5-5,claude-sonnet-5-5-xhigh,claude-sonnet-5-5-high,claude-sonnet-5-5-medium,claude-sonnet-5-5-low,claude-haiku-5-5,claude-haiku-5-5-xhigh,claude-haiku-5-5-high,claude-haiku-5-5-medium,claude-haiku-5-5-low,claude-opus-4-7,claude-opus-4-8,claude-opus-5,claude-opus-5-5,claude-opus-5-5-xhigh,claude-opus-5-5-high,claude-opus-5-5-medium,claude-opus-5-5-low,deepseek-v4-flash,deepseek-v4-flash-vision,deepseek-v4-pro,deepseek-v4-1-flash,deepseek-v4-1-flash-1017,deepseek-v3-2-reasoning,grok-4-20,grok-4-3,grok-4-5,grok-4-6,grok-4-7,grok-4-7-high,minimax-m2-7,minimax-m3,minimax-m3-1-flash,nvidia-nemotron-3-super-120b-a12b,nvidia-nemotron-3-ultra-550b-a55b,kimi-k2-6,kimi-k3,kimi-k3-1-pro,mimo-v2-omni,mimo-v2-5-pro,mimo-v2-5-0424,mimo-v2-pro,mimo-v2-6-pro,mimo-v2-6-flash,glm-5-1,qwen3-6-plus,qwen3-7-max,qwen3-7-plus,qwen3-8-max,qwen3-8-2-4t-a95b,qwen3-8-27b,claude-4-5-sonnet-thinking,claude-opus-4-6-adaptive,minimax-m2-5,kimi-k2-5,kimi-k2-7-code,glm-5-2,glm-5-3,glm-5-3-flash,claude-fable-5,claude-fable-5-1,claude-fable-5-1-medium,claude-fable-5-1-xhigh,claude-fable-5-2,claude-fable-5-2-xhigh,claude-fable-5-2-high,claude-fable-5-2-medium,claude-fable-5-2-low,hy3,tencent-hy4&intelligence=coding-index&intelligence-index-cost=intelligence-vs-cost",
+  "modelCount": 160,
   "intelligenceIndexVersion": "5.0.1",
   "metricVersions": {
     "codingIndex": "local-v5.0.1",
@@ -163,7 +163,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 62.1387990593969,
       "codingIndex": 52.88467171717171,
-      "knowledgeWorkIndex": 55.710176608483344,
+      "knowledgeWorkIndex": 55.70687660848335,
       "scienceIndex": 75.45714285714284,
       "generalIndex": 64.49330505478967,
       "agenticIndex": null,
@@ -214,7 +214,7 @@
       "harveyLabAllPass": 0.15,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1643.35,
+      "briefcaseElo": 1643.24,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
@@ -295,7 +295,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 61.5602325371388,
       "codingIndex": 55.027368686868684,
-      "knowledgeWorkIndex": 53.616619765983856,
+      "knowledgeWorkIndex": 53.64241976598385,
       "scienceIndex": 75.34285714285716,
       "generalIndex": 62.25528455284554,
       "agenticIndex": null,
@@ -346,7 +346,7 @@
       "harveyLabAllPass": 0.12777777777777777,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1593.51,
+      "briefcaseElo": 1594.37,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
@@ -355,13 +355,79 @@
       "intelligenceRank": 5
     },
     {
+      "id": "gemini-4-neon",
+      "name": "Gemini 4 Neon (Xhigh)",
+      "shortName": "Gemini 4 Neon (xhigh)",
+      "provider": "Google",
+      "intelligenceIndex": 61.3982491392674,
+      "codingIndex": 52.10086363636361,
+      "knowledgeWorkIndex": 57.472108749823356,
+      "scienceIndex": 66.19999999999999,
+      "generalIndex": 69.82302417088252,
+      "agenticIndex": null,
+      "mathIndex": null,
+      "inputPrice": 3.0,
+      "outputPrice": 15.0,
+      "cacheInputPrice": 0.15,
+      "blendedPrice": 2.205,
+      "costToRunIndex": 7787.910053117797,
+      "costPerTask": 6.444838101104699,
+      "isOpenWeights": false,
+      "releaseDate": "2026-11-18",
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/gemini-4-neon",
+      "gpqa": null,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": null,
+      "mmluPro": null,
+      "math500": null,
+      "hle": null,
+      "gdpval": null,
+      "gdpvalNormalized": null,
+      "ifbench": null,
+      "tau2": null,
+      "terminalbenchHard": null,
+      "critpt": null,
+      "mmmuPro": null,
+      "multilingualAA": null,
+      "omniscience": 54.766666666666666,
+      "omniscienceAccuracy": 0.6046666666666667,
+      "omniscienceHallucinationRate": 0.14418212478920742,
+      "lcr": null,
+      "tauBanking": null,
+      "terminalbenchV21": null,
+      "terminalbenchV40": 0.636363636363636,
+      "frontierCode20": 0.444105303030303,
+      "terminalbenchScience": 0.7,
+      "hleDiamond": 0.713,
+      "critptV2Hard": 0.605,
+      "gdpPdfAllPass": 0.28,
+      "mlcrOverall": null,
+      "analystAgent": null,
+      "automationBench": 0.7933804374911678,
+      "enterpriseOpsGym": null,
+      "harveyLabAllPass": null,
+      "apexAgents": null,
+      "itBenchSre": null,
+      "briefcaseElo": 1700.15,
+      "code2videoElo": null,
+      "code2videoEloInterval": null,
+      "code2videoCostToRun": null,
+      "code2videoCostPerTask": null,
+      "intelligenceIndexIsEstimated": null,
+      "intelligenceRank": 6
+    },
+    {
       "id": "gpt-6-2-astra-high",
       "name": "GPT-6.2 Astra (High)",
       "shortName": "GPT-6.2 Astra (high)",
       "provider": "OpenAI",
       "intelligenceIndex": 60.0882280338247,
       "codingIndex": 52.319570707070675,
-      "knowledgeWorkIndex": 53.02271332827533,
+      "knowledgeWorkIndex": 53.03591332827532,
       "scienceIndex": 73.7428571428571,
       "generalIndex": 61.26957095709571,
       "agenticIndex": null,
@@ -412,13 +478,13 @@
       "harveyLabAllPass": 0.13333333333333333,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1569.97,
+      "briefcaseElo": 1570.41,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 6
+      "intelligenceRank": 7
     },
     {
       "id": "gemini-4-carbon",
@@ -434,10 +500,10 @@
       "mathIndex": null,
       "inputPrice": 2.0,
       "outputPrice": 10.0,
-      "cacheInputPrice": 0.1,
-      "blendedPrice": 1.47,
-      "costToRunIndex": 5333.26684317719,
-      "costPerTask": 5.484780948230178,
+      "cacheInputPrice": 0.2,
+      "blendedPrice": 1.54,
+      "costToRunIndex": 4813.165248851011,
+      "costPerTask": 4.897345693056595,
       "isOpenWeights": false,
       "releaseDate": "2026-10-28",
       "contextWindow": 1000000,
@@ -484,7 +550,73 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 7
+      "intelligenceRank": 8
+    },
+    {
+      "id": "gemini-4-neon-high",
+      "name": "Gemini 4 Neon (High)",
+      "shortName": "Gemini 4 Neon (high)",
+      "provider": "Google",
+      "intelligenceIndex": 59.6189441875232,
+      "codingIndex": 50.61282828282826,
+      "knowledgeWorkIndex": 56.48941808959644,
+      "scienceIndex": 63.02857142857141,
+      "generalIndex": 68.34495894909688,
+      "agenticIndex": null,
+      "mathIndex": null,
+      "inputPrice": 3.0,
+      "outputPrice": 15.0,
+      "cacheInputPrice": 0.15,
+      "blendedPrice": 2.205,
+      "costToRunIndex": 3694.620680778624,
+      "costPerTask": 3.7427499092845027,
+      "isOpenWeights": false,
+      "releaseDate": "2026-11-18",
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/gemini-4-neon-high",
+      "gpqa": null,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": null,
+      "mmluPro": null,
+      "math500": null,
+      "hle": null,
+      "gdpval": null,
+      "gdpvalNormalized": null,
+      "ifbench": null,
+      "tau2": null,
+      "terminalbenchHard": null,
+      "critpt": null,
+      "mmmuPro": null,
+      "multilingualAA": null,
+      "omniscience": 53.766666666666666,
+      "omniscienceAccuracy": 0.594,
+      "omniscienceHallucinationRate": 0.138752052545156,
+      "lcr": null,
+      "tauBanking": null,
+      "terminalbenchV21": null,
+      "terminalbenchV40": 0.616161616161616,
+      "frontierCode20": 0.432772727272727,
+      "terminalbenchScience": 0.657142857142857,
+      "hleDiamond": 0.684,
+      "critptV2Hard": 0.59,
+      "gdpPdfAllPass": 0.334,
+      "mlcrOverall": null,
+      "analystAgent": null,
+      "automationBench": 0.792440904479822,
+      "enterpriseOpsGym": null,
+      "harveyLabAllPass": null,
+      "apexAgents": null,
+      "itBenchSre": null,
+      "briefcaseElo": 1632.02,
+      "code2videoElo": null,
+      "code2videoEloInterval": null,
+      "code2videoCostToRun": null,
+      "code2videoCostPerTask": null,
+      "intelligenceIndexIsEstimated": null,
+      "intelligenceRank": 9
     },
     {
       "id": "claude-opus-5-5",
@@ -553,7 +685,7 @@
       "code2videoCostToRun": 350.922468,
       "code2videoCostPerTask": 3.0782672631578945,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 8
+      "intelligenceRank": 10
     },
     {
       "id": "claude-opus-5-5-xhigh",
@@ -619,7 +751,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 9
+      "intelligenceRank": 11
     },
     {
       "id": "gpt-6-2-sol",
@@ -628,7 +760,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 57.2576209885477,
       "codingIndex": 50.66826767676766,
-      "knowledgeWorkIndex": 53.61326653599736,
+      "knowledgeWorkIndex": 53.61746653599737,
       "scienceIndex": 65.57142857142856,
       "generalIndex": 59.1673211699971,
       "agenticIndex": null,
@@ -679,13 +811,13 @@
       "harveyLabAllPass": 0.1111111111111111,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1611.92,
+      "briefcaseElo": 1612.06,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 10
+      "intelligenceRank": 12
     },
     {
       "id": "gpt-6-2-astra-medium",
@@ -694,7 +826,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 56.9986252138657,
       "codingIndex": 51.37022222222224,
-      "knowledgeWorkIndex": 47.524776086175116,
+      "knowledgeWorkIndex": 47.49297608617511,
       "scienceIndex": 71.85714285714289,
       "generalIndex": 57.23875968992249,
       "agenticIndex": null,
@@ -745,13 +877,13 @@
       "harveyLabAllPass": 0.08055555555555555,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1409.26,
+      "briefcaseElo": 1408.2,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 11
+      "intelligenceRank": 13
     },
     {
       "id": "gpt-6-astra",
@@ -820,7 +952,7 @@
       "code2videoCostToRun": 184.76985,
       "code2videoCostPerTask": 1.6207881578947367,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 12
+      "intelligenceRank": 14
     },
     {
       "id": "claude-fable-5-2-medium",
@@ -886,7 +1018,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 13
+      "intelligenceRank": 15
     },
     {
       "id": "gpt-6-2-sol-xhigh",
@@ -895,7 +1027,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 55.7351067246438,
       "codingIndex": 48.07565151515154,
-      "knowledgeWorkIndex": 52.111594721846124,
+      "knowledgeWorkIndex": 52.19169472184612,
       "scienceIndex": 65.00000000000001,
       "generalIndex": 57.75318066157761,
       "agenticIndex": null,
@@ -946,13 +1078,13 @@
       "harveyLabAllPass": 0.06111111111111111,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1577.37,
+      "briefcaseElo": 1580.04,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 14
+      "intelligenceRank": 16
     },
     {
       "id": "gpt-6-astra-xhigh",
@@ -1018,7 +1150,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 15
+      "intelligenceRank": 17
     },
     {
       "id": "gpt-6-2-sol-high",
@@ -1027,7 +1159,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 54.8898658241942,
       "codingIndex": 47.56928282828284,
-      "knowledgeWorkIndex": 50.919261346791615,
+      "knowledgeWorkIndex": 50.95436134679161,
       "scienceIndex": 65.17142857142856,
       "generalIndex": 55.8967905502737,
       "agenticIndex": null,
@@ -1078,13 +1210,79 @@
       "harveyLabAllPass": 0.058333333333333334,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1539.62,
+      "briefcaseElo": 1540.79,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 16
+      "intelligenceRank": 18
+    },
+    {
+      "id": "gemini-4-neon-medium",
+      "name": "Gemini 4 Neon (Medium)",
+      "shortName": "Gemini 4 Neon (medium)",
+      "provider": "Google",
+      "intelligenceIndex": 54.8622945007349,
+      "codingIndex": 43.97428787878784,
+      "knowledgeWorkIndex": 52.65202534413527,
+      "scienceIndex": 57.45714285714287,
+      "generalIndex": 65.36452192287373,
+      "agenticIndex": null,
+      "mathIndex": null,
+      "inputPrice": 3.0,
+      "outputPrice": 15.0,
+      "cacheInputPrice": 0.15,
+      "blendedPrice": 2.205,
+      "costToRunIndex": 1865.5405669449221,
+      "costPerTask": 1.9045555241044152,
+      "isOpenWeights": false,
+      "releaseDate": "2026-11-18",
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/gemini-4-neon-medium",
+      "gpqa": null,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": null,
+      "mmluPro": null,
+      "math500": null,
+      "hle": null,
+      "gdpval": null,
+      "gdpvalNormalized": null,
+      "ifbench": null,
+      "tau2": null,
+      "terminalbenchHard": null,
+      "critpt": null,
+      "mmmuPro": null,
+      "multilingualAA": null,
+      "omniscience": 51.1,
+      "omniscienceAccuracy": 0.5793333333333334,
+      "omniscienceHallucinationRate": 0.1624405705229794,
+      "lcr": null,
+      "tauBanking": null,
+      "terminalbenchV21": null,
+      "terminalbenchV40": 0.545454545454545,
+      "frontierCode20": 0.369268434343434,
+      "terminalbenchScience": 0.547619047619048,
+      "hleDiamond": 0.636,
+      "critptV2Hard": 0.615,
+      "gdpPdfAllPass": 0.328,
+      "mlcrOverall": null,
+      "analystAgent": null,
+      "automationBench": 0.7780512672067629,
+      "enterpriseOpsGym": null,
+      "harveyLabAllPass": null,
+      "apexAgents": null,
+      "itBenchSre": null,
+      "briefcaseElo": 1517.7,
+      "code2videoElo": null,
+      "code2videoEloInterval": null,
+      "code2videoCostToRun": null,
+      "code2videoCostPerTask": null,
+      "intelligenceIndexIsEstimated": null,
+      "intelligenceRank": 19
     },
     {
       "id": "gpt-6-astra-high",
@@ -1150,7 +1348,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 17
+      "intelligenceRank": 20
     },
     {
       "id": "gpt-6-1-sol",
@@ -1159,10 +1357,10 @@
       "provider": "OpenAI",
       "intelligenceIndex": 54.6087338138148,
       "codingIndex": 46.800015151515176,
-      "knowledgeWorkIndex": 50.81648976479634,
+      "knowledgeWorkIndex": 50.88488976479635,
       "scienceIndex": 62.65714285714286,
       "generalIndex": 57.877787481804944,
-      "agenticIndex": 55.63824147066361,
+      "agenticIndex": 55.69524147066362,
       "mathIndex": null,
       "inputPrice": 2.0,
       "outputPrice": 10.0,
@@ -1210,7 +1408,7 @@
       "harveyLabAllPass": 0.06944444444444443,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1554.76,
+      "briefcaseElo": 1557.04,
       "code2videoElo": 1369.3,
       "code2videoEloInterval": {
         "lower": 1345.86,
@@ -1219,7 +1417,7 @@
       "code2videoCostToRun": 35.88272,
       "code2videoCostPerTask": 0.314760701754386,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 18
+      "intelligenceRank": 21
     },
     {
       "id": "claude-sonnet-5-5",
@@ -1288,7 +1486,7 @@
       "code2videoCostToRun": 202.9808,
       "code2videoCostPerTask": 1.7805333333333333,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 19
+      "intelligenceRank": 22
     },
     {
       "id": "claude-fable-5-2-low",
@@ -1354,7 +1552,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 20
+      "intelligenceRank": 23
     },
     {
       "id": "gemini-4-hydrogen",
@@ -1420,7 +1618,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 21
+      "intelligenceRank": 24
     },
     {
       "id": "gpt-6-2-sol-medium",
@@ -1429,7 +1627,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 52.6777305876603,
       "codingIndex": 47.26333333333332,
-      "knowledgeWorkIndex": 49.83837949349849,
+      "knowledgeWorkIndex": 49.743879493498504,
       "scienceIndex": 61.8857142857143,
       "generalIndex": 51.71809523809524,
       "agenticIndex": null,
@@ -1480,13 +1678,13 @@
       "harveyLabAllPass": 0.05,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1498.07,
+      "briefcaseElo": 1494.92,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 22
+      "intelligenceRank": 25
     },
     {
       "id": "gpt-6-1-sol-xhigh",
@@ -1552,7 +1750,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 23
+      "intelligenceRank": 26
     },
     {
       "id": "claude-opus-5-5-high",
@@ -1618,7 +1816,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 24
+      "intelligenceRank": 27
     },
     {
       "id": "gpt-6-astra-medium",
@@ -1684,7 +1882,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 25
+      "intelligenceRank": 28
     },
     {
       "id": "gpt-6-1-terra",
@@ -1693,10 +1891,10 @@
       "provider": "OpenAI",
       "intelligenceIndex": 51.3265188577015,
       "codingIndex": 47.614252525252546,
-      "knowledgeWorkIndex": 44.792524654515454,
+      "knowledgeWorkIndex": 44.71182465451545,
       "scienceIndex": 61.771428571428565,
       "generalIndex": 51.07326967960959,
-      "agenticIndex": 48.824437212096214,
+      "agenticIndex": 48.757187212096206,
       "mathIndex": null,
       "inputPrice": 1.0,
       "outputPrice": 5.0,
@@ -1744,13 +1942,13 @@
       "harveyLabAllPass": null,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1401.3,
+      "briefcaseElo": 1398.61,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 26
+      "intelligenceRank": 29
     },
     {
       "id": "gemini-4-hydrogen-high",
@@ -1816,7 +2014,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 27
+      "intelligenceRank": 30
     },
     {
       "id": "gemini-4-argon",
@@ -1885,7 +2083,7 @@
       "code2videoCostToRun": 30.341166,
       "code2videoCostPerTask": 0.26615057894736843,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 28
+      "intelligenceRank": 31
     },
     {
       "id": "gpt-6-1-sol-high",
@@ -1951,7 +2149,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 29
+      "intelligenceRank": 32
     },
     {
       "id": "muse-wonder-full",
@@ -2017,7 +2215,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 30
+      "intelligenceRank": 33
     },
     {
       "id": "claude-fable-5-1-xhigh",
@@ -2083,7 +2281,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 31
+      "intelligenceRank": 34
     },
     {
       "id": "claude-sonnet-5-5-xhigh",
@@ -2149,7 +2347,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 32
+      "intelligenceRank": 35
     },
     {
       "id": "claude-fable-5-1",
@@ -2218,7 +2416,7 @@
       "code2videoCostToRun": 443.01755,
       "code2videoCostPerTask": 3.886118859649123,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 33
+      "intelligenceRank": 36
     },
     {
       "id": "claude-opus-5-5-medium",
@@ -2284,7 +2482,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 34
+      "intelligenceRank": 37
     },
     {
       "id": "kimi-k3-1-pro",
@@ -2350,7 +2548,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 35
+      "intelligenceRank": 38
     },
     {
       "id": "gpt-6-1-sol-medium",
@@ -2416,7 +2614,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 36
+      "intelligenceRank": 39
     },
     {
       "id": "gpt-6-2-astra-low",
@@ -2425,7 +2623,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 45.6504174923967,
       "codingIndex": 40.001797979797985,
-      "knowledgeWorkIndex": 35.459643954629065,
+      "knowledgeWorkIndex": 35.47584395462906,
       "scienceIndex": 54.97142857142854,
       "generalIndex": 52.173299463731304,
       "agenticIndex": null,
@@ -2476,13 +2674,13 @@
       "harveyLabAllPass": 0.02222222222222222,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1038.17,
+      "briefcaseElo": 1038.71,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 37
+      "intelligenceRank": 40
     },
     {
       "id": "gpt-6-1-terra-xhigh",
@@ -2548,7 +2746,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 38
+      "intelligenceRank": 41
     },
     {
       "id": "claude-opus-5",
@@ -2614,7 +2812,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 39
+      "intelligenceRank": 42
     },
     {
       "id": "gpt-6-sol",
@@ -2680,7 +2878,73 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 40
+      "intelligenceRank": 43
+    },
+    {
+      "id": "gemini-4-neon-low",
+      "name": "Gemini 4 Neon (Low)",
+      "shortName": "Gemini 4 Neon (low)",
+      "provider": "Google",
+      "intelligenceIndex": 44.0831506204565,
+      "codingIndex": 29.30072222222218,
+      "knowledgeWorkIndex": 45.37669343994126,
+      "scienceIndex": 41.08571428571426,
+      "generalIndex": 60.582372533948245,
+      "agenticIndex": null,
+      "mathIndex": null,
+      "inputPrice": 3.0,
+      "outputPrice": 15.0,
+      "cacheInputPrice": 0.15,
+      "blendedPrice": 2.205,
+      "costToRunIndex": 830.2556933049173,
+      "costPerTask": 0.7452280945089245,
+      "isOpenWeights": false,
+      "releaseDate": "2026-11-18",
+      "contextWindow": 1000000,
+      "url": "https://artificialanalysis.ai/models/gemini-4-neon-low",
+      "gpqa": null,
+      "aime": null,
+      "aime25": null,
+      "humaneval": null,
+      "livecodebench": null,
+      "scicode": null,
+      "mmluPro": null,
+      "math500": null,
+      "hle": null,
+      "gdpval": null,
+      "gdpvalNormalized": null,
+      "ifbench": null,
+      "tau2": null,
+      "terminalbenchHard": null,
+      "critpt": null,
+      "mmmuPro": null,
+      "multilingualAA": null,
+      "omniscience": 48.5,
+      "omniscienceAccuracy": 0.5663333333333334,
+      "omniscienceHallucinationRate": 0.18754803996925443,
+      "lcr": null,
+      "tauBanking": null,
+      "terminalbenchV21": null,
+      "terminalbenchV40": 0.328282828282828,
+      "frontierCode20": 0.269490151515151,
+      "terminalbenchScience": 0.271428571428571,
+      "hleDiamond": 0.542,
+      "critptV2Hard": 0.62,
+      "gdpPdfAllPass": 0.314,
+      "mlcrOverall": null,
+      "analystAgent": null,
+      "automationBench": 0.7599496719970632,
+      "enterpriseOpsGym": null,
+      "harveyLabAllPass": null,
+      "apexAgents": null,
+      "itBenchSre": null,
+      "briefcaseElo": 1296.59,
+      "code2videoElo": null,
+      "code2videoEloInterval": null,
+      "code2videoCostToRun": null,
+      "code2videoCostPerTask": null,
+      "intelligenceIndexIsEstimated": null,
+      "intelligenceRank": 44
     },
     {
       "id": "muse-wonder",
@@ -2749,7 +3013,7 @@
       "code2videoCostToRun": 34.620408,
       "code2videoCostPerTask": 0.3036877894736842,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 41
+      "intelligenceRank": 45
     },
     {
       "id": "gpt-6-astra-low",
@@ -2815,7 +3079,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 42
+      "intelligenceRank": 46
     },
     {
       "id": "claude-fable-5-1-medium",
@@ -2881,7 +3145,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 43
+      "intelligenceRank": 47
     },
     {
       "id": "gpt-6-1-terra-high",
@@ -2947,7 +3211,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 44
+      "intelligenceRank": 48
     },
     {
       "id": "claude-sonnet-5-5-high",
@@ -3013,7 +3277,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 45
+      "intelligenceRank": 49
     },
     {
       "id": "gemini-4-hydrogen-medium",
@@ -3079,7 +3343,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 46
+      "intelligenceRank": 50
     },
     {
       "id": "gpt-6-2-sol-low",
@@ -3088,7 +3352,7 @@
       "provider": "OpenAI",
       "intelligenceIndex": 40.552508943285,
       "codingIndex": 33.97245454545454,
-      "knowledgeWorkIndex": 40.26292273428068,
+      "knowledgeWorkIndex": 40.25362273428068,
       "scienceIndex": 45.48571428571426,
       "generalIndex": 42.48654420769042,
       "agenticIndex": null,
@@ -3139,13 +3403,13 @@
       "harveyLabAllPass": 0.030555555555555555,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1229.87,
+      "briefcaseElo": 1229.56,
       "code2videoElo": null,
       "code2videoEloInterval": null,
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 47
+      "intelligenceRank": 51
     },
     {
       "id": "gpt-6-1-terra-medium",
@@ -3211,7 +3475,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 48
+      "intelligenceRank": 52
     },
     {
       "id": "muse-spark-1-3",
@@ -3280,7 +3544,7 @@
       "code2videoCostToRun": 15.8931215,
       "code2videoCostPerTask": 0.13941334649122805,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 49
+      "intelligenceRank": 53
     },
     {
       "id": "claude-haiku-5-5",
@@ -3349,7 +3613,7 @@
       "code2videoCostToRun": 9.412821699999999,
       "code2videoCostPerTask": 0.08256861140350875,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 50
+      "intelligenceRank": 54
     },
     {
       "id": "muse-ember",
@@ -3415,7 +3679,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 51
+      "intelligenceRank": 55
     },
     {
       "id": "grok-4-7",
@@ -3484,7 +3748,7 @@
       "code2videoCostToRun": 72.753798,
       "code2videoCostPerTask": 0.6381912105263158,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 52
+      "intelligenceRank": 56
     },
     {
       "id": "grok-4-7-high",
@@ -3550,7 +3814,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 53
+      "intelligenceRank": 57
     },
     {
       "id": "gpt-6-1-sol-low",
@@ -3616,7 +3880,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 54
+      "intelligenceRank": 58
     },
     {
       "id": "claude-opus-5-5-low",
@@ -3682,7 +3946,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 55
+      "intelligenceRank": 59
     },
     {
       "id": "claude-haiku-5-5-xhigh",
@@ -3748,7 +4012,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 56
+      "intelligenceRank": 60
     },
     {
       "id": "tencent-hy4",
@@ -3814,7 +4078,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 57
+      "intelligenceRank": 61
     },
     {
       "id": "muse-ember-xhigh",
@@ -3880,7 +4144,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 58
+      "intelligenceRank": 62
     },
     {
       "id": "qwen3-8-max",
@@ -3949,7 +4213,7 @@
       "code2videoCostToRun": 28.518108,
       "code2videoCostPerTask": 0.2501588421052632,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 59
+      "intelligenceRank": 63
     },
     {
       "id": "deepseek-v4-1-flash-1017",
@@ -4015,7 +4279,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 60
+      "intelligenceRank": 64
     },
     {
       "id": "gpt-5-6-terra",
@@ -4081,7 +4345,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 61
+      "intelligenceRank": 65
     },
     {
       "id": "glm-5-3",
@@ -4150,7 +4414,7 @@
       "code2videoCostToRun": 40.5335672,
       "code2videoCostPerTask": 0.35555760701754385,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 62
+      "intelligenceRank": 66
     },
     {
       "id": "gemini-3-8-flash",
@@ -4219,7 +4483,7 @@
       "code2videoCostToRun": 14.14236975,
       "code2videoCostPerTask": 0.124055875,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 63
+      "intelligenceRank": 67
     },
     {
       "id": "claude-sonnet-5-5-medium",
@@ -4285,7 +4549,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 64
+      "intelligenceRank": 68
     },
     {
       "id": "gpt-6-1-terra-non-reasoning",
@@ -4351,7 +4615,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 65
+      "intelligenceRank": 69
     },
     {
       "id": "gemini-3-8-flash-medium",
@@ -4417,7 +4681,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 66
+      "intelligenceRank": 70
     },
     {
       "id": "mimo-v2-6-pro",
@@ -4486,7 +4750,7 @@
       "code2videoCostToRun": 3.0013246949999997,
       "code2videoCostPerTask": 0.026327409605263155,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 67
+      "intelligenceRank": 71
     },
     {
       "id": "claude-haiku-5-5-high",
@@ -4552,7 +4816,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 68
+      "intelligenceRank": 72
     },
     {
       "id": "gpt-6-1-terra-low",
@@ -4618,7 +4882,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 69
+      "intelligenceRank": 73
     },
     {
       "id": "minimax-m3-1-flash",
@@ -4684,7 +4948,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 70
+      "intelligenceRank": 74
     },
     {
       "id": "gpt-6-luna",
@@ -4693,10 +4957,10 @@
       "provider": "OpenAI",
       "intelligenceIndex": 27.8552004938153,
       "codingIndex": 20.15536868686866,
-      "knowledgeWorkIndex": 40.316828068966345,
+      "knowledgeWorkIndex": 40.28412806896635,
       "scienceIndex": 22.142857142857142,
       "generalIndex": 28.863648076569113,
-      "agenticIndex": 45.51885672413862,
+      "agenticIndex": 45.49160672413862,
       "mathIndex": null,
       "inputPrice": 0.1,
       "outputPrice": 0.5,
@@ -4744,7 +5008,7 @@
       "harveyLabAllPass": 0.03333333333333333,
       "apexAgents": null,
       "itBenchSre": null,
-      "briefcaseElo": 1337.44,
+      "briefcaseElo": 1336.35,
       "code2videoElo": 1029.65,
       "code2videoEloInterval": {
         "lower": 1010.01,
@@ -4753,7 +5017,7 @@
       "code2videoCostToRun": 2.6989225,
       "code2videoCostPerTask": 0.023674758771929826,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 71
+      "intelligenceRank": 75
     },
     {
       "id": "glm-5-3-flash",
@@ -4822,7 +5086,7 @@
       "code2videoCostToRun": 2.66315295,
       "code2videoCostPerTask": 0.023360990789473686,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 72
+      "intelligenceRank": 76
     },
     {
       "id": "gemini-4-hydrogen-low",
@@ -4888,7 +5152,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 73
+      "intelligenceRank": 77
     },
     {
       "id": "mimo-v2-6-flash",
@@ -4957,7 +5221,7 @@
       "code2videoCostToRun": 1.21618014,
       "code2videoCostPerTask": 0.010668246842105263,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 74
+      "intelligenceRank": 78
     },
     {
       "id": "claude-sonnet-5-5-low",
@@ -5023,7 +5287,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 75
+      "intelligenceRank": 79
     },
     {
       "id": "muse-spark-open",
@@ -5089,7 +5353,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 76
+      "intelligenceRank": 80
     },
     {
       "id": "claude-haiku-5-5-medium",
@@ -5155,7 +5419,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 77
+      "intelligenceRank": 81
     },
     {
       "id": "gpt-5-6-luna",
@@ -5221,7 +5485,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 78
+      "intelligenceRank": 82
     },
     {
       "id": "gpt-6-luna-xhigh",
@@ -5287,7 +5551,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 79
+      "intelligenceRank": 83
     },
     {
       "id": "deepseek-v4-pro",
@@ -5353,7 +5617,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 80
+      "intelligenceRank": 84
     },
     {
       "id": "gemini-3-8-flash-low",
@@ -5419,7 +5683,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 81
+      "intelligenceRank": 85
     },
     {
       "id": "gpt-6-luna-high",
@@ -5485,7 +5749,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 82
+      "intelligenceRank": 86
     },
     {
       "id": "qwen3-8-27b",
@@ -5554,7 +5818,7 @@
       "code2videoCostToRun": 15.7617195,
       "code2videoCostPerTask": 0.13826069736842106,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 83
+      "intelligenceRank": 87
     },
     {
       "id": "minimax-m3",
@@ -5623,7 +5887,7 @@
       "code2videoCostToRun": 8.756075399999999,
       "code2videoCostPerTask": 0.07680767894736841,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 84
+      "intelligenceRank": 88
     },
     {
       "id": "claude-haiku-5-5-low",
@@ -5689,7 +5953,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 85
+      "intelligenceRank": 89
     },
     {
       "id": "gpt-6-luna-medium",
@@ -5755,7 +6019,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 86
+      "intelligenceRank": 90
     },
     {
       "id": "nvidia-nemotron-3-ultra-550b-a55b",
@@ -5824,7 +6088,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 87
+      "intelligenceRank": 91
     },
     {
       "id": "gpt-6-luna-low",
@@ -5890,7 +6154,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 88
+      "intelligenceRank": 92
     },
     {
       "id": "gpt-6-luna-non-reasoning",
@@ -5956,7 +6220,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 89
+      "intelligenceRank": 93
     },
     {
       "id": "gpt-oss-120b",
@@ -6022,7 +6286,7 @@
       "code2videoCostToRun": null,
       "code2videoCostPerTask": null,
       "intelligenceIndexIsEstimated": null,
-      "intelligenceRank": 90
+      "intelligenceRank": 94
     },
     {
       "id": "claude-4-5-sonnet-thinking",
